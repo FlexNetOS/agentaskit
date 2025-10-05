@@ -2,8 +2,8 @@
     "summary":  {
                     "other_files":  240,
                     "archive_files":  462,
-                    "files_total":  995,
-                    "production_files":  293
+                    "files_total":  996,
+                    "production_files":  294
                 },
     "lineage_pairs":  146,
     "duplicates_groups":  195,
@@ -83,6 +83,7 @@
                                           "report.json",
                                           "report.md",
                                           "rotation.md",
+                                          "run_all.ps1",
                                           "sample.log",
                                           "secrets.md",
                                           "security_tests.rs",

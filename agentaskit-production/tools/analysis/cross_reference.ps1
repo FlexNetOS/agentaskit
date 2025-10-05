@@ -5,7 +5,12 @@
 
 $ErrorActionPreference = "Stop"
 $rootPath = (Resolve-Path $Root).Path
-$outPath = Join-Path $rootPath $OutDir
+# Use OutDir as-is if absolute; otherwise, make it relative to root
+if ([System.IO.Path]::IsPathRooted($OutDir)) {
+  $outPath = $OutDir
+} else {
+  $outPath = Join-Path $rootPath $OutDir
+}
 New-Item -ItemType Directory -Force -Path $outPath | Out-Null
 
 # Ignore directories

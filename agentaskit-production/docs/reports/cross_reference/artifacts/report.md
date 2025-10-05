@@ -1,5 +1,5 @@
 ﻿# Cross-reference Report (archives V2–V7 → production)
-- Files total: 995 (archive: 462, production: 293, other: 240)
+- Files total: 996 (archive: 462, production: 294, other: 240)
 - Lineage pairs (archive↔production filename collisions): 146
 - Duplicate groups (identical sha across different paths): 195
 ## Basenames present outside production but not in final package (top 200)
@@ -74,11 +74,11 @@
 - report.json
 - report.md
 - rotation.md
+- run_all.ps1
 - sample.log
 - secrets.md
 - security_tests.rs
 - self_improving.rs
 - seven_phase_implementation_complete.md
 - seven_phase_verification_report.md
-- seven_phase_workflow_implementation.md
-… and 20 more
+… and 21 more

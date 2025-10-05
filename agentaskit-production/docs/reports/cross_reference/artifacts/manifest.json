@@ -3,8 +3,8 @@
     "summary":  {
                     "other_files":  240,
                     "archive_files":  462,
-                    "files_total":  995,
-                    "production_files":  293
+                    "files_total":  996,
+                    "production_files":  294
                 },
     "files":  [
                   {
@@ -1312,22 +1312,22 @@
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json",
                       "kind":  "production",
-                      "sha256":  "f4c1eb0267895f8003af77d0036511eea5143733a2ee016320b8424501d316de",
-                      "size":  378490,
+                      "sha256":  "f029e6896c937fe0f26bd183887dad6a7f9638ad02b325148d3e028e19d1803b",
+                      "size":  378838,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.json",
                       "kind":  "production",
-                      "sha256":  "3f706447ca95877168d1a0fe245659e61d495827fded95f6773d12d2939a1596",
-                      "size":  7077,
+                      "sha256":  "7c7f3c78fc1e2c99ac26d770a82668d58127739f7b6592302a510c2cecfc688a",
+                      "size":  7135,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.md",
                       "kind":  "production",
-                      "sha256":  "c52211b2b643e5ae5a8539604937440e1835f43742654ff9f5fb0c87267724c0",
-                      "size":  2168,
+                      "sha256":  "8a10d24678edc2f765e06d900c5a882702132cb852ce81b5464b53ea85fd7815",
+                      "size":  2141,
                       "text":  true
                   },
                   {
@@ -1634,8 +1634,8 @@
                   {
                       "path":  "agentaskit-production/tools/analysis/cross_reference.ps1",
                       "kind":  "production",
-                      "sha256":  "c11489f22cfa36c48d98bb3a4dfe024c70c0865d404e7607804af3cc0e661b8b",
-                      "size":  5675,
+                      "sha256":  "143670e60fb52ff8bf559ca9c034b4df9c4a7e6fab93afb6ba5e6762f571b32d",
+                      "size":  5829,
                       "text":  true
                   },
                   {
@@ -1657,6 +1657,13 @@
                       "kind":  "production",
                       "sha256":  "3196588f9056f70c93d064f06866a5faba8402257ef5794cc9ffd4fb367df4e8",
                       "size":  1999,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/tools/runner/run_all.ps1",
+                      "kind":  "production",
+                      "sha256":  "4f5e4633b02bd551ccbbfe7c1f4c1b4ce40c792df070eb56eb43203249cd8086",
+                      "size":  1605,
                       "text":  true
                   },
                   {
