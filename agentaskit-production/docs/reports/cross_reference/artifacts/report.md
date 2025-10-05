@@ -1,5 +1,5 @@
 ﻿# Cross-reference Report (archives V2–V7 → production)
-- Files total: 996 (archive: 462, production: 294, other: 240)
+- Files total: 1000 (archive: 462, production: 298, other: 240)
 - Lineage pairs (archive↔production filename collisions): 146
 - Duplicate groups (identical sha across different paths): 195
 ## Basenames present outside production but not in final package (top 200)
@@ -54,7 +54,9 @@
 - manifest.json
 - manifest_validator.py
 - messaging_throughput.rs
+- model_selector_bridge.md
 - model_selector_bridge.rs
+- models.yaml
 - ops-dedup-todo.md
 - overview.json
 - performance_tests.rs
@@ -75,10 +77,8 @@
 - report.md
 - rotation.md
 - run_all.ps1
+- run_many.ps1
+- run_many.sh
 - sample.log
 - secrets.md
-- security_tests.rs
-- self_improving.rs
-- seven_phase_implementation_complete.md
-- seven_phase_verification_report.md
-… and 21 more
+… and 25 more

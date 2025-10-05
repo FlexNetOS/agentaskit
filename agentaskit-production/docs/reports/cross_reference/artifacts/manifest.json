@@ -3,8 +3,8 @@
     "summary":  {
                     "other_files":  240,
                     "archive_files":  462,
-                    "files_total":  996,
-                    "production_files":  294
+                    "files_total":  1000,
+                    "production_files":  298
                 },
     "files":  [
                   {
@@ -17,8 +17,8 @@
                   {
                       "path":  ".gitignore",
                       "kind":  "other",
-                      "sha256":  "a90f88d0682ef263a232cd040ec9c95be63440f009df796380b1230765ae4d53",
-                      "size":  593,
+                      "sha256":  "6fa59c23a9a19ff3fefadac095ad0739359266645c2cc4972bcd83c2d5a06205",
+                      "size":  809,
                       "text":  true
                   },
                   {
@@ -593,6 +593,13 @@
                       "kind":  "production",
                       "sha256":  "7bfd4efbab651d53f7081696111709f0cc46fe07f1c8ec5bbe8b0223fb97ee1d",
                       "size":  34835,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/core/src/ai/model_selector_bridge.md",
+                      "kind":  "production",
+                      "sha256":  "6d745c81d5b5ad8e5bedcba3bc1728ee3c30cceda47346618b458aa41fe9ef54",
+                      "size":  337,
                       "text":  true
                   },
                   {
@@ -1312,7 +1319,7 @@
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json",
                       "kind":  "production",
-                      "sha256":  "f029e6896c937fe0f26bd183887dad6a7f9638ad02b325148d3e028e19d1803b",
+                      "sha256":  "3e82ae5936fd550a2a2b62e76e8c2893ec3308c4acf96d00baa1b11a49d525bf",
                       "size":  378838,
                       "text":  true
                   },
@@ -1370,6 +1377,27 @@
                       "kind":  "production",
                       "sha256":  "0e8414c6e7e46ffbc0bf4128b92b69db3b17ecb4fa3420fdd188352bf2251586",
                       "size":  654,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/integrations/llama.cpp/run_many.ps1",
+                      "kind":  "production",
+                      "sha256":  "669986921f4c213df5d55cf3e50679c3b887fb2547b9d67d0374b092911da8ee",
+                      "size":  1785,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/integrations/llama.cpp/run_many.sh",
+                      "kind":  "production",
+                      "sha256":  "cc63867060fabcdba18796a645af336c0bb317c339211cb0fe261a8c13749e7b",
+                      "size":  1064,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/integrations/llama.cpp/config/models.yaml",
+                      "kind":  "production",
+                      "sha256":  "1cf97cca762f1aa6d8653c79f9efe0dcd42c2923c4343575c9295f77e4eb9e9b",
+                      "size":  426,
                       "text":  true
                   },
                   {

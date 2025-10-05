@@ -37,6 +37,12 @@ node_modules/
 *.orig
 *.rej
 
+# Models / binaries
+*.gguf
+agentaskit-production/integrations/llama.cpp/llama.cpp/build/
+agentaskit-production/integrations/llama.cpp/llama.cpp/bin/
+agentaskit-production/integrations/llama.cpp/llama.cpp/main
+
 # Do not ignore evidence/e2e directories by default
 !agentaskit-production/operational_hash/**
 !agentaskit-production/sbom/**

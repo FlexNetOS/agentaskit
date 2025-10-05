@@ -2,8 +2,8 @@
     "summary":  {
                     "other_files":  240,
                     "archive_files":  462,
-                    "files_total":  996,
-                    "production_files":  294
+                    "files_total":  1000,
+                    "production_files":  298
                 },
     "lineage_pairs":  146,
     "duplicates_groups":  195,
@@ -63,7 +63,9 @@
                                           "manifest.json",
                                           "manifest_validator.py",
                                           "messaging_throughput.rs",
+                                          "model_selector_bridge.md",
                                           "model_selector_bridge.rs",
+                                          "models.yaml",
                                           "ops-dedup-todo.md",
                                           "overview.json",
                                           "performance_tests.rs",
@@ -84,6 +86,8 @@
                                           "report.md",
                                           "rotation.md",
                                           "run_all.ps1",
+                                          "run_many.ps1",
+                                          "run_many.sh",
                                           "sample.log",
                                           "secrets.md",
                                           "security_tests.rs",
