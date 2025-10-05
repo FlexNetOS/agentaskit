@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'agentaskit-production/agentask.subject.todo'
+      - 'agentaskit-production/.todo'
+      - 'agentaskit-production/core/src/orchestration/tasks.todo'
   workflow_dispatch:
   issue_comment:
     types: [created]
