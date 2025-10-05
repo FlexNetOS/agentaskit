@@ -997,8 +997,8 @@
                   {
                       "path":  "agentaskit-production/core/src/orchestration/tasks.todo",
                       "kind":  "production",
-                      "sha256":  "d0a6cca7556376e52ee049f6d45329fd9d99d8272487cd1dec0ba9f65b363945",
-                      "size":  23127,
+                      "sha256":  "8ff715caa2bd501816f4d8249c17a238c2c97aac4adccace7d93a83c8ed2a9be",
+                      "size":  23051,
                       "text":  true
                   },
                   {
@@ -1312,22 +1312,22 @@
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json",
                       "kind":  "production",
-                      "sha256":  "8e945a6f545d092b52da28e1f8498b24431885491b22ca91bcfff05c6d773786",
-                      "size":  367701,
+                      "sha256":  "f4c1eb0267895f8003af77d0036511eea5143733a2ee016320b8424501d316de",
+                      "size":  378490,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.json",
                       "kind":  "production",
-                      "sha256":  "ebc5df2b43626342ddfdc22a9f982e806856c6a164add1fe524e1f9553750c16",
-                      "size":  5967,
+                      "sha256":  "3f706447ca95877168d1a0fe245659e61d495827fded95f6773d12d2939a1596",
+                      "size":  7077,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.md",
                       "kind":  "production",
-                      "sha256":  "c0bb86ed6f7a0a009f8599437a101ba83e1aa46037891af461814877973440dd",
-                      "size":  2413,
+                      "sha256":  "c52211b2b643e5ae5a8539604937440e1835f43742654ff9f5fb0c87267724c0",
+                      "size":  2168,
                       "text":  true
                   },
                   {
