@@ -1319,22 +1319,22 @@
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json",
                       "kind":  "production",
-                      "sha256":  "3e82ae5936fd550a2a2b62e76e8c2893ec3308c4acf96d00baa1b11a49d525bf",
-                      "size":  378838,
+                      "sha256":  "bae7dc3a86bf203bb6c3074f9a44e92b3c856de8ea257263a3acf3af33ff0623",
+                      "size":  380279,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.json",
                       "kind":  "production",
-                      "sha256":  "7c7f3c78fc1e2c99ac26d770a82668d58127739f7b6592302a510c2cecfc688a",
-                      "size":  7135,
+                      "sha256":  "0bf8567eb2efb5e7647c7ff5acb696d2fd01c452963a787885061cc68d3e741b",
+                      "size":  7382,
                       "text":  true
                   },
                   {
                       "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.md",
                       "kind":  "production",
-                      "sha256":  "8a10d24678edc2f765e06d900c5a882702132cb852ce81b5464b53ea85fd7815",
-                      "size":  2141,
+                      "sha256":  "8b663d53e77f2af85e18b0d4452cc055d2e48867bc35d2827853da19ced9b434",
+                      "size":  2094,
                       "text":  true
                   },
                   {
