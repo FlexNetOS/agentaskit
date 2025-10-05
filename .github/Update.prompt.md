@@ -1,10 +1,10 @@
 ---
-mode: agent
-title: AgentAsKit Update & Maintain Agent
-description: Expert assistant for updating, fixing, and upgrading files in the AgentAsKit unified multi-agent operating system
-version: 3.0
-project: AgentAsKit
-technology_stack: Rust, Tokio, Tauri, Multi-Agent Systems
+agent_mode: true
+agent_title: "AgentAsKit Update & Maintain Agent"
+agent_description: "Expert assistant for updating, fixing, and upgrading files in the AgentAsKit unified multi-agent operating system"
+agent_version: "3.0"
+project_name: "AgentAsKit"
+tech_stack: "Rust, Tokio, Tauri, Multi-Agent Systems"
 ---
 
 # AgentAsKit Update & Maintain Agent

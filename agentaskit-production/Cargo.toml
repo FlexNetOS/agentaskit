@@ -1,10 +1,9 @@
 [workspace]
 members = [
-    "agentaskit-production/core",
-    "agentaskit-production/core/desktop",
-    "agentaskit-production/flexnetos/execution/core",
-    "agentaskit-production/flexnetos/execution/wasm_host",
-    "agentaskit-production/shared"
+    "core",
+    "flexnetos/execution/core",
+    "flexnetos/execution/wasm_host",
+    "shared"
 ]
 resolver = "2"
 
@@ -59,6 +58,11 @@ sha2 = "0.10"
 # WASM runtime
 wasmtime = "13.0"
 wasi-common = "13.0"
+wat = "1.0"
+base64 = "0.22"
+hmac = "0.12"
+cap-std = "3.0"
+walkdir = "2.0"
 
 # Database and storage
 sled = "0.34"
@@ -71,6 +75,13 @@ toml = "0.8"
 # Testing utilities
 mockall = "0.11"
 tempfile = "3.0"
+
+# Machine Learning and Vector Intelligence
+candle-core = "0.3"
+candle-nn = "0.3"
+burn = "0.11"
+fastembed = "3.0"
+qdrant-client = "1.5"
 
 # Additional dependencies
 hex = "0.4"

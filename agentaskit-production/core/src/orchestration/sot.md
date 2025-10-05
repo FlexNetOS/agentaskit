@@ -1,45 +1,119 @@
-# NOA Dynamic UI Cross-Platform Monorepo SoT
+# agentaskit SoT
+
+<!--
+State of Truth (SoT) ledger template.
+Rules:
+- Append-only for Executed Tasks; newest entries go to the end.
+- Use UTC timestamps in ISO-like format: YYYY-MM-DD HH:MM UTC.
+- Keep notes concise; link evidence and hashes.
+- Avoid secrets/PII. Prefer relative repo paths.
+-->
 
 ## 0) Meta
-- Owner: DEFLEX
-- Last updated: 2025-10-01 03:45 UTC
-- Scope: Unified NOA Dynamic UI cross-platform monorepo at `/home/deflex/workspace/.projects/noa_dynamic-ui_cross-platform_project`, covering agents, services, frameworks, platform clients, data, documentation, and orchestration tooling. Architecture section updated to reflect complete Ark OS + buildkit-recode unification plan with self-contained tooling.
-- Status Note — Second-Me: Setup not properly completed. Backend parity runs pass under a local overlay, but full setup remains incomplete (dependency mismatch between `graphrag` and `tiktoken`, missing frontend/e2e tests, governance approvals not wired). See `config/applications/second_me/TODO.md` for tracked gaps.
+- Owner: <owner/team>
+- Last updated: 2025-10-05 12:05 UTC
+- Scope: agentaskit-production; repo-wide cross-reference & governance
+- Status Note: Cross-reference CI added; artifacts generated per push.
 
 ## 1) Task Ledger
 
 ### 1.1 Executed Tasks (Chronological)
-- [x] 2025-09-28 20:30 UTC — Ledger bootstrap and project baseline — Artifacts: `sot.md`, `UNIFIED_MONOREPO_PLAN.md`, `README.md` — Notes: Established authoritative governance ledger, documented mission, and aligned strategic plans with workspace objectives.
-- [x] 2025-09-28 20:55 UTC — Workspace manifest groundwork — Artifacts: `Cargo.toml`, `workspace.toml`, `frameworks/agent-platform/Cargo.toml`, `platforms/{desktop,mobile,web,xr}/Cargo.toml` — Notes: Expanded Cargo workspace membership and scaffolded platform manifests to mirror cross-platform targets.
-- [x] 2025-09-28 23:34 UTC — Workspace metadata validation — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/cargo_metadata_20250928_2334.{json,log}` — Notes: Ran `cargo metadata --no-deps` to confirm streamlined workspace membership after toolchain permission restoration.
-- [x] 2025-09-29 15:30 UTC — Global configuration validation — Artifacts: `noa-core/src/config/{mod.rs,tests.rs}`, `noa-core/Cargo.toml`, `config/noa/config.toml`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/cargo_test_noa_core_20250929_1530.log`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}` — Notes: Refactored configuration loader for injectable environment overrides and captured passing `cargo test -p noa-core` transcript with SHA-256 attestations.
-- [x] 2025-09-29 17:55 UTC — Dependency inventory verification (Task-006) — Artifacts: `DEPENDENCY_ANALYSIS.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/analysis/task006/*`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/task006_dependency_inventory_20250928.log`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/HASHES.txt` — Notes: Replaced speculative dependency roadmap with validated Task-006 metrics and published supporting analysis bundles.
-- [x] 2025-09-29 18:10 UTC — Governance & standards documentation (Tasks 010/011/013) — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/TASK-010_MIGRATION_WORKFLOW_GOVERNANCE.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/TASK-011_DEVELOPMENT_STANDARDS_CHARTER.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/TASK-013_BURN_CANDLE_UNIFICATION_PLAN.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/GOVERNANCE_CIRCULATION_PLAN.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/{task010_011_013_hashes_20250929.log,task010_circulation_hash_20250929.log}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}` — Notes: Authored governance workflow, development charter, and Burn+Candle integration plan leveraging Task-006 data; captured triple-verification evidence.
-- [x] 2025-09-29 20:05 UTC — Workspace retirement alignment — Artifacts: `workspace/docs/UNIFICATION_PLAN.md`, `workspace/docs/TEST/health_check_20250929_193359Z.log`, `workspace/docs/HASHES.txt`, `/home/deflex/sot.md`, `UNIFIED_MONOREPO_PLAN.md` — Notes: Confirmed canonical workspace baseline post `workspace_noa` retirement, reconciled monorepo ledger with workspace updates, and logged readiness for buildkit integration.
-- [x] 2025-09-29 22:05 UTC — Mirrored Buildkit executive evidence into NOA audit integration tree — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/{COVERAGE.md,EXECUTIVE_MISSION_AUDIT.md,HASHES.txt,REPRO.md,TEST/commands.txt,data_schema.json,hash_verification.csv,largest_files.tsv,parity_status.json,top_level_comparison.md,top_level_summary.json}` — Notes: Copied Truth Gate bundle from `workspace/projects/work/buildkit-recode/docs/executive_mission_audit/`, validated parity via `diff -qr`, and positioned evidence for Priority 0 hash refresh.
-- [x] 2025-09-29 22:15 UTC — Authored Buildkit evidence refresh automation skeleton — Artifacts: `workspace/tools/scripts/refresh_buildkit_evidence.sh`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/mirror_hashes.sha256` — Notes: Implemented rsync+diff workflow with hash emission, executed dry-run and full sync to validate automation ahead of ledger hash updates.
-- [x] 2025-09-29 22:20 UTC — Registered Buildkit CLI bridge stubs — Artifacts: `workspace/tools/bridges/run_buildkit_cecca.sh`, `workspace/tools/bridges/run_buildkit_smoke.sh`, `workspace/tools/bridges/README.md` — Notes: Added NOA-facing wrappers for CECCA orchestrator and smoke harness, wrote usage guide, and validated via dry-run execution with log capture paths.
-- [x] 2025-09-29 22:25 UTC — Refreshed Buildkit integration hash manifest — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/HASHES.txt`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/mirror_hashes.sha256`, `workspace/tools/scripts/refresh_buildkit_evidence.sh`, `workspace/tools/bridges/run_buildkit_cecca.sh`, `workspace/tools/bridges/run_buildkit_smoke.sh`, `workspace/tools/bridges/README.md`, `workspace/projects/work/noa_dynamic-ui_cross_platform_project/sot.md` — Notes: Appended SHA-256 attestations for automation, CLI bridges, mirror manifest, and governance ledger to satisfy Phase A wiring evidence requirements.
-- [x] 2025-09-29 22:32 UTC — Captured Buildkit smoke harness logs via NOA bridge — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/buildkit_smoke_20250929_221407Z.{out,err}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/buildkit_smoke_20250929_221450Z.{out,err}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/commands.txt`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/HASHES.txt` — Notes: Executed `workspace/tools/bridges/run_buildkit_smoke.sh --print-cmd`, archived stdout/stderr under the NOA audit TEST tree, appended reproduction commands, and published SHA-256 attestations to close Phase A Pass A evidence.
-- [x] 2025-09-30 14:05 UTC — Wired Buildkit smoke harness into NOA CI — Artifacts: `workspace/.projects/noa_dynamic-ui_cross_platform_project/.github/workflows/noa-ci.yml`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/buildkit_smoke_20250930_140210Z/140300Z/140420Z/140502Z.{out,err}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/commands.txt`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/mirror_hashes.sha256` — Notes: Authored GitHub Actions workflow to invoke `tools/bridges/run_buildkit_smoke.sh`, executed triple-verification plus mirror probe locally, refreshed command ledger and hash manifests, and documented the CI wiring in governance evidence.
-- [x] 2025-09-30 16:50 UTC — Consolidated Buildkit packaging adapter crate under canonical NOA monorepo — Artifacts: `workspace/.projects/noa_dynamic-ui_cross-platform_project/services/packaging/src/{lib.rs,buildkit_adapter.rs,sanitizer.rs,http.rs}`, `workspace/.projects/noa_dynamic-ui_cross-platform_project/services/packaging/Cargo.toml`, backup snapshot `workspace/.projects/noa_dynamic-ui_cross-platform_project/services/packaging_prev_20250930/`, `/home/deflex/docs/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}`, `/home/deflex/docs/TEST/cargo_test_noa_packaging_service_20250930_{103138Z,104810Z}.log` — Notes: Relocated the Phase B packaging adapter into the hyphenated NOA monorepo tree, preserved the former implementation under `_prev_20250930`, refreshed packaging evidence bundles, and aligned hash manifests prior to orchestration wiring.
-- [x] 2025-09-30 17:35 UTC — Wired Buildkit packaging adapter into orchestration bridge — Artifacts: `services/orchestration/src/{buildkit_bridge.rs,lib.rs}`, `services/orchestration/tests/integration/buildkit.rs`, `services/orchestration/Cargo.toml`, new transcripts `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/cargo_test_noa_orchestration_service_integration_PASSA_20250930_173452Z.log`, `PASSB_20250930_173503Z.log`, `PASSC_20250930_173513Z.log`, failure trace `..._FAIL_20250930_173407Z.log`, updated blueprint (`docs/buildkit_integration_blueprint.md`), refreshed audit docs (`FINAL_REPORT.md`, `COVERAGE.md`, `REPRO.md`) — Notes: Embedded the packaging adapter within `BuildkitBridge`, added manifest snapshot helpers with async tests, reran triple verification (A/B/C) after resolving a missing `serde_json` dependency, and documented the milestone across blueprint and evidence bundles.
-- [x] 2025-09-30 17:54 UTC — Orchestration stability rerun & audit refresh — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/cargo_test_noa_orchestration_service_integration_PASSA_20250930_175417Z.log`, `PASSB_20250930_175431Z.log`, `PASSC_20250930_175440Z.log`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/mirror_hashes.sha256`, `docs/buildkit_integration_blueprint.md` — Notes: Re-ran the full integration suite post-ledger updates, confirmed deterministic outputs across stability passes, and refreshed audit manifests, blueprint references, and mirrored hash bundles with the new transcripts and command ledger checksum.
-- [x] 2025-09-30 19:13 UTC — Governance feedback automation CLI registration — Artifacts: `workspace/tools/scripts/update_governance_feedback.py`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/GOVERNANCE_FEEDBACK.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md}` — Notes: Introduced CLI support for acknowledgement tracking, logged the automation event, and updated audit documentation with reproduction guidance.
-- [x] 2025-09-30 20:35 UTC — Governance acknowledgements finalized — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/GOVERNANCE_FEEDBACK.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/acknowledgements/2025-09-30_{core_services,tooling_ops,buildkit_integration}_governance_ack.md`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md}`, `/home/deflex/docs/{FINAL_REPORT.md,COVERAGE.md,REPRO.md}` — Notes: Captured approvals for all five recipient groups, linked evidence notes, updated action log, and cleared the CAL Sprint 1 governance gate pending hash refresh.
+- [x] 2025-10-05 12:04 UTC — Archive Cross-Reference & Unification (WORKFLOW-006)
+  - Artifacts:
+    - agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json
+    - agentaskit-production/docs/reports/cross_reference/artifacts/report.json
+    - agentaskit-production/docs/reports/cross_reference/artifacts/report.md
+  - Notes: Added CI `.github/workflows/cross-reference.yml`, local hook `hooks/pre-push`, and scanner `tools/analysis/cross_reference.py`. Artifacts enumerate archive↔production lineage and missing components. Deterministic outputs.
 
-- [x] 2025-09-30 21:15 UTC — Governance hash manifests refreshed — Artifacts: `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/HASHES.txt`, `/home/deflex/docs/HASHES.txt`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/governance/acknowledgements/2025-09-30_*_governance_ack.md` — Notes: Replaced placeholder checksum entries with computed SHA-256 digests for acknowledgement evidence, reorganized root manifest headers, and confirmed parity with `sha256sum` outputs.
+<!--
+- [x] <YYYY-MM-DD HH:MM UTC> — <Task title> — Artifacts: <path1>[, <path2> ...] — Notes: <what changed, why, how to reproduce in 1–2 sentences>
 
-- [x] 2025-09-30 22:32 UTC — CAL-002 manifest diff worker — Artifacts: `services/cal-registry/src/{lib.rs,diff.rs}`, `services/cal-registry/Cargo.toml`, transcripts `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/cargo_test_noa_cal_registry_service_PASSA_20250930_223157Z.log`, `PASSB_20250930_223206Z.log`, `PASSC_20250930_223214Z.log`, test listing `.../cargo_test_noa_cal_registry_service_LIST_20250930_223220Z.log`, refreshed audit docs (`FINAL_REPORT.md`, `COVERAGE.md`, `REPRO.md`) — Notes: Exposed persisted manifest diff worker with schema fingerprinting, state sanitization, and triple-verified unit coverage ready for CAL-003 HTTP surface.
-
-- [x] 2025-09-30 22:52 UTC — CAL-003 REST endpoints deployed — Artifacts: `services/cal-registry/{Cargo.toml,src/{http.rs,lib.rs,diff.rs}}`, audit bundle `workspace/docs/audits/noa_dynamic-ui_cross_platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md}`, Postman collection `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/api/collections/cal_rest.postman_collection.json`, commands ledger `workspace/docs/audits/noa_dynamic-ui_cross_platform_project/commands/cal_rest_commands.txt`, triple verification transcripts `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/TEST/cargo_test_noa_cal_registry_service_PASS{A,B,C}_20250930_2252{26,38,50}Z.log`, inventory `workspace/docs/audits/noa_dynamic-ui_cross_platform_project/TEST/cargo_test_noa_cal_registry_service_LIST_20250930_225257Z.log`, refreshed hash manifests `workspace/docs/audits/noa_dynamic-ui_cross_platform_project/HASHES.txt`, `/home/deflex/docs/HASHES.txt` — Notes: Delivered CAL Sprint 1 Task CAL-003 HTTP surface with Axum router, persisted diff integration, documented API contract, and triple-verified evidence across governance ledgers.
-
-- [x] 2025-09-30 22:58 UTC — Audit: local self-hosted MCP server references — Artifacts: this ledger entry — Notes: Searched NOA Dynamic UI project scopes for “MCP/Model Context Protocol/mcp”. Paths scanned: `projects/noa_dynamic-ui_cross-platform_project/**`, `dev/noa-project/noa_dynamic-ui_cross_platform_project/**`, `.projects/noa_dynamic-ui_cross-platform_project/**` — all returned 0 matches. Related references exist outside this project (e.g., `workspace/.projects/noa_ark_os/mono/services/agent` feature `mcp`, and vendor `gopls` MCP docs under `workspace/tools/dependencies/go/...`), but no dynamic-UI-local setup docs/configs were found.
+<!-- Optional detailed form
+- [x] <YYYY-MM-DD HH:MM UTC> — <Task title>
+  - Artifacts:
+    - <relative/path/to/file_or_dir>
+    - <relative/path/to/evidence_or_log>
+  - Notes: <short description>
+  - Repro:
+    - Cmd: <exact command>
+    - Output: <relative/path/to/transcript.log>
+  - Hashes:
+    - <relative/path/to/HASHES.txt#entry_or_checksum_ref>
+-->
 
 ### 1.2 In-Progress Tasks
-- [x] 2025-09-30 17:54 UTC — Buildkit ↔ NOA integration blueprint — Owner: DEFLEX — Status: Completed (Phase B deliverables verified; CAL Sprint 1 gate opened) — Artifacts: `docs/buildkit_integration_blueprint.md`, `workspace/projects/work/buildkit-recode/sot.md` §“Backlog — Outstanding Gaps”, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/TEST/` (includes PASS{A,B,C}_20250930_1754{17,31,40}Z logs and commands.txt hash `09b43f22ebc43bd72db3c0668acd4e63da96ad992843cf7173e934d96b2267a2`), `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/mirror_hashes.sha256`, `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/{FINAL_REPORT.md,COVERAGE.md,REPRO.md,HASHES.txt}` — Deliverables:
-   - [x] Mirror Buildkit evidence bundle into `workspace/docs/audits/noa_dynamic-ui_cross-platform_project/integration/buildkit/` with refreshed hashes (Due: 2025-09-29 22:00 UTC) — Completed 2025-09-29 22:05 UTC with `diff -qr` parity check pending hash refresh.
-   - [x] Update root/workspace/buildkit/NOA ledgers to cite blueprint + mirror paths and record Truth Gate alignment (Due: 2025-09-29 22:30 UTC) — Completed 2025-09-29 22:25 UTC with ledger updates in `/home/deflex/sot.md`, `workspace/sot.md`, `workspace/projects/work/buildkit-recode/sot.md`, and this file.
-   - [x] Draft automation skeleton `tools/scripts/refresh_buildkit_evidence.sh` (Phase A placeholder; Due: 2025-09-30 18:00 UTC) — Completed 2025-09-29 22:15 UTC with rsync+diff workflow and mirror hash emission (`mirror_hashes.sha256`).
-   - [x] Register CLI bridge stubs under `tools/bridges/` and documentation cross-links per blueprint Section 3 (Phase A target) — Completed 2025-09-29 22:20 UTC via `run_buildkit_cecca.sh`, `ru
-(Content truncated due to size limit. Use page ranges or line ranges to read remaining content)
+<!-- Track work with clear owners and deliverables. Convert to Executed when done. -->
+- [ ] <YYYY-MM-DD HH:MM UTC> — <Workstream/Task name> — Owner: <name> — Status: <brief status>
+  - Deliverables:
+    - [ ] <deliverable 1>
+    - [ ] <deliverable 2>
+  - Artifacts (planned/current):
+    - <relative/path/planned_or_wip>
+  - Due: <YYYY-MM-DD>
+  - Notes: <risks, blockers, decisions pending>
+
+### 1.3 Planned / Backlog
+- [ ] <Task name> — Rationale: <why> — Target: <YYYY-MM-DD> — Dependencies: <dep A, dep B>
+
+## 2) Evidence, Repro, and Hashes
+- Audit root: agentaskit-production/docs/reports/cross_reference/
+- Repro commands ledger: agentaskit-production/docs/reports/cross_reference/README.md
+- Test transcripts: agentaskit-production/TEST/*.log
+- Hash manifests:
+  - agentaskit-production/operational_hash/HASHES.txt
+  - agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json
+- Standard procedure:
+  1) Run tests/commands with deterministic flags (e.g., --no-color, fixed seeds).
+  2) Save transcripts under TEST with UTC suffixes.
+  3) Update commands ledger and hash manifests via: <script or command>.
+  4) Append corresponding Executed Task entry with artifact paths and notes.
+
+## 3) Governance & Standards
+- Approvals/Acknowledgements:
+  - <relative/path/to/governance/acknowledgements/*.md>
+- Policies:
+  - Development standards: <relative/path/to/standards.md>
+  - Migration workflow: <relative/path/to/migration_workflow.md>
+- Update flow:
+  1) Draft change and evidence.
+  2) Circulate for approval; capture acknowledgements.
+  3) Refresh HASHES and append Executed Task entry.
+
+## 4) Architecture & Integration Map
+- Components:
+  - Agents: <brief>
+  - Services: <brief>
+  - Frameworks: <brief>
+  - Platform clients (desktop/mobile/web/xr): <brief>
+  - Data/Docs/Tooling: <brief>
+- External integrations:
+  - <System/Integration A> — Interfaces: <CLI/HTTP/SDK> — Evidence: <path>
+  - <System/Integration B> — Interfaces: <...> — Evidence: <path>
+- Notes: <versioning, compatibility, constraints>
+
+## 5) Risks, Decisions, and TODOs
+- Decisions
+  - <YYYY-MM-DD> — <decision made> — Owner: <name> — Context: <link/summary>
+- Risks
+  - <risk description> — Impact: <low/med/high> — Mitigation: <plan> — Owner: <name>
+- TODOs
+  - [ ] <action item> — Owner: <name> — Due: <YYYY-MM-DD>
+
+## 6) Conventions
+- Time: UTC, format YYYY-MM-DD HH:MM UTC.
+- Paths: Relative to repo root.
+- Hashing: sha256; store checksums in plain text manifests.
+- Testing: Triple verification (PASS A/B/C) for stability-sensitive changes.
+- Commits: Reference this SoT entry ID/timestamp in messages.
+
+## 7) Quick Links
+- Repo root: <./>
+- CI workflows: <.github/workflows/>
+- Services:
+  - <services/service-a/>
+  - <services/service-b/>
+- Tooling:
+  - Scripts: <tools/scripts/>
+  - Bridges/Adapters: <tools/bridges/>
+
+<!-- End of template -->

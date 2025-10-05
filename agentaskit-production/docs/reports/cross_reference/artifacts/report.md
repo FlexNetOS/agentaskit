@@ -1,0 +1,85 @@
+﻿# Cross-reference Report (archives V2–V7 → production)
+- Files total: 964 (archive: 462, production: 264, other: 238)
+- Lineage pairs (archive↔production filename collisions): 146
+- Duplicate groups (identical sha across different paths): 195
+## Missing expected production components
+- agentaskit-production/security/policies
+- agentaskit-production/TEST
+## Basenames present outside production but not in final package (top 200)
+- .gitattributes
+- .gitignore
+- .qoderignore
+- agent_map_crosswalk.md
+- agentaskit.todo
+- analyze_all_repositories.csv
+- ark-os repository analysis_ comprehensive feature catalog.md
+- ark-os_ architectural positioning for agenticai os scaffold.md
+- comprehensive agenticai os repository analysis.md
+- crosscheck_report.md
+- data.csv
+- enhanced_workflow_implementation.md
+- final_report.md
+- healing_report.md
+- inference.capnp
+- multi-agent-task-kit.md
+- noaos_comprehensive_enhanced.xlsx
+- optimize.ps1
+- readme.txt
+- reply.bin
+- request.bin
+- system_unification_success.md
+- unification_summary.md
+- unified_docs
+- update.prompt.md
+## Basenames present in final package but not elsewhere (top 200)
+- agent_factory.py
+- agent_performance.rs
+- agentask.sop
+- agentask.subject.todo
+- autonomous.rs
+- autonomous_deployment_report.md
+- comprehensive_7phase_system.md
+- comprehensive_workflow_processor.rs
+- cross_reference.ps1
+- cross_reference.py
+- deployment-manifest.schema.json
+- fetch.sh
+- final_7phase_implementation_verification.md
+- generate_integrity.py
+- integration_test.rs
+- manifest_validator.py
+- messaging_throughput.rs
+- model_selector_bridge.rs
+- performance_tests.rs
+- phase_five.rs
+- phase_four.rs
+- phase_one.rs
+- phase_seven.rs
+- phase_six.rs
+- phase_three.rs
+- phase_two.rs
+- policies.yaml
+- production_readiness_analysis.md
+- production_ready_summary.md
+- production-deployment.json
+- security_tests.rs
+- self_improving.rs
+- seven_phase_implementation_complete.md
+- seven_phase_verification_report.md
+- seven_phase_workflow_implementation.md
+- system.log
+- system_manager.sh
+- task_execution_7phase_processing.md
+- task_execution_correction.md
+- task_execution_example.rs
+- tasks.todo
+- triple_cross_reference_analysis.md
+- unification_audit.md
+- unification_plan.md
+- update_todo_from_report.ps1
+- update_todo_from_report.py
+- verification.rs
+- verification_tests.rs
+- verify_7phase_implementation.ps1
+- verify_7phase_implementation.py
+… and 1 more

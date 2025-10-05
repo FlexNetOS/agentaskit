@@ -1,9 +1,10 @@
-pub mod cecca;
+// Re-export specific agent modules
 pub mod board;
 pub mod executive;
-pub mod stack_chiefs;
-pub mod specialists;
-pub mod micro;
+pub mod specialized;
+
+// Communication module (if needed)
+pub mod communication;
 
 use anyhow::Result;
 use async_trait::async_trait;

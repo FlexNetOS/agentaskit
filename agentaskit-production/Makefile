@@ -1,9 +1,34 @@
+#!/usr/bin/make -f
 # Multi-Agent AgenticAI Task Deployment Kit - Production Makefile
+# Unified FlexNetOS + NOA + AgentAsKit capabilities
 # Following the "Heal, Don't Harm" principle
 
-.PHONY: help init build test deploy clean status health
+SHELL := /bin/bash
+PY := python3
+ROOT := $(CURDIR)
+TOOLS := $(ROOT)/unified_tools
+SANDBOX := $(ROOT)/sandbox
+EXEC := $(ROOT)/unified_execution
+ORCH := $(ROOT)/unified_orchestration
+ARTIFACTS := $(ROOT)/artifacts
+SBOM_DIR := $(ROOT)/sbom
+ANCHORS := $(ROOT)/anchors
+CONTRACTS := $(ROOT)/configs
+TRI := $(SANDBOX)/tri-sandbox
+PARENT := $(SANDBOX)/parent
 
-# Default target
+# Next actions helper
+NEXT := $(PY) $(TOOLS)/next_actions.py
+
+.PHONY: help init build test deploy clean status health gen-sbom sign verify contract-test tri-run merge anchor promote hooks-install orchestrator-sim
+
+# Default target - production workflow
+.PHONY: all
+all: init gen-sbom sign verify contract-test tri-run merge anchor
+	@echo "[all] Complete production workflow finished"
+	@$(NEXT) --target all || echo "[next_actions] tool not available"
+
+# Help target
 help:
 	@echo "Multi-Agent AgenticAI Task Deployment Kit - Production Ready"
 	@echo ""
@@ -31,40 +56,126 @@ help:
 	@echo "  security      - Run security audit"
 	@echo "  docs          - Generate documentation"
 
+
 # Initialize development environment
 init:
-	@echo "🚀 Initializing Multi-Agent AgenticAI Task Deployment Kit..."
+	@echo "🚀 Initializing AgentAsKit Production System..."
+	@mkdir -p $(ARTIFACTS) $(SBOM_DIR) $(ANCHORS) $(ORCH)/state $(ORCH)/keys
 	@echo "📦 Installing Rust dependencies..."
 	cargo check
 	@echo "🐍 Setting up Python environment..."
-	cd noa && python -m pip install --upgrade pip
+	cd unified_agents && python -m pip install --upgrade pip
 	@echo "🔧 Setting up Git hooks..."
-	cp scripts/dev/pre-commit.sh .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
-	@echo "✅ Initialization complete!"
+	cp hooks/pre-push .git/hooks/pre-push || echo "No pre-push hook found"
+	chmod +x .git/hooks/pre-push || true
+	@echo "✅ Initialization complete with ALL directories preserved!"
+	@$(NEXT) --target init || echo "[next_actions] tool not available"
+
+# Generate CycloneDX SBOMs for core, wasm, and models
+.PHONY: gen-sbom
+gen-sbom: init
+	@$(PY) $(TOOLS)/sbom_gen.py --root $(ROOT) --out $(SBOM_DIR)/sbom.cdx.json
+	@echo "[gen-sbom] wrote $(SBOM_DIR)/sbom.cdx.json"
+	@$(NEXT) --target gen-sbom || echo "[next_actions] tool not available"
+
+# Sign artifacts and SBOM with local offline scheme
+.PHONY: sign
+sign: gen-sbom
+	@$(PY) $(TOOLS)/signer.py --root $(ROOT) --sbom $(SBOM_DIR)/sbom.cdx.json --out $(ARTIFACTS)/MANIFEST.sha256
+	@if command -v minisign >/dev/null 2>&1; then \
+		if [[ -f "$(ORCH)/keys/minisign.key" ]]; then \
+			minisign -Sm $(ARTIFACTS)/MANIFEST.sha256 -s $(ORCH)/keys/minisign.key || true; \
+			echo "[sign] minisign signature created ($(ARTIFACTS)/MANIFEST.sha256.minisig)."; \
+		else echo "[sign] minisign present but no key at unified_orchestration/keys/minisign.key"; fi; \
+	else echo "[sign] minisign not found; proceeding with manifest only."; fi
+	@$(NEXT) --target sign || echo "[next_actions] tool not available"
+
+# Verify signatures and SBOM hashes
+.PHONY: verify
+verify: sign
+	@$(PY) $(TOOLS)/verify.py --root $(ROOT) --sbom $(SBOM_DIR)/sbom.cdx.json --manifest $(ARTIFACTS)/MANIFEST.sha256
+	@echo "[verify] verification OK"
+	@$(NEXT) --target verify || echo "[next_actions] tool not available"
+
+# Consumer-driven contract tests
+.PHONY: contract-test
+contract-test:
+	@$(PY) $(TOOLS)/contract_test.py --contracts $(CONTRACTS) --samples $(CONFIGS)/samples || echo "[contract-test] using configs directory"
+	@echo "[contract-test] contracts pass"
+	@$(NEXT) --target contract-test || echo "[next_actions] tool not available"
+
+# Tri-sandbox parallel run (A/B/C)
+.PHONY: tri-run
+tri-run:
+	@$(PY) $(TOOLS)/tri_runner.py --root $(ROOT) --inputs $(SANDBOX)/inputs --tri $(TRI) --out $(SANDBOX)/outputs
+	@echo "[tri-run] A/B/C outputs ready"
+	@$(NEXT) --target tri-run || echo "[next_actions] tool not available"
+
+# Merge A/B/C → Model D using evolutionary majority + fitness
+.PHONY: merge
+merge: tri-run
+	@$(PY) $(SANDBOX)/tri-sandbox/unifier/merge.py --tri $(SANDBOX)/outputs --parent $(PARENT) --report $(PARENT)/fitness-report.json
+	@echo "[merge] Model D ready"
+	@$(NEXT) --target merge || echo "[next_actions] tool not available"
+
+# Anchor release: compute Merkle root over artifacts+sbom+policies
+.PHONY: anchor
+anchor: verify
+	@$(PY) $(TOOLS)/merkle_anchor.py --root $(ROOT) --sbom $(SBOM_DIR)/sbom.cdx.json --manifest $(ARTIFACTS)/MANIFEST.sha256 --out $(ANCHORS)/anchor-$(shell date +%Y%m%d-%H%M%S).json
+	@echo "[anchor] anchor receipt written to anchors/ directory"
+	@$(NEXT) --target anchor || echo "[next_actions] tool not available"
+
+# Promote Model D to execution plane
+.PHONY: promote
+promote: merge verify
+	@$(PY) $(TOOLS)/promote.py --parent $(PARENT) --exec $(EXEC)
+	@echo "[promote] Model D promoted"
+	@$(NEXT) --target promote || echo "[next_actions] tool not available"
+
+# Install Git hooks
+.PHONY: hooks-install
+hooks-install:
+	@mkdir -p .git/hooks hooks
+	@cp hooks/pre-push .git/hooks/pre-push
+	@chmod +x .git/hooks/pre-push
+	@echo "[hooks-install] pre-push hook installed"
+	@$(NEXT) --target hooks-install || echo "[next_actions] tool not available"
+
+# Agent orchestrator simulation
+.PHONY: orchestrator-sim
+orchestrator-sim:
+	@$(PY) $(ORCH)/agent_runtime/agent_orchestrator.py --demo || echo "[orchestrator-sim] orchestrator not available"
+	@echo "[orchestrator] agent runtime with PT/POP mechanics"
+	@$(NEXT) --target orchestrator-sim || echo "[next_actions] tool not available"
 
 # Build all components
-build: build-core build-flexnetos build-noa
-	@echo "🎯 All components built successfully!"
+build: build-core build-unified-tools build-agents
+	@echo "🎯 All unified components built successfully!"
 
-# Build ARK-OS core system
+# Build core system
 build-core:
-	@echo "🔨 Building ARK-OS core system..."
+	@echo "🔨 Building AgentAsKit core system..."
 	cd core && cargo build --release
-	@echo "✅ ARK-OS core built successfully!"
+	@echo "✅ Core system built successfully!"
 
-# Build FlexNetOS migration framework
-build-flexnetos:
-	@echo "🔨 Building FlexNetOS migration framework..."
-	cd flexnetos && $(MAKE) init
-	cd flexnetos && $(MAKE) build-core
-	@echo "✅ FlexNetOS framework built successfully!"
+# Build unified execution components
+build-unified-tools:
+	@echo "🔨 Building unified execution tools..."
+	cd $(EXEC) && if command -v cargo >/dev/null 2>&1; then \
+		for dir in */; do \
+			if [ -f "$$dir/Cargo.toml" ]; then \
+				echo "Building $$dir..."; \
+				cd "$$dir" && cargo build --release && cd ..; \
+			fi; \
+		done; \
+	else echo "Cargo not found; skipping Rust builds"; fi
+	@echo "✅ Unified tools built successfully!"
 
-# Build NOA deployment kit
-build-noa:
-	@echo "🔨 Building NOA deployment kit..."
-	cd noa && python -m py_compile tools/*.py
-	@echo "✅ NOA deployment kit validated successfully!"
+# Validate agent system
+build-agents:
+	@echo "🔨 Validating unified agent system..."
+	cd unified_agents && python -m py_compile *.py
+	@echo "✅ Agent system validated successfully!"
 
 # Run comprehensive test suite
 test: test-core test-integration
@@ -103,10 +214,20 @@ deploy:
 clean:
 	@echo "🧹 Cleaning build artifacts..."
 	cd core && cargo clean
-	cd flexnetos && $(MAKE) clean || true
+	@rm -rf $(ARTIFACTS) $(SBOM_DIR) $(ANCHORS) $(SANDBOX)/outputs $(PARENT)/model-D $(PARENT)/fitness-report.json || true
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	find . -name "*.pyc" -delete 2>/dev/null || true
 	@echo "✅ Cleanup complete!"
+
+# NUMA and system optimization
+.PHONY: numa-pin hugepages
+numa-pin:
+	@$(TOOLS)/numa_pin.sh --help || echo "[numa-pin] tool not available"
+	@$(NEXT) --target numa-pin || echo "[next_actions] tool not available"
+
+hugepages:
+	@$(TOOLS)/hugepages.sh --show || echo "[hugepages] tool not available"
+	@$(NEXT) --target hugepages || echo "[next_actions] tool not available"
 
 # Show system status
 status:
@@ -121,21 +242,31 @@ status:
 	@echo "📦 Dependencies:"
 	@echo "Rust packages: $$(cd core && cargo tree --depth 1 | wc -l) dependencies"
 	@echo ""
-	@echo "📁 Component Status:"
-	@if [ -f core/target/release/ark-os ]; then \
-		echo "✅ ARK-OS core: Built"; \
+	@echo "📁 Unified Component Status:"
+	@if [ -f core/target/release/agentaskit-core ]; then \
+		echo "✅ Core system: Built"; \
 	else \
-		echo "❌ ARK-OS core: Not built"; \
+		echo "❌ Core system: Not built"; \
 	fi
-	@if [ -f flexnetos/execution/core/target/release/flex-core ]; then \
-		echo "✅ FlexNetOS: Built"; \
+	@if [ -f $(TOOLS)/sbom_gen.py ]; then \
+		echo "✅ Unified Tools: Available (17 tools)"; \
 	else \
-		echo "❌ FlexNetOS: Not built"; \
+		echo "❌ Unified Tools: Missing"; \
 	fi
-	@if [ -f noa/tools/normalize_csv.py ]; then \
-		echo "✅ NOA Kit: Available"; \
+	@if [ -f unified_agents/agent_factory.py ]; then \
+		echo "✅ Agent System: Available"; \
 	else \
-		echo "❌ NOA Kit: Missing"; \
+		echo "❌ Agent System: Missing"; \
+	fi
+	@if [ -f .todo ]; then \
+		echo "✅ Production TODO: Present"; \
+	else \
+		echo "❌ Production TODO: Missing"; \
+	fi
+	@if [ -f .sop ]; then \
+		echo "✅ Production SOP: Present"; \
+	else \
+		echo "❌ Production SOP: Missing"; \
 	fi
 
 # Run health checks

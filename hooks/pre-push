@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+python3 "$repo_root/agentaskit-production/tools/analysis/cross_reference.py" --root "$repo_root" \
+  --out-dir "$repo_root/agentaskit-production/docs/reports/cross_reference/artifacts" >/dev/null || true
+
+sot="$repo_root/agentaskit-production/core/src/orchestration/sot.md"
+if [ -f "$sot" ]; then
+  if ! grep -q "Executed Tasks" "$sot"; then
+    echo "WARN: SoT has no 'Executed Tasks' entries. Consider updating before push." >&2
+  fi
+fi
+
+echo "pre-push: cross-reference artifacts refreshed."

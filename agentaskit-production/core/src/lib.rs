@@ -1,6 +1,6 @@
-//! ARK-OS Production-Ready Core Library
+//! AgentAsKit Production-Ready Core Library
 //! 
-//! This library unifies the best capabilities from all three Rust ecosystem repositories:
+//! This library unifies the best capabilities from all integrated systems:
 //! - rustecosys: Tauri desktop application framework
 //! - rustecosys2: Advanced orchestration and execution engine  
 //! - agentrs: Comprehensive multi-agent system
@@ -16,6 +16,9 @@ pub mod communication;
 pub mod security;
 pub mod monitoring;
 
+// Enhanced workflow processing module
+pub mod workflows;
+
 // New autonomous development modules
 pub mod verification;
 pub mod autonomous;
@@ -28,6 +31,14 @@ pub use communication::{MessageBroker, Message, MessageType, Priority as Message
 pub use security::{SecurityManager, CapabilityToken, Capability};
 pub use monitoring::{MetricsCollector, SystemMetrics, AgentMetrics, Alert, AlertLevel};
 
+// Export enhanced workflow processing capabilities
+pub use workflows::{
+    EnhancedWorkflowProcessor, ChatRequest, RequestPriority, TaskSubject,
+    DeconstructPhase, DiagnosePhase, DevelopPhase, DeliverPhase,
+    Deliverable, DeliverableType, TargetLocation, LocationType,
+    VerificationProtocol, VerificationPass, EvidenceLedger, TruthGateRequirements
+};
+
 // Export autonomous development capabilities
 pub use verification::{NoaVerificationSystem, VerificationPass, VerificationStatus, TruthGate, EvidenceLedger};
 pub use autonomous::{AutonomousPipeline, PipelineConfig, MLEngine, BuildSystem};
@@ -37,13 +48,13 @@ pub use self_improving::{SelfImprovingOrchestrator, OrchestratorConfig, Learning
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const BUILD_TIME: &str = env!("BUILD_TIME");
 
-/// Initialize the ARK-OS production system
+/// Initialize the AgentAsKit production system
 pub async fn init_system() -> Result<()> {
     // Initialize logging
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
-    tracing::info!("ARK-OS Production System v{} initialized", VERSION);
+    tracing::info!("AgentAsKit Production System v{} initialized", VERSION);
     Ok(())
 }
