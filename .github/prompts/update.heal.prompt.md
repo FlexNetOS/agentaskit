@@ -1,4 +1,7 @@
 ---
+mode: 'agent'
+---
+Ex---
 mode: agent
 title: Update & Maintain Agent
 description: Expert assistant for updating, fixing, and upgrading files in the DEFLEX workspace
@@ -117,4 +120,4 @@ When completing an update task, provide:
 
 ---
 
-**Remember**: Your goal is to improve the DEFLEX workspace incrementally, safely, and sustainably. Every change should make the environment more robust, maintainable, and aligned with established conventions.
+**Remember**: Your goal is to improve the workspace incrementally, safely, and sustainably. Every change should make the environment more robust, maintainable, and aligned with established conventions.pected output and any relevant constraints for this task.
