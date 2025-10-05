@@ -1,10 +1,10 @@
 ﻿{
     "root":  "D:\\dev\\workspaces\\projects\\source\\repos\\agentaskit",
     "summary":  {
-                    "other_files":  238,
+                    "other_files":  240,
                     "archive_files":  462,
-                    "files_total":  964,
-                    "production_files":  264
+                    "files_total":  995,
+                    "production_files":  293
                 },
     "files":  [
                   {
@@ -26,6 +26,20 @@
                       "kind":  "other",
                       "sha256":  "2f8992b73b116e81e8adaf44a2a1879492eba0bf6b4b587db7cb80d91e982d84",
                       "size":  140,
+                      "text":  true
+                  },
+                  {
+                      "path":  "CODEOWNERS",
+                      "kind":  "other",
+                      "sha256":  "fc0ed72850060bd549721ed6c9072691de3b3c888e27c5ce290e2b993ff4bcca",
+                      "size":  10,
+                      "text":  true
+                  },
+                  {
+                      "path":  "CONTRIBUTING.md",
+                      "kind":  "other",
+                      "sha256":  "5a39a505ad6f4dc816ec7228b75027fa42058f8eb09e0a543a213b9873079ffa",
+                      "size":  120,
                       "text":  true
                   },
                   {
@@ -204,10 +218,38 @@
                       "text":  true
                   },
                   {
+                      "path":  "agentaskit-production/alerts/backpressure.yaml",
+                      "kind":  "production",
+                      "sha256":  "8eb5912c7a7b1cbaeb7c2e709b969ef2ced3e016b3007487842af46f73414789",
+                      "size":  28,
+                      "text":  true
+                  },
+                  {
                       "path":  "agentaskit-production/alerts/README.md",
                       "kind":  "production",
                       "sha256":  "23a8c701424079ff2e2791febf463383c7c8c90cde9cfed231b8a3449ddd535b",
                       "size":  208,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/configs/rate_limits.yaml",
+                      "kind":  "production",
+                      "sha256":  "8001844df481153a2f98b27ef42c70b79ec563b904c3ddedaeabee4cb7bcad57",
+                      "size":  29,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/configs/tracing.yaml",
+                      "kind":  "production",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "size":  0,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/configs/secrets/README.md",
+                      "kind":  "production",
+                      "sha256":  "4ffcba7ccaea005e035b348cdc65c2e0aa3931bc4e6f338aed08943579ddd1b0",
+                      "size":  32,
                       "text":  true
                   },
                   {
@@ -955,8 +997,8 @@
                   {
                       "path":  "agentaskit-production/core/src/orchestration/tasks.todo",
                       "kind":  "production",
-                      "sha256":  "e82780fccebe617d2c44dec6489a6cbfba1f200e796a8d4f6c1e4d86ad202ac6",
-                      "size":  22159,
+                      "sha256":  "d0a6cca7556376e52ee049f6d45329fd9d99d8272487cd1dec0ba9f65b363945",
+                      "size":  23127,
                       "text":  true
                   },
                   {
@@ -1149,6 +1191,41 @@
                       "text":  true
                   },
                   {
+                      "path":  "agentaskit-production/dashboards/sla.json",
+                      "kind":  "production",
+                      "sha256":  "a5d4ef2851458d3fc13bab30b8fdbf9e6e53139c4fcae000f0b93a8f385a9397",
+                      "size":  46,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/dashboards/capacity/overview.json",
+                      "kind":  "production",
+                      "sha256":  "e288c444fc984e23238d8390e7e91db6511af7e641dd7855f37fab49c158d9c3",
+                      "size":  60,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/dashboards/perf/throughput.json",
+                      "kind":  "production",
+                      "sha256":  "9221c8bfea3c0c520d4c96c579e819c03b1c487a7564be765f51a67e86fe40be",
+                      "size":  116,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/deploy/canary/plan.md",
+                      "kind":  "production",
+                      "sha256":  "ba9f57104f44ec845673d3e6d98f9cc2f59536c12349d87c86b43bf90d6c88f6",
+                      "size":  104,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/deploy/k8s/limits.yaml",
+                      "kind":  "production",
+                      "sha256":  "dcce442078748dba6925b5f2bf9622980e1286a95fdcbd7d12361a825efbaf3a",
+                      "size":  28,
+                      "text":  true
+                  },
+                  {
                       "path":  "agentaskit-production/docs/agent.chatmode.md",
                       "kind":  "production",
                       "sha256":  "cae461ac670558eb8fca6a94fb8cc58f768bf1db91169e265fbde035015012db",
@@ -1198,10 +1275,73 @@
                       "text":  true
                   },
                   {
+                      "path":  "agentaskit-production/docs/decisions/ops-dedup-todo.md",
+                      "kind":  "production",
+                      "sha256":  "58d8a39e39d4298e9154913ca6d189b8cc85689becb735e0aa7e94cb9fa543b2",
+                      "size":  331,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/observability/logging.md",
+                      "kind":  "production",
+                      "sha256":  "dd07b1b884e22d2c462d38eac22824de044551ad5e697fac818aa0813db1e62d",
+                      "size":  111,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/ops/capacity_plan.md",
+                      "kind":  "production",
+                      "sha256":  "fff3fc7a52a67e9c3429401fde3b20ef263fa622e50885ec7270d176e4152c42",
+                      "size":  31,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/perf/backpressure.md",
+                      "kind":  "production",
+                      "sha256":  "a6eff0186b7b34562cc6fba3d60cf119ed12f23a3a8574f0df3149e7aed0a2e8",
+                      "size":  37,
+                      "text":  true
+                  },
+                  {
                       "path":  "agentaskit-production/docs/reports/cross_reference/README.md",
                       "kind":  "production",
                       "sha256":  "e52e933faf1819c25ae715cf304936d0ac2411c1aa5ebdfadee73ccad9445606",
                       "size":  538,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/manifest.json",
+                      "kind":  "production",
+                      "sha256":  "8e945a6f545d092b52da28e1f8498b24431885491b22ca91bcfff05c6d773786",
+                      "size":  367701,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.json",
+                      "kind":  "production",
+                      "sha256":  "ebc5df2b43626342ddfdc22a9f982e806856c6a164add1fe524e1f9553750c16",
+                      "size":  5967,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/reports/cross_reference/artifacts/report.md",
+                      "kind":  "production",
+                      "sha256":  "c0bb86ed6f7a0a009f8599437a101ba83e1aa46037891af461814877973440dd",
+                      "size":  2413,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/runbooks/security/rotation.md",
+                      "kind":  "production",
+                      "sha256":  "2fd7b618ea56d3d11829565dd5555bff0dcff464b245f7a65f0af5df027bfddf",
+                      "size":  38,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/docs/security/secrets.md",
+                      "kind":  "production",
+                      "sha256":  "7951ab6f1ebd49303fe5f39c9d26f53137ccd2872a9729731420f091d55a908f",
+                      "size":  36,
                       "text":  true
                   },
                   {
@@ -1230,6 +1370,13 @@
                       "kind":  "production",
                       "sha256":  "0e8414c6e7e46ffbc0bf4128b92b69db3b17ecb4fa3420fdd188352bf2251586",
                       "size":  654,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/operational_audit/README.md",
+                      "kind":  "production",
+                      "sha256":  "e3dbe477a40d1536494aa8e154e3a036eb1806ae7e1bd17f2a3cd46e8da8745a",
+                      "size":  35,
                       "text":  true
                   },
                   {
@@ -1275,6 +1422,13 @@
                       "text":  true
                   },
                   {
+                      "path":  "agentaskit-production/sandbox/tri/README.md",
+                      "kind":  "production",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "size":  0,
+                      "text":  true
+                  },
+                  {
                       "path":  "agentaskit-production/sandbox/tri-sandbox/A/run.sh",
                       "kind":  "production",
                       "sha256":  "276103a30f6c8181e6bee1af57b7005170840981c6e7fd2038ca0189fcd391b7",
@@ -1300,6 +1454,27 @@
                       "kind":  "production",
                       "sha256":  "a9e4fd27715b2137aef90652059154b89df83ef5cc2321ce691fa09fa82e416e",
                       "size":  1118,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/security/token-schema.json",
+                      "kind":  "production",
+                      "sha256":  "b3670adeee06fd9cc02aa3366fdb98d7b6db189d3c84a80e9de1a837a36ef4be",
+                      "size":  132,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/security/policies/README.md",
+                      "kind":  "production",
+                      "sha256":  "d1612d8c51a25f51e8cd899e0003b94d89b3be19391dbc7472346e14a6759e2c",
+                      "size":  35,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/security/reports/README.md",
+                      "kind":  "production",
+                      "sha256":  "906b5ff24f4c7036846e4e89af47bc97e97638c1036adfec7811d3ebd815aab0",
+                      "size":  34,
                       "text":  true
                   },
                   {
@@ -1352,6 +1527,34 @@
                       "text":  true
                   },
                   {
+                      "path":  "agentaskit-production/TEST/perf/sample.log",
+                      "kind":  "production",
+                      "sha256":  "87e4ffb1717abd6ddbb052ddbb1052ee0ab291df9bdd6a4e16e83a31e4055fb1",
+                      "size":  22,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/TEST/perf/overload/sample.log",
+                      "kind":  "production",
+                      "sha256":  "7089c82a3fbfe6b49375fabac527d7c001efba85c7e0c580f176455873bb3cf9",
+                      "size":  31,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/TEST/perf/rate/sample.log",
+                      "kind":  "production",
+                      "sha256":  "cbbc9a57e76dfad1efb485486ca749db9fabb6bc076b148f24af2e0e20ee3174",
+                      "size":  33,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/TEST/slo/sample.log",
+                      "kind":  "production",
+                      "sha256":  "c2219026a8422fcb145c4db98e3d2367ff7668c27e172ae9b11ec7ed34d49f3c",
+                      "size":  21,
+                      "text":  true
+                  },
+                  {
                       "path":  "agentaskit-production/tests/integration/benches/agent_performance.rs",
                       "kind":  "production",
                       "sha256":  "268a2adb129d18d6794cfa7d8f8911aa91c3d4fed06994621133aaac87f0b1c4",
@@ -1370,6 +1573,20 @@
                       "kind":  "production",
                       "sha256":  "2be0baa3d9a6d9dd130b633149ab1c54a3bce07ed075d77a8de62adb5d8eac18",
                       "size":  10325,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/tests/performance/README.md",
+                      "kind":  "production",
+                      "sha256":  "3810a207cb4930c708ee8b0371e8e0d49b5a3224a498c7e33b1dd920d3fd76b5",
+                      "size":  35,
+                      "text":  true
+                  },
+                  {
+                      "path":  "agentaskit-production/tests/performance/rate_limit/README.md",
+                      "kind":  "production",
+                      "sha256":  "bdfc1c525a36cd2ed2a6047755c5783aaf3b0f98edd0fb336433be0504eb5bbc",
+                      "size":  34,
                       "text":  true
                   },
                   {
@@ -6751,8 +6968,8 @@
                   {
                       "path":  "hooks/pre-push",
                       "kind":  "other",
-                      "sha256":  "b5126beaf1dae77ca18fd5429520d5b52a1a94142f454c85455558d2a7b31664",
-                      "size":  593,
+                      "sha256":  "5567543624284c82f9b50212d957dadbcf6a7d8596d99cab21501db0b1ce7b70",
+                      "size":  1673,
                       "text":  true
                   }
               ]

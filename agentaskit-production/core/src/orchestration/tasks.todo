@@ -472,9 +472,6 @@
 
 #### Subtasks (auto-generated)
 <!-- AUTO:WORKFLOW-009:SUBTASKS:BEGIN -->
-- [ ] Create missing production dirs:
-  - [ ] agentaskit-production/security/policies
-  - [ ] agentaskit-production/TEST
 - [ ] Review basenames present outside production (top sample):
   - [ ] .gitattributes
   - [ ] .gitignore
@@ -484,7 +481,9 @@
   - [ ] analyze_all_repositories.csv
   - [ ] ark-os repository analysis_ comprehensive feature catalog.md
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
+  - [ ] codeowners
   - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] contributing.md
   - [ ] crosscheck_report.md
   - [ ] data.csv
   - [ ] enhanced_workflow_implementation.md
@@ -583,3 +582,4 @@
   2. Add `.github/workflows/sca.yml` (e.g., OSS Review/Trivy/GHAS)
 - **Acceptance:** CI green; zero high/critical findings
 - **Evidence:** CI runs, security/reports/
+
