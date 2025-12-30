@@ -79,7 +79,7 @@ use crate::agents::MessageId;
             from: AgentId::from_name("executive-layer-coordinator"),
             topic: "emergency-alert".to_string(),
             payload: serde_json::to_value(alert)?,
-            scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
+            scope: crate::agents::BroadcastScope::Role(AgentRole::Executive),
         }).await?;
         
         Ok(())
