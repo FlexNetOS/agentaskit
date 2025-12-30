@@ -1,0 +1,3780 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:8b9b5f6721197304967d32e8ea625f8a",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-10-05T14:09:08Z",
+    "tools": [
+      {
+        "vendor": "FlexNetOS",
+        "name": "sbom_gen",
+        "version": "0.1"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "file",
+      "name": ".sop",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "447c20328d741b110048714a0ff1ec7a9ba74f71b1e168099b79b2c0a1cb39d6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": ".todo",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c170e2f786355f3c8502855f456f591aa57f7aca21adec7dd4bf01da9389aea9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "agentask.sop",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e09214ed7bcf2898ce3f81bca166a7312d37a7aca4aba60927f8f2f5447d92e8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "agentask.subject.todo",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cb9c380c1071d5f3065c73de2d1d6f0400e639b1fac4e92f4e83a1f1b362d0d0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "agentask.todo",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fa4342f3246241d980bca76795dfd5fa0fc012f1639dd599907c534325128911"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "AUTONOMOUS_DEPLOYMENT_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "98a3618261b3381479f536638f1ed609793a94e8958e6fd547bd5c15f6fd993e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "Cargo.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "62a7b36b780cd3c83abd15928703e5a3189a191491bf4511289efc5dd1351860"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "comprehensive_workflow_processor.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ec194def6b02641a617d9feb29563e020128424da86fcb825f5f728bad84b616"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "FINAL_7PHASE_IMPLEMENTATION_VERIFICATION.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5d5cc818917af0b93af89951ac112cd9d57d12f9a5b28c921d84550718d66362"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "Makefile",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c66aad0f866c8098c0634806ffd9a4a672da054c654ddb2bce3c8929f619f92b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "PRODUCTION_READINESS_ANALYSIS.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dce11ea54ae398c958cdd316eaae0a6917a08771db0937102106cacd48947b52"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "PRODUCTION_READY_SUMMARY.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "79ca618faabc5ecf4ef010b20055c401e9178838ea94afbc06d144a6abb3b8dc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9f5b757f588cdd564836f7ba7e73036507565f1ef4aa9206a19cd2f1c4425601"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "SEVEN_PHASE_IMPLEMENTATION_COMPLETE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "65cadcafb692200819dd08317a75a3518327e701b2bab345bbfd0ce2b34d71b9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "system_integrity.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6b602ff005909dfebb168a955ebfc4b4e749cdb4e166f703739b6567a818461e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TASK_EXECUTION_7PHASE_PROCESSING.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "68afcfe78c7fdfd6c759555ad638e32579b07007320966fa537ce0db67491dbe"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TASK_EXECUTION_CORRECTION.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "36ff382691e99044d5943a938dd427663e720e2420fba40d24ef7545273aee5a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "task_execution_example.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "98ca2c219ad019ed63d7b120032c6e6fdbad77b397eb565256014f7231c84b2e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TRIPLE_CROSS_REFERENCE_ANALYSIS.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d5c944ef43c6347a10d7c07d699e1d8cf2c814fea8408e8bac887a2dcab161a0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "UNIFICATION_COMPLETE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7d69ead553121091d8d80bba6e0a0c8865d63758a65bc68ce7c45025c065315b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "UNIFICATION_PLAN.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cccf51a5b65031099ea873ec51ede7035e93a74dd21b18ef7144073d55b9d957"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "verify_7phase_implementation.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c2ff5a97abfd32a7c00fff6461a32260c22706ad730a3360033214307525386f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "verify_7phase_implementation.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "80872c0afa7784d1c56a40a4279b3b3445677f3439daf2f76f3bcd9652c97dc2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "alerts/backpressure.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8eb5912c7a7b1cbaeb7c2e709b969ef2ced3e016b3007487842af46f73414789"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "alerts/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "23a8c701424079ff2e2791febf463383c7c8c90cde9cfed231b8a3449ddd535b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "artifacts/MANIFEST.sha256",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c5bd156040be92d94c81b8590b12e3785fb48e66f1aa978dd58ec2f76b67f392"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "artifacts/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a6a48c9c71e1c7007e9b612b45e061a1687f0013750ec2076e2338ffd5045c7d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "configs/rate_limits.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c5c93e4c8cd7ae105fd5119a8dc3076acee8a301151536e23ec7482bf5def25c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "configs/tracing.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/build.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0577d305e504ee90307d6e6fcc1640c5c8b67435f4d79da88f54c74172550671"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/Cargo.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "187b7e7d467e0f7d63dcc890b722c1a953a2383047c2735022953ff748b7f85c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "dashboards/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aa0dbccfb996d01e1b33e418edfc12b01b55660b0c7daa1e187184ecadb940f2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "dashboards/sla.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a5d4ef2851458d3fc13bab30b8fdbf9e6e53139c4fcae000f0b93a8f385a9397"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/4D_METHOD_ENHANCEMENT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8ddbd02215d52e5d1abb38ec1b3b98fc751ef147a2d9f3fa97e0c958f8778029"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/agent.chatmode.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cae461ac670558eb8fca6a94fb8cc58f768bf1db91169e265fbde035015012db"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/agent_hierarchical_map.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2a5794fe77fcdda70038b3c457c7e1e0eced393129ec1ec2988c2f0a7a7606e6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/COMPREHENSIVE_7PHASE_SYSTEM.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "96e4fc39b66ccde012a5973034e84ab7bf756c892d955d0d5ab04766e48b2181"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/DELIVERABLE_MANAGEMENT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c0c09ff24b5db7f4039bc009cfc1026d5a44539e942137def636688864d3729f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/ENHANCED_WORKFLOW_COMPONENTS_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3a404caa1c3886f39791d0171f4a5df0e83beb17576a134ef304baf7ac28c820"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/FINAL_SUMMARY.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ddc2b67101d4dca72b2402cc92ef848245dd0c171c090ebf04180ff96f9401a8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/INTEGRATION_TEST_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "08e73e5186c1c9b3614bc528542f664bb94ae470df30b6a43da368fb006165a1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/mode1-noa-dynamic-ui-cross-platform.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b40d54d5670ac0a4cbb814b77da3c0b2b98a34264a1b9850b59bfea5f921f5eb"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/PRODUCTION_READINESS_CERTIFICATION.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7712510496cbfdaa14a3dc54a8743189f4126a21d5741089e05527fb3b6f78ad"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/SEVEN_PHASE_VERIFICATION_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eaa06c94734390a363c1d8ad673ea5c87b8655d01ee186b9858f90ce11bc4ecc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/SEVEN_PHASE_WORKFLOW_IMPLEMENTATION.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e684510a1d1c247a0a3a07ac8127438f09dae6a3dbd29d0a07de352e87612b8f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/SOP_INTEGRATION_GUIDE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e906577dd4fd1548bf4d1f64f2f23ff96f3ebb9242a1da1a030c355b0e0e1d0e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/TASK_COMPLETION_VERIFICATION.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "01c0a6938f98dec591493cb5158824bbb9a95b8b029a09f726c3a666892727df"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/tools.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e7ca699fd9473bf3076604398025712a064c75b21c8fa23f694543fb8325ecb5"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/WORKFLOW_INTEGRATION_COMPLETE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8ae2a1495b83204258eafb5fc35b4dcc13f8c1a80a563cdd107ac535aac79845"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/WORKFLOW_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "36eec67aafcfef824cca6049e2dd181a3d8ad4553bf766c2de7cec85f248559c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/WORKSPACE_CROSS_ANALYSIS_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5111c25d9a5c60962af5abd40cf78c8c167bdb6d369590609bf9fde64216de44"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "hooks/pre-push",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "022d03f30fe14b133343b7dab7989e694fa3accc11d03c8d4e9c7603cff85307"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_audit/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3dbe477a40d1536494aa8e154e3a036eb1806ae7e1bd17f2a3cd46e8da8745a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_audit/unification_audit.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fc393592eb22e5105545d8bb166da0820b48c2f73facb2e4a0538ea41b2debfd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_hash/generate_integrity.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a90a1af8ba7d7707d3e7a5b35b7cb9398d5a986055ddc423265de90249608fdf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_hash/HASHES.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ec1737554a8a2bbf703e659b2596cdb399aa0c3017bbdcc6b1dfc0b1ef3242e6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_logs/system.log",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e51b114f2780ea17ac6274b57f926a6095d23747fa841673ec3506750751a9de"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "operational_scripts/system_manager.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9acbf6c531fb53e9b0c7b3b4193ad150f68701ed9a989803985c4c947efe193c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b0265ec7bb37712f4da51e9c2c0289ee814d66523ac4e883772e4c9fcd5de551"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sbom/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5f7becf16212789bcbe853c6b5b82d88016d596726c5ac77726b02533e42ba4e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sbom/sbom.cdx.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e1870ac8d034fd388f5557cf38d31a36e5b2a9e975cc071aaeb1f6d41211e3dc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "scripts/deliverable_automation.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6b66f2f6893f89e34c37e523e44d123cdff111e9861cd6b872db79b7e82d6ca1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "scripts/dispatch_run_todo.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b731fba5298fbecafa48edea08f59a5cab3f7295eef85a369d85b703224907df"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "security/token-schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b3670adeee06fd9cc02aa3366fdb98d7b6db189d3c84a80e9de1a837a36ef4be"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/Cargo.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6e3e1e1f0c495ad0f08bd156794715bae9d97790eee493cc5c90acff02e84f95"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "slo/policies.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "79fe341413d7c97ceec77bf4d7db9be740201126f45f07ac7c54c63c9b1706fa"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/agents_for_parallel.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "22a171c3399254a1ab9108907aa6d372f97e9d87c41239a623b7b2eaccb90cd9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/agent_factory.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bb3c48b52d4c838f597c87ec77cd0c8f288aacc0602e105181446e399c5f1c2c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/agent_names_list.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "91e80e93274165c493e7a2010bff1b2b144bbd9cec597437fe40974a9002b141"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/All_Inclusive_Agent_Directory.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "abec6f0326e542b9bae422ae974ad4beb75446bfceaf4aef9db99241e1f07825"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/csv_validation_report_final.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d3337279e13df7cef7dd55361c2ab40b198120edee6063618bfba0d708f71252"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/HOW-TO-USE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "720d0ff1bc3f64857cec1694a10351184b3450a810b4f49684dde23a824aefe4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/manifest_validator.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "685f07cc7b86ad7e797b877377e0eca12a60be68b1415a971f0ad664a4ef16a4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/PACKAGE_CONTENTS.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b43ebbe8f0725ed8addd5db6ce27e2bedc998dd84294c859ee6103599fef982e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "141e8e524820e545e733c248469f1620fc9be5e7c87561bdc30e9505191c4213"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/REPAIR_IMPLEMENTATION_GUIDE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c3b82eb1b66195b4b20abf42f021d3c45d41b475472f6c9cc4e2f8fde1843440"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/REPAIR_SUMMARY.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6962343c091af7a5ad64e69cbaaf20148dfcec131c9ea8b6a5e65ab51902cfb2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/stack.manifest.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ceff9a56cbf2522d3d1ff6bd49d1043a55c03489b83031a8ebb98baab51a948b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/UNIFICATION_REPORT.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ed4e9d9ea42c2e34e7d25d9362f3a7c10437120f57636401989dd47d23a29051"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/unify_agents.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8df159c65fd8698cbf47e5541facf7fd63bbe0e6d2fd7098b04195239e69e285"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/unique_agent_names.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "45589da2b1f47e4a8606164f0b425d4f6411c0ce8f5453d9f78c06f612873f17"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/capnp_python_client.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1c3d26592622b57ee4a616150dc7566bf5cc1ad3acc9c7ac1f56d0fbb69723a3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/cap_token.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "52acda3dec99a29f210dc2b941cd27c80b7e11889658467a867249c2958799f9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/contract_test.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5fe86a3b94228f7ab77b3b13b1820724dbfb914b0caf52453e80f9bb2287f841"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/fs_integrity.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "66812b766830545dd4dcb0bb863de3ddc9b1ca2027d567e9cd7fcadcac6ec753"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/fs_integrity.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bc7ed794d598716f8c2988dd39035affca614883da018075d3901493dce6f758"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/hugepages.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b86ab3d058b42536234ecf73f6f595043c2fea28b4a5ef807a009082a8f18c9e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/merkle_anchor.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e223f9156af6f64fba63300f4bcd39afed3ce9a8ba2dd819a8e3ebd4dc8b9ffe"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/next_actions.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0d73936f089859ddb5dd60e09f8e0de48794ac507591d13bae7ead530809bad7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/normalize_csv.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "03a89017ede6d0f316375e380bcc1174c6e993870ed25c372e967935ae64d4af"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/normalize_csv_v2.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "33b5eea46bf5782da30b2d51f77b5ef1adcb7a6f541124ad41dfc539bd1c7738"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/numa_pin.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eb52ac9a1ca8af530a1554f57a3ea8f1399183bf79d7cbfc577d91c9c30bef44"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/promote.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "adb82855d0f5d3832f595113d1869d040b9e54d8c2c9a8d50114bacca2270fbf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/sbom_gen.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ace06e3739233c9b48873c625965c05ee625feb0b4c38a8810f1e86e034248e1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/signer.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "719cf384c108e0cbb73633fd8c7be79480ad86eb02feccbd1028806f14a14ea8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/tri_runner.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1486a95085437dacb4b2f8efdf6d5dbe7350768c75ad36f2e7a7c3bf66af7456"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/verify.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7425c1629645a3bd3987f0eaf61bef185034c487df8d74a2e3b17015bfe21050"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_tools/verity_policy.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7ab83e1d9d574e69e334b3bbe69a98fc407dc156ebc8f02e438e331257d5f990"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "configs/production/resource_config.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a0e7a131926354160c1d97d379873e284d3155c1ea50d602747235f171f2cf85"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "configs/secrets/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4ffcba7ccaea005e035b348cdc65c2e0aa3931bc4e6f338aed08943579ddd1b0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c954808f09b58a712e39d2c9d2653f8d2e60ce2c32a2469d3abafb258ca9135e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/autonomous.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "777a311817c5d8ebad5f982da53ec92c64cd6ffd2fc0ed9948b1608854f1c97d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/broker.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a510f91ff5c12a69853d8dff90801bbafdecb6155fc12de0454765828913e6b1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/build.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/effect.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fe957ffc41eb3ad944541c33a65bb94cd198d707c2dfb43824594271837a28af"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/engine.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7959a417ec4257130194c9308de96c70812a56c6eac4434b2ce34f54282abd7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/evolution.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5ac06c18e03d8f2180b63ea21ce7f157151fb759cfab6e64593b25883fd9a74c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/executor.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "05c443b8f8d4b417b0e9f6cb9afc335882c1f8f371e90cc817b099f112734925"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/expansion.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d3838932cab91bb621b384926357c1e5d72257f908a0b6a04c1d41e191916157"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/governance_integration.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ed7c7ee881f218fc0ed01e6de2452aa74a0b902ab86f1cfff5b57b69fe53619c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/governance_integration_simple.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1ef176e7e0a0ca6084d95679cd69471eb5a0438b228393f70356fbbdb5923b5f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/governance_stubs.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7701b6317e74b3b1f1a92e6197c4ebcbd356bbc88c809519dae1f25f8240def0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/hootl.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2c62bf15e7f1380b456ed7b4e8e9c5261bc9e18ab1d09c45ffdfe5dc994efedc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/lib.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "60d7c4b003db23ca7df1151dad2e1032971a1651e47b5d832498410397ffaa17"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/main.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0ed5dcf09ee1d2125f1e2510801a1b6ed0c93870c525a552e72193820e2c858e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/noop.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "058f01468fba2119b59c1497c44e58605f7265d752f9591500cd7e93bb1faec3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestrator.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "91962fc2081c87e7c3031a10f78cfe8ad605d81f41dbfeb832042b1c8286c65d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/production_config.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "375cd66fc332e48aa38ddfe42381f2c8a291f2ebe6b2d255a0b1f61b32434a42"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/rust_workers.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f48a2fc27e50a3be4cbd2fdcd680627eb35afbbbce334e0e8c69d69204521c75"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/self_improving.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8c1377d8d3debbef4837cc3ec2b5f39fc7c17ccf8c51a10e2a1730b1cfe53257"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/shell.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3ef9c0dbc56b353a868471d8c5fd32feab943e380686424f8a07c3fa1dd354a2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/task.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3cef1fab35c92ea58b95b2cfb88ad4f43560a84618d243d531d9904c45a20311"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/verification.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7e5be8231766677668c8f3aa2503baf2ffa851386968775fd84519656c8524d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/integration_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e2e13ec3e29791021d818039083259999c98e813fa61573a1e703234cd417ea0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f911500ca5359e0b913fce715771ea8d7f8b3134ec51923ea40f401b30fb531d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ai/model_selector_bridge.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6d745c81d5b5ad8e5bedcba3bc1728ee3c30cceda47346618b458aa41fe9ef54"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ai/model_selector_bridge.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fd4173cc03d563280ae78258b0f3fd331e0ab4838d944b63e7cb77f27c325ede"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ai/sop_analyzer.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "22066b785468e2a99c117ab7430389965cbe80f0d7a5c6e1155729a3298a5d1d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/communication/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "710186d1d2fd258c2d29cc9aec1f5dec23b514763d5e5c0b94214ab3fbba98a1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/config/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "39db6f6e948903f8e1d2271f42a231321063521f10b9cc197798c9fe9f814e1a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/execution/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7ba50df91e9c4c11d7f33005249b9bdb41e1561b9bd37835ec5b28cbe60025d0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/monitoring/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bd069d79e805dcbdd0753d6ba331723a92d0e07f658b47393aa63f9862633be9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/.env.example",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "28c1161d6c6b7a40c22184ac92ff7f5a036d29d579f4e8067c2c9d2b0ac45a08"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/agent.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "571c5ee7a29dc939ca8deb916a79d103c8e028aa2dc8fc30445bc86c606eb011"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c954808f09b58a712e39d2c9d2653f8d2e60ce2c32a2469d3abafb258ca9135e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/analyze_crates_optimization.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "878ac0d5cbcc5b92cc98f64059cc3ccb52d844222cee13932202a8e914c3d100"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Ark OS NOA Project Setup Report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "20b0d1327efa4696e38ce6450db2303c1ac918babae5e2b0a5857ab1088bf48d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/autonomous_expansion_engine.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "63eaa2f75d585860df22ad5466adba0b6e736e4e82d60caaaba43cc4c0a2d68e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/broker.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a510f91ff5c12a69853d8dff90801bbafdecb6155fc12de0454765828913e6b1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/build.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/build.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2f979b6d128f7b56d12281d44a3e2a45aaf2edbe6dc4653ad621613cedb545ad"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/cli.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "34861575dcfe233f865f242b4645f4deb66ba09a5ab951dfe47036cd3d577484"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/CROSS_ANALYSIS.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2058134b42981cfa6953073f843177d1678e6b3832fa723f672fa6a58a092b52"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/effect.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fe957ffc41eb3ad944541c33a65bb94cd198d707c2dfb43824594271837a28af"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/engine.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7959a417ec4257130194c9308de96c70812a56c6eac4434b2ce34f54282abd7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/ENHANCED_HASHES.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4591852d834776e7e35802b3f0cb08de4afe474f74134e0e87131e2a87e4debd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/evolution.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5ac06c18e03d8f2180b63ea21ce7f157151fb759cfab6e64593b25883fd9a74c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/executor.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "df732cf38c91800d866f9bc9d14a09486076442fe208fa32674621c8bf6d9563"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/executor.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "05c443b8f8d4b417b0e9f6cb9afc335882c1f8f371e90cc817b099f112734925"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/expansion.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d3838932cab91bb621b384926357c1e5d72257f908a0b6a04c1d41e191916157"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/FRAMEWORK_HASHES.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ee3cdaf3a44937c623f40850b5c649d223f98fe7d941305c91a497be738a3f1f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/governance_integration.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ed7c7ee881f218fc0ed01e6de2452aa74a0b902ab86f1cfff5b57b69fe53619c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/governance_integration_simple.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1ef176e7e0a0ca6084d95679cd69471eb5a0438b228393f70356fbbdb5923b5f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/governance_stubs.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7701b6317e74b3b1f1a92e6197c4ebcbd356bbc88c809519dae1f25f8240def0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/HASHES.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "08b59189e62fed0a9fa0bcaecc56b4ebee2950efccbc2ac1173af0df015ca1dd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/hootl.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2c62bf15e7f1380b456ed7b4e8e9c5261bc9e18ab1d09c45ffdfe5dc994efedc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/hootl_autonomy_loop.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c4e5a25ea31cdae385c7637651bb39348c969dfc1a1d4304ca666ad27cf85647"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/index.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7964957f656be28daaa25c46fc3b7ec16083c38cbe4db4808465e3db793fa022"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/lib.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a0a74546459f20b6998e3bdebf9d32c50d05902d4ba2397a8f47ad5398961b85"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/main.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8a94b3202f41a91591262bbe28c81f5015169818b1e4ff74e1055fa406b45746"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/master_autonomous_orchestrator.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a8dc24553b0680c9edb7e2a889d0e53563cbd71c52bb0061df049b93aad815bf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3d16e512ea730342c508819a2f3b64489533b3ec31592ff985d07da9d214ba17"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/noop.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "058f01468fba2119b59c1497c44e58605f7265d752f9591500cd7e93bb1faec3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/OPTIMIZATION_ANALYSIS.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "32ebfaa56e111ee2f8c4f546b0d4499510fb7e2b1498a222c1c9fa56487b65fc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/orchestrator.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "91962fc2081c87e7c3031a10f78cfe8ad605d81f41dbfeb832042b1c8286c65d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/planner.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "87126aab3906e3a4f31aa840219c13c2d9e02a559065ec96ae45415b476d7356"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/production_config.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "375cd66fc332e48aa38ddfe42381f2c8a291f2ebe6b2d255a0b1f61b32434a42"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f48d07837fd7d1472eb7b0172812eec103c5fc2ee858c226b50a2816f04f22bc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/registry.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "97fd869e281f626289fe85df154859f6b1be93b81e10ec82215101fe59866151"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/run.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "91699ae10610a5fea6bc208a241da39586fb73838886aac85884788f2a8bf2a7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/rust_workers.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f48a2fc27e50a3be4cbd2fdcd680627eb35afbbbce334e0e8c69d69204521c75"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/shell.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3ef9c0dbc56b353a868471d8c5fd32feab943e380686424f8a07c3fa1dd354a2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/smoke.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b0b5514a61789e8a41c4b9123b224cc4e7c333bd0a53b1a21e44b19390e1629e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/sot.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d1f5e06324ee493b9596e6667de1e5b937b93bcb9d70c4decbac3ab3f6d1f5cd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Enhanced Architecture Design.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d13ba85e54393a4f1d0e6c0adeec9ccd8a87291f05f59e146c6c818f385a63a3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Enhancement Analysis.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "740d88551ecd104cd34efad43eb7aab89aebabd4808cddcc0660fe184d3c17d4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Final Enhancement Report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fde91c251eb93e2a3ee3c52b45ae41bf4cf376da1e424a236f51c7fba4eb5019"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Framework Enhancement Report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c98cfc40a95eb1e6ac07dc14bb1fdb23758c190e726838d3011f1e8259573619"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Framework Integration Analysis.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0dc201a9a227fa7539e27eaa74ec88621965c0d02b922d886d74b0e9856960d1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Framework-Enhanced Architecture.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "94bb4d5e13f5ad602bbeb5bf6ec42e3c6b878c174d31a5465d4b430c13abfb6a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust - Upgrade Report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a71e57f889d32a30970c15e616a018c6c192b595ecf6f4d643498a3a0e8d32a0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/Task Execution Kit Rust Upgrade Architecture.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ccab2df750cd00da711bb67640651b6a72d9678d73d81f79772f4d949e5c4269"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/TASK-001_noop_20251001_220602Z.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c8b3e5c1309e1db515c5e99d549d2c6f1bc7b94398343e35681a0df5cd1450dd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/task.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3cef1fab35c92ea58b95b2cfb88ad4f43560a84618d243d531d9904c45a20311"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/tasks.todo",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c495c1ff74725efd7f8430a272acd7356b40070f3c8746707c8f80876dfeff1f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/tauri.conf.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "823c225b661d011abb42e76d5d1e5599e57e7e9ab8213af67a80ffb1b709473c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/test.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9f6f62bfbb7e6c45e715c3e56ee671395e30c054a24fb9e77ae78cab0d440790"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/test_plan.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e125c76ee15e3c66b6816e85714a2d9853625a4eac17d70a7fb9e517c5a4451"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/UPGRADE_ARCHITECTURE.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ccab2df750cd00da711bb67640651b6a72d9678d73d81f79772f4d949e5c4269"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/orchestration/workflows.sop",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fda42af529a799fa3cf12555c14a07c6d400c9fa1f6e57ef5cd6d63645b696ea"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/security/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "13d96c5fc2735552cb3c65b3ad92d906abd844e782d99829ef3891c0c9798bf6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/ARK-OS Rust Ecosystem Setup Report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6b462d07c207c7357e1ca0e0c635218f6896e065f06c2b77763e75c771cb6ed4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/build.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/build.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e284d749ea2b3e4b12f106d85fa13958dd508d4cc9e01fda83818ffac7fd86e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/index.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "df6c4c417d1f563f3bfbdfd9ad1a8e0d10e5acdb5b2aa3d122e0983facba2967"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/lib.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "247aeb28997b69a4c09b8e173d64a4b16eea1ffbbd5f5bfc77748453bfd6203c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/main.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "62bb3bac7dbffbf7a19267351965047179d0041ac53ee19edeb6615720878a39"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6ba484f8c5e7855abcc03b35b3e08767d4ee362551a076d786a69c5ab25f5819"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/setup.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7a444e2271ea6722fa9024b9cd4874f6395b055e3f8da41d9c6a338db6ce7a17"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/smoke.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "65050a089760b283faa3265899d7509c62f7bd3945b1fe726abef780a1145ede"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/tauri.conf.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e2d731128ddb85daf394f7e1f85a15b651ebbeeada99fcf8879ffd94fd94fc30"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/ui/test.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3164ebc909bb4223caa9f7f7e14a861a0fb2aac05dfbf599737d4d4a28f05ff4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/ai_sop_interface.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5e87690b4ba6680de247efdc6f7fd01b7d397dc65083d6c1d43111f2db689905"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/deliverable_manager.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "110b7130c3b21642bf6f3eb30a1d63056ab78c0ac5b80197a3091f02fade4fad"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/location_manager.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d28ab94f29e3208a905a3a01b4be01e187fa8831b111cd7908fee0b0da5ef1b1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/methodology_engine.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "441de020858b9110d8e5a176ff5351b395ddfcdba7e2a0f334fa6d98f2334de7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fa763393f818cc3cdb8a16c447762b4517582b420e962cb34664f8f4a8c751af"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/sop_parser.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7bed33b96284ee668101e91ca972c774512b4153e306748713cfa9dea1fc09a5"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/digest_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6a687d00a0e2dc4d32abdfcd518a345dbd747389a89d3b80db9b97a38b90d12b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/finance_board_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4b48a2b81d23f389a8b2553cdfff403422883c094b68a6ebb7f76073e0f6a578"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/legal_compliance_board_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cccf6f1a4a3182cc925347dd0900376dad8fab26597045cca5ef8408d737deea"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e9c19ebab521dc5a48eac9d4c7ce67dac28679e9d57199ddd381c2de5db2a3dc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/operations_board_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4ea0c9f95ff563166f6238044042ebbf25ce0899318a2578e78b8822c81831ed"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/board/strategy_board_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2deea1dc7ea94e262bad6d8fef58ec9fbc9cc4c0a8ad70ac8d4acd4a4b621de"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/communication/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "71566067c1b05eabb72b7eab786976580bbea85b5bf7b60b7d03aa7ac80ed4f7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/emergency_responder.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c6c74b4733b5a91eb032a3e2f1dd747af20b91c951547c1c04c847df4782c41e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c703916b449e5eef0c5126289eddc945ea57eb421e50777d7127c6c9085b026d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/noa_commander.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6c83e87f0310588b1e16f4d364f72433347479dfcbffb0641f614fc54e883157"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/priority_manager.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "310675d90ec2200cfc13010b7649e22b4708f3143eb6b28f9d4a433cada7af1d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/resource_allocator.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2bfa03bce97a932127abff066ec7e509bd4874043dbe2c1cf55f3fe10ae1f7ec"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/executive/system_orchestrator.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e4ec3e325fb7e776987bbd22996fa4f8173df6b373f7b6ae7bede21b391f02b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/code_generation_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c8e01087d0f1f9598544033aeab5f449d0223bb6a56da49734a87ce871c97a56"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/data_analytics_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2c810487f5a9f248809f57a99d6d3c61c944d762421bc737119a46ba54d5e386"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/deployment_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e7a586710dad5a15cbc46ee8fa77fe1f225853ea93e09aa23a18e76ba6011b03"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/integration_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f52cab9e28872b1b9891f0b742d92c3bfc09426c4470a27d9c1fec96b530d554"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/learning_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2c63235d2abc8cf810a812525c66591479ea992c459295ee5971be98c7348ca0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c719794b4e7d184e91eb4ee146a4f928a74a7ed0d1e2ab256c507bb9acaafdb4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/monitoring_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "84e643e10fd1786b7d868a704c51f9c24e80563d07ae9665f1e530d91c1fcc46"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/security_specialist_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0f66cc1fd613f1f06c35b0a0e39fdde79356307817110c970c06804d5c808638"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/agents/specialized/testing_agent.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7bfd4efbab651d53f7081696111709f0cc46fe07f1c8ec5bbe8b0223fb97ee1d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "31c73613dbe30f8bc3f8907c34472ceb19eab299b0604b6d92cc7ffe31e505d0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_five.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8ab3714d540b6e6aaa66b3c3da47c1718d42c781079b3ebfee80ff34d5299081"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_four.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2043c14c31f8e56142ad73913e7613cdb4bf62fb734b9c4712c53e8b6875537"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_one.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "45a5c337e8065c7c8291b0416655f407b4f8c0ca68841d0f5bc9813f19ef5547"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_seven.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4c6a7c273321b89e0f105bdfe041defa6bd729b7d4741d96e5c87edd37974ed8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_six.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5965889832f00769b12f1ae3d359cdc07979199b37e15a15d13c3a994090e1fd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_three.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9975a0b4a07ac34dd150605734edbceebb5ccaa3d0887e25cb984fef831361cf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "core/src/workflows/seven_phase/phase_two.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9ef59edf9513659eef415506a63d906e0c3c853d28e5f1798fbaec4c11bdd3de"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "dashboards/capacity/overview.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e288c444fc984e23238d8390e7e91db6511af7e641dd7855f37fab49c158d9c3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "dashboards/perf/throughput.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9221c8bfea3c0c520d4c96c579e819c03b1c487a7564be765f51a67e86fe40be"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "deploy/canary/plan.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ba9f57104f44ec845673d3e6d98f9cc2f59536c12349d87c86b43bf90d6c88f6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "deploy/k8s/limits.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dcce442078748dba6925b5f2bf9622980e1286a95fdcbd7d12361a825efbaf3a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/decisions/ops-dedup-todo.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "58d8a39e39d4298e9154913ca6d189b8cc85689becb735e0aa7e94cb9fa543b2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/observability/logging.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dd07b1b884e22d2c462d38eac22824de044551ad5e697fac818aa0813db1e62d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/ops/capacity_plan.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fff3fc7a52a67e9c3429401fde3b20ef263fa622e50885ec7270d176e4152c42"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/perf/backpressure.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a6eff0186b7b34562cc6fba3d60cf119ed12f23a3a8574f0df3149e7aed0a2e8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/security/secrets.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7951ab6f1ebd49303fe5f39c9d26f53137ccd2872a9729731420f091d55a908f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/reports/cross_reference/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e52e933faf1819c25ae715cf304936d0ac2411c1aa5ebdfadee73ccad9445606"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/reports/cross_reference/artifacts/manifest.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a09021288d0ef11a4327b96899fa2642a1da129f82265feb22385f336e3fd26c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/reports/cross_reference/artifacts/report.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0e7b498c60a7f1b19478a2de81e495ad748168923c7bb38ec7d59bc2efb2f9f0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/reports/cross_reference/artifacts/report.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "65d10b59e3f8fcc7e0607ebb092a0e16f47deb74e5487f1d24fc5a351eb5d93a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "docs/runbooks/security/rotation.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2fd7b618ea56d3d11829565dd5555bff0dcff464b245f7a65f0af5df027bfddf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/build.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "84cdce60dfeaa008432224f86839ab0258c293eae9e07d463eec8e929e0a0720"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/fetch.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "984738057833e9bdf518db2d6f1069d3aecefa62ea0e243a39e74e4a9b409f1c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0e8414c6e7e46ffbc0bf4128b92b69db3b17ecb4fa3420fdd188352bf2251586"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/run_many.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6455a210b219b4a523a4f09662b161d723f7b0207c41b7e5f1b201e3eb28cd1b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/run_many.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "58924a41963e2ad565f90c2f1c1154dffcd2f5b770c78ca5244458431ccb7ee9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "integrations/llama.cpp/config/models.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1cf97cca762f1aa6d8653c79f9efe0dcd42c2923c4343575c9295f77e4eb9e9b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/inputs/sample.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b47cc0f104b62d4c7c30bcd68fd8e67613e287dc4ad8c310ef10cbadea9c4380"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/tri/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/tri-sandbox/A/run.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "276103a30f6c8181e6bee1af57b7005170840981c6e7fd2038ca0189fcd391b7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/tri-sandbox/B/run.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "276103a30f6c8181e6bee1af57b7005170840981c6e7fd2038ca0189fcd391b7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/tri-sandbox/C/run.sh",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "276103a30f6c8181e6bee1af57b7005170840981c6e7fd2038ca0189fcd391b7"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "sandbox/tri-sandbox/unifier/merge.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a9e4fd27715b2137aef90652059154b89df83ef5cc2321ce691fa09fa82e416e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "security/policies/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d1612d8c51a25f51e8cd899e0003b94d89b3be19391dbc7472346e14a6759e2c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "security/reports/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "906b5ff24f4c7036846e4e89af47bc97e97638c1036adfec7811d3ebd815aab0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/src/lib.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "71e31e00bd33bfaf76ee5cbb33f2fbbec3bbb53703e5a11535e9fb4a264b9e20"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/src/data_models/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3bab73c6116ce59aa0e214f6b527a7f677aaf798afb24730b8d8259ae3128b37"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/src/protocols/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8090aa29d7ff22165d9417904b0ab5f161e0244c2a99a7cfa5fe34171e1ef7bd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/src/types/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cbfb220b49a3cb2498628510009b1889d3aae7027d26b923aab30828341c4c3b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "shared/src/utils/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9a2bdb291139c36fab28eb2ef1d336a1c6d1407609da31a06efad41d599c8ada"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TEST/perf/sample.log",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "87e4ffb1717abd6ddbb052ddbb1052ee0ab291df9bdd6a4e16e83a31e4055fb1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TEST/slo/sample.log",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c2219026a8422fcb145c4db98e3d2367ff7668c27e172ae9b11ec7ed34d49f3c"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TEST/perf/overload/sample.log",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7089c82a3fbfe6b49375fabac527d7c001efba85c7e0c580f176455873bb3cf9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "TEST/perf/rate/sample.log",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cbbc9a57e76dfad1efb485486ca749db9fabb6bc076b148f24af2e0e20ee3174"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/integration/enhanced_workflow_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c85eada3f47019741bf2d3463b159d3c3b10bb7a55c7c56d26fd4e27182c8082"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/performance/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3810a207cb4930c708ee8b0371e8e0d49b5a3224a498c7e33b1dd920d3fd76b5"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/seven_phase_workflow/integration_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eecbcffad70528720e65c5c6b0699192f1f119bf73afb3e865dd309a728700f2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/seven_phase_workflow/performance_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "161f6dfe2062137bc45f9972b93747169c2b165df5ad2a346e3019c137300826"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/seven_phase_workflow/security_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dd5c84babe5d0a531f8becc58698bca5c84abd08347ec00f5e90a19f417640ff"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/seven_phase_workflow/verification_tests.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "253d5e01e01fb1b5c9556f27bbcc8e73de89390db9bb2ff25078aace8034b2a0"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/workflows/integration_test.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "836efff73844861c94953a0c84c90f0b9dba5d00e9fc0014dd90e97ee7969ecf"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/workflows/mod.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8854a1d2f535152fa852fe36ce25d7eeaeb87ae164d48176b91cf4b9112b32aa"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/integration/benches/agent_performance.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "268a2adb129d18d6794cfa7d8f8911aa91c3d4fed06994621133aaac87f0b1c4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/integration/benches/messaging_throughput.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d9514c8caa2d80109aa336af03f9b98eaef56bb9579a098f4ed1cf7dc6c55fe1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/integration/enhanced_workflow/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "546b908beac3984bede8582efc264154fa22722c26a3e6e11231a48466e5536a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/integration/src/lib.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2be0baa3d9a6d9dd130b633149ab1c54a3bce07ed075d77a8de62adb5d8eac18"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/performance/rate_limit/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bdfc1c525a36cd2ed2a6047755c5783aaf3b0f98edd0fb336433be0504eb5bbc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/performance/workflow_benchmarks/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9b49bee54310d5ff2480d45f97793dc5b4c00cd7dda8d3e335f587d876a8a801"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/security/workflow_validation/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aad8bdb437e4d2baa6ba17478fb87094c95335165b6f7ca824fd8389925e8091"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/workflows/methodology/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ca5a8fee6b6c3057e03f1e8e78d1cab830392d3bb2cb93b67e85ab2679a6399a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tests/workflows/sop_integration/README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4648eba2a01cdab26687bbbc1f7f26421be74b0f322697be22b1a64be9307585"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/analysis/cross_reference.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "143670e60fb52ff8bf559ca9c034b4df9c4a7e6fab93afb6ba5e6762f571b32d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/analysis/cross_reference.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d96e449c47e920fcce741b8f1a768eb89c8fc557d3a3f90b403ff9af903ec961"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/analysis/update_todo_from_report.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "43d0a42094f93b973b1cef4044dcf3a844d65253109b01ad1034619e30603358"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/analysis/update_todo_from_report.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3196588f9056f70c93d064f06866a5faba8402257ef5794cc9ffd4fb367df4e8"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/runner/run_all.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4f5e4633b02bd551ccbbfe7c1f4c1b4ce40c792df070eb56eb43203249cd8086"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "tools/runner/run_all_local.ps1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7d1f8dbaa24a2e6673d2bda034a6e06c4ebd2b525895e0fde3aa8f97601493eb"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/graphs/capsule_flow.mmd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9849a32b5c7ed831763f7502123d52557b7ab534095b9e0ae7f73ae3a47d2892"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/graphs/orchestration.mmd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "627831c7e0a21067b3c5604b532abe56991d3101f3593d1d82eeb66e7780a72e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/graphs/stacks.mmd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "70caa3fbb1278958c6f3e548cc7a933b5bc17e21f3595706e5790e3768cff3b4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/reports/csv_validation_report_post_heal.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "42e3d6b072dabdfce641267714ce462087636e3bf5d25cb97ad04583a23f74b1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/schema/capsule.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7cd1a2d5ef42637d930af6a38cc82f0dbbdbb08fe2bf89fafaf89e8913d44e1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/schema/CSV_SCHEMA.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "16e5784610ee557a1dee4ff1d0a47e51c6ca125f913264e8138059d309d68009"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/schema/manifest.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bdd72550048d65ac79031c0c795835559674fb0a69ea02de255bae44c9fce52e"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/templates/agent_directory_template.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a9aa0bd58b9e3efc6d3ad6f99b9363810782b60d5083eea55d44034eddbc7274"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/templates/agent_schema_template.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "899f2d72f2c0a1936233a794c8a8edd3676583362a0b2cbce12d5e6c4e24df3a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/templates/stack_manifest_template.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "27c0504b4ebfb57c1ca0638de014ab93b7ab866e39cecaf5ed898cd85e70c47f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/csv/All_Inclusive_Agent_Directory_v6_plus.normalized.fixed_20251005-081849.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ae068c9ec86415b760dd8cf204953c4cc775c74cb91e488b31e0288b96431272"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/csv/All_Inclusive_Agent_Directory_v6_plus.normalized.full_20251005-081849.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "027ded3946439003fd20730a8116caf196b836d0668f12aac60336ab59eeca7b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/csv/All_Inclusive_Agent_Directory_v6_plus.normalized.healed_20251005-081849.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "abec6f0326e542b9bae422ae974ad4beb75446bfceaf4aef9db99241e1f07825"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/howto/HOW-TO-USE_v3_1_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "09d4151238793ed807ca8dbdee7f92504156ba45c34d15399438963d1173b7fc"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/howto/HOW-TO-USE_v3_1_extended_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "720d0ff1bc3f64857cec1694a10351184b3450a810b4f49684dde23a824aefe4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/manifests/stack.manifest.v2_20251005-081849.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ceff9a56cbf2522d3d1ff6bd49d1043a55c03489b83031a8ebb98baab51a948b"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/manifests/stack.manifest.v3_20251005-081849.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "87ebbac5556fb260d0b9ae991fdecf08afaa29ade0f33585d2a7f8617a3a498f"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/readmes/README_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9076321245745fcd4eaa45039d7157d9bdeb02317d968562427f7b7d223dea2d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/readmes/README_extended_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d729e7e630e153e4f46227ff106bfee9fd4f53e850aa29f98761caff17d95bce"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/readmes/README_v3_HEALED_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "141e8e524820e545e733c248469f1620fc9be5e7c87561bdc30e9505191c4213"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/schemas/capsule.schema.v2_20251005-081849.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7cd1a2d5ef42637d930af6a38cc82f0dbbdbb08fe2bf89fafaf89e8913d44e1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/schemas/capsule.schema_20251005-081849.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "78965f558f9ab3e4e029f9623609e51855fe1fad68b025429e782217d2f37e68"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/schemas/CSV_SCHEMA_v1_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "26da43567aa55f0c04c7c4ae176f4c0714a7f0e9ff1cb3464db31f7863578ec3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/schemas/CSV_SCHEMA_v2_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c3ada50992342bb3142f36740694a4820d22c73bfbbbf5e613824299ec910dd3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/archive/schemas/CSV_SCHEMA_v3_20251005-081849.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "16e5784610ee557a1dee4ff1d0a47e51c6ca125f913264e8138059d309d68009"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/config/manifests/production-deployment.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "76e3c88347112b84cb45bcfb65712bdc6fbc6c7e5c0f209d1a982173d0343f42"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_agents/config/schema/deployment-manifest.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b1257b03ee7e649396009f1cd38fb42b0d8d1da996108a5ae9cd468be7039d20"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/core/build.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d5377d7553e20b0aa61e126233c60a12a3f79af6ae802eb7d92a227c94a055dd"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/core/Cargo.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dda467b4bfd25338fbcb975f54495a28224409cfcfdf1b8316fbf9922a592978"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/policies/fsverity_allowlist.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ea772c283ceeaa88ad58e523cea141e082fa6ad050ae0f4ce112147ac2df1af4"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/wasm_host/Cargo.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "83fd057a144b3753c23cfe810eea7370cc9cdecb7c102e6eb160484fb89ea3a6"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/connectors/cap-sandbox/hello.txt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "24f23f7d2e8a0cbf2066ffdf4b86c028894152a3604f7d0c1a2e64c9e90ce1ac"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/connectors/echo/echo.wat",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d00abd4d98ada3d2212a72ea9d5eb01f00b7549174ab3ed13c63eb6ae8c56d07"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/connectors/json-filter/json_filter.wat",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "244c876e5d6eee0cf78c6692131c040214525651c2ef08842dff03b3feb474d1"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/connectors/readfile/readfile.wat",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7236c2e2aa059812ec81415e77a69072e5ee8394ed1ec5387dc741243bfcbaa9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/core/src/client.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "57257a94f48d32a92f99f46fe781db51f027f31d7e877d090d86762493e1ac76"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/core/src/main.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "48e3afcd4ca11a7f3c3c874436b533bfae0e990ace6d68de1b46b42405af93d9"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_execution/wasm_host/src/main.rs",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ed404ae59f37ada45a00615a6698b30474b05aa01df530775ef959248bd494d5"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/agent_runtime/agent_orchestrator.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1a89da2aaba79d9893140d36abc201bed5f7c0e55727c6f0183e61cc5b93890d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/policies/budgets.env",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "63f6891417a968c76af850b11a80c018ae98d6a0bd7d5a05a7746f396d7f2697"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/policies/capability_schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "187091dbde0ef3289326e2451d6260472595c19a8e0580ffcbc48dafbb326a1d"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/policies/plan.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "20edc2f8ec9bac1599f07767f23b28be59c6467d96e94acd5e5224f1c80f1d1a"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/policies/pop.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a1c7246f034f4cafb3c96f36b92410543151f08c8c5fa3804f12f888df3c4ed3"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "type": "file",
+      "name": "unified_orchestration/policies/progress_token.schema.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b35285a5ace01d9126b2efaae6a51be0f477ab68cb59b6a407e1745679bdb847"
+        }
+      ],
+      "version": "1.0.0"
+    }
+  ]
+}

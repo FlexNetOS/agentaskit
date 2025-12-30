@@ -1,0 +1,361 @@
+# Production Resource Configuration
+# AgentAsKit Production Environment
+# Updated: 2025-01-05
+
+# ==============================================================================
+# PRODUCTION HARDWARE PROFILE
+# ==============================================================================
+hardware:
+  # CPU configuration
+  cpu:
+    architecture: "x86_64"
+    cores_physical: 16
+    cores_logical: 32
+    threads_per_core: 2
+    cache_l1: "1MB"
+    cache_l2: "16MB"
+    cache_l3: "64MB"
+    base_frequency: "3.5GHz"
+    boost_frequency: "5.0GHz"
+  
+  # GPU configuration (Multi-GPU setup)
+  gpu:
+    enabled: true
+    devices:
+      - id: 0
+        name: "NVIDIA RTX 4090"
+        compute_capability: "8.9"
+        vram: "24GB"
+        cuda_cores: 16384
+        tensor_cores: 512
+      - id: 1
+        name: "NVIDIA RTX 4090"
+        compute_capability: "8.9"
+        vram: "24GB"
+        cuda_cores: 16384
+        tensor_cores: 512
+      - id: 2
+        name: "NVIDIA RTX 4090"
+        compute_capability: "8.9"
+        vram: "24GB"
+        cuda_cores: 16384
+        tensor_cores: 512
+      - id: 3
+        name: "NVIDIA RTX 4090"
+        compute_capability: "8.9"
+        vram: "24GB"
+        cuda_cores: 16384
+        tensor_cores: 512
+    total_vram: "96GB"
+    cuda_version: "12.4"
+    driver_version: "545.29"
+    nvlink_enabled: true
+  
+  # Memory configuration
+  memory:
+    total: "128GB"
+    type: "DDR5"
+    frequency: "5600MHz"
+    ecc_enabled: false
+    numa_nodes: 1
+  
+  # Storage configuration
+  storage:
+    system_drive:
+      type: "NVMe"
+      capacity: "2TB"
+      interface: "PCIe 5.0"
+      read_speed: "10000MB/s"
+      write_speed: "9500MB/s"
+    data_drive:
+      type: "NVMe RAID0"
+      capacity: "8TB"
+      interface: "PCIe 4.0"
+      read_speed: "14000MB/s"
+      write_speed: "12000MB/s"
+    archive_drive:
+      type: "SSD SATA"
+      capacity: "16TB"
+      interface: "SATA III"
+      read_speed: "550MB/s"
+      write_speed: "520MB/s"
+  
+  # Network configuration
+  network:
+    interfaces:
+      - name: "eth0"
+        speed: "10Gbps"
+        type: "Ethernet"
+        mtu: 9000
+      - name: "eth1"
+        speed: "10Gbps"
+        type: "Ethernet"
+        mtu: 9000
+    total_bandwidth: "20Gbps"
+    low_latency_mode: true
+
+# ==============================================================================
+# RESOURCE ALLOCATION STRATEGY
+# ==============================================================================
+allocation:
+  # CPU allocation strategy
+  cpu_allocation:
+    kernel: 4                       # 4 cores for CECCA kernel
+    agents: 16                      # 16 cores for agent pool
+    sandboxes: 8                    # 8 cores for tri-sandbox
+    io: 4                           # 4 cores for I/O operations
+    reserved: 4                     # 4 cores reserved for OS
+  
+  # GPU allocation strategy
+  gpu_allocation:
+    inference: 
+      devices: [0, 1]               # GPUs 0-1 for inference
+      memory_per_device: "20GB"
+    training:
+      devices: [2]                  # GPU 2 for fine-tuning
+      memory_per_device: "20GB"
+    reserved:
+      devices: [3]                  # GPU 3 for failover
+      memory_per_device: "20GB"
+  
+  # Memory allocation strategy
+  memory_allocation:
+    kernel: "8GB"                   # CECCA kernel
+    agent_pool: "32GB"              # Agent execution pool
+    model_cache: "40GB"             # LLM model cache
+    data_cache: "16GB"              # Data processing cache
+    sandboxes: "12GB"               # 4GB x 3 sandboxes
+    buffers: "4GB"                  # I/O buffers
+    reserved: "16GB"                # Reserved for OS/system
+  
+  # Storage allocation strategy
+  storage_allocation:
+    operational: "500GB"            # /agentaskit-production
+    models: "1TB"                   # /models (LLM weights)
+    cache: "500GB"                  # /cache
+    logs: "100GB"                   # /logs
+    artifacts: "200GB"              # /artifacts, /sbom, /anchors
+    sandboxes: "200GB"              # /sandbox workspaces
+    archive: "2TB"                  # /archive
+
+# ==============================================================================
+# PERFORMANCE TUNING
+# ==============================================================================
+performance:
+  # CPU optimization
+  cpu_optimization:
+    governor: "performance"         # CPU frequency governor
+    turbo_boost: true
+    hyperthreading: true
+    numa_balancing: true
+    cpu_affinity: true              # Pin processes to cores
+    
+  # GPU optimization
+  gpu_optimization:
+    persistence_mode: true          # Keep GPU initialized
+    power_limit: "450W"             # Per-GPU power limit
+    memory_clock: "+1000MHz"        # Memory overclock
+    core_clock: "+150MHz"           # Core overclock
+    fan_control: "auto"
+    compute_mode: "exclusive"       # Exclusive process mode
+    
+  # Memory optimization
+  memory_optimization:
+    huge_pages: true
+    huge_page_size: "2MB"
+    transparent_huge_pages: "always"
+    swappiness: 10                  # Minimize swapping
+    dirty_ratio: 15
+    dirty_background_ratio: 5
+    
+  # Storage optimization
+  storage_optimization:
+    scheduler: "none"               # I/O scheduler (NVMe doesn't need one)
+    read_ahead: "4MB"
+    queue_depth: 256
+    direct_io: true
+    aio_enabled: true
+    
+  # Network optimization
+  network_optimization:
+    tcp_congestion_control: "bbr"
+    tcp_window_scaling: true
+    tcp_timestamps: true
+    tcp_sack: true
+    receive_buffer: "16MB"
+    send_buffer: "16MB"
+
+# ==============================================================================
+# SCALING POLICIES
+# ==============================================================================
+scaling:
+  # Horizontal scaling (add more instances)
+  horizontal:
+    enabled: false                  # Future: distributed execution
+    min_instances: 1
+    max_instances: 32
+    target_cpu_utilization: 70
+    scale_up_threshold: 80
+    scale_down_threshold: 30
+  
+  # Vertical scaling (increase resources per instance)
+  vertical:
+    enabled: true
+    auto_adjust_memory: true
+    auto_adjust_cpu: true
+    auto_adjust_gpu: false          # GPU allocation is static
+    adjustment_cooldown: "5m"
+    
+  # Elastic resource allocation
+  elastic:
+    enabled: true
+    burst_capacity: 1.5             # Allow 150% temporary burst
+    burst_duration: "10m"           # Maximum burst duration
+    recovery_period: "30m"          # Recovery time after burst
+
+# ==============================================================================
+# LIMITS AND QUOTAS (Production)
+# ==============================================================================
+limits:
+  # Per-user limits
+  per_user:
+    max_concurrent_tasks: 32
+    max_daily_tasks: 1000
+    max_token_usage_daily: 10000000  # 10M tokens
+    max_storage_usage: "100GB"
+    max_cpu_hours_daily: 100
+    max_gpu_hours_daily: 50
+  
+  # Per-agent limits
+  per_agent:
+    max_execution_time: "30m"
+    max_memory_usage: "4GB"
+    max_cpu_usage: 2                # 2 cores
+    max_gpu_memory: "4GB"
+    max_file_descriptors: 10000
+    max_network_bandwidth: "1Gbps"
+  
+  # Per-sandbox limits
+  per_sandbox:
+    max_execution_time: "10m"
+    max_memory_usage: "4GB"
+    max_cpu_usage: 4                # 4 cores
+    max_storage_usage: "50GB"
+    max_processes: 100
+    network_access: "restricted"
+  
+  # System-wide limits
+  system_wide:
+    max_total_agents: 1000
+    max_concurrent_agents: 128
+    max_total_sandboxes: 32
+    max_concurrent_sandboxes: 3     # Tri-sandbox A/B/C
+    max_model_cache_size: "40GB"
+    max_log_size: "100GB"
+
+# ==============================================================================
+# MONITORING AND TELEMETRY
+# ==============================================================================
+monitoring:
+  # Metrics collection
+  metrics:
+    collection_interval: "10s"
+    retention_period: "90d"
+    aggregation_interval: "1m"
+    export_format: "prometheus"
+    
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: "30s"
+    timeout: "10s"
+    failure_threshold: 3
+    success_threshold: 1
+    
+  # Performance profiling
+  profiling:
+    enabled: true
+    cpu_profiling: true
+    memory_profiling: true
+    gpu_profiling: true
+    network_profiling: true
+    sampling_rate: "100Hz"
+    
+  # Tracing
+  tracing:
+    enabled: true
+    sample_rate: 0.1                # 10% sampling
+    export_endpoint: "http://localhost:4318"
+    export_protocol: "otlp"
+
+# ==============================================================================
+# DISASTER RECOVERY
+# ==============================================================================
+disaster_recovery:
+  # Backup strategy
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"           # Daily at 2 AM
+    retention: "30d"
+    compression: "zstd"
+    encryption: true
+    destination: "/archive/backups"
+    
+  # Replication
+  replication:
+    enabled: false                  # Future: multi-datacenter
+    sync_mode: "async"
+    replica_count: 2
+    
+  # Failover
+  failover:
+    enabled: true
+    auto_failover: true
+    failover_timeout: "30s"
+    health_check_interval: "10s"
+
+# ==============================================================================
+# SECURITY HARDENING
+# ==============================================================================
+security:
+  # Process isolation
+  isolation:
+    use_namespaces: true
+    use_cgroups: true
+    use_seccomp: true
+    use_apparmor: true
+    
+  # Resource limits (security)
+  rlimits:
+    max_open_files: 65536
+    max_processes: 4096
+    max_memory_locked: "unlimited"
+    max_stack_size: "8MB"
+    
+  # Network security
+  network_security:
+    egress_filtering: true
+    ingress_filtering: true
+    allowed_ports: [80, 443, 6333]  # HTTP, HTTPS, Qdrant
+    firewall_enabled: true
+
+# ==============================================================================
+# EXPERIMENTAL FEATURES
+# ==============================================================================
+experimental:
+  # Distributed execution
+  distributed_execution:
+    enabled: false
+    coordinator_url: "tcp://localhost:5555"
+    worker_count: 4
+    
+  # Quantum acceleration (future)
+  quantum_acceleration:
+    enabled: false
+    backend: "qiskit"
+    
+  # Neural architecture search
+  nas:
+    enabled: false
+    search_space: "efficient"
+    max_trials: 100

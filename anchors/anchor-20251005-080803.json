@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-10-05T13:08:03Z",
+  "merkle_root": "fb81c0f8a3b09a5253f26c45c6e4bae3d1d475054d9815aaf43c8338fee6477a",
+  "files": [
+    "Makefile",
+    "sbom/sbom.cdx.json",
+    "artifacts/MANIFEST.sha256",
+    "unified_orchestration/policies/budgets.env",
+    "unified_orchestration/policies/capability_schema.json",
+    "unified_orchestration/policies/plan.schema.json",
+    "unified_orchestration/policies/pop.schema.json",
+    "unified_orchestration/policies/progress_token.schema.json",
+    "configs/rate_limits.yaml",
+    "configs/tracing.yaml"
+  ]
+}

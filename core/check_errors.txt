@@ -1,0 +1,2626 @@
+warning: /home/ubuntu/agentaskit-workspace/agentaskit-production/Cargo.toml: unused manifest key: workspace.package.name
+warning: unused import: `std::env`
+ --> core/build.rs:1:5
+  |
+1 | use std::env;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `agentaskit-core` (build script) generated 1 warning
+warning: variable `unknown` is assigned to, but never used
+   --> shared/src/utils/mod.rs:210:13
+    |
+210 |         let mut unknown = 0;
+    |             ^^^^^^^^^^^
+    |
+    = note: consider using `_unknown` instead
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: value assigned to `unknown` is never read
+   --> shared/src/utils/mod.rs:218:42
+    |
+218 |                 HealthStatus::Unknown => unknown += 1,
+    |                                          ^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling agentaskit-core v0.1.0 (/home/ubuntu/agentaskit-workspace/agentaskit-production/core)
+warning: `agentaskit-shared` (lib) generated 2 warnings
+error[E0432]: unresolved import `crate::shared`
+  --> core/src/workflows/mod.rs:32:12
+   |
+32 | use crate::shared::{AgentCommunicationProtocol, TaskOrchestrationProtocol};
+   |            ^^^^^^ could not find `shared` in the crate root
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/strategy_board_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/operations_board_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/finance_board_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/legal_compliance_board_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/digest_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::Priority`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/board/mod.rs:13:21
+    |
+ 13 | use crate::agents::{AgentId, AgentMessage, Priority, Task, TaskResult, TaskStatus, Agent};
+    |                     ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^ no `TaskStatus` in `agents`
+    |                     |        |             |               |
+    |                     |        |             |               no `TaskResult` in `agents`
+    |                     |        |             no `Priority` in `agents`
+    |                     |        no `AgentMessage` in `agents`
+    |                     no `AgentId` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these enums instead:
+            crate::TaskStatus
+            agentaskit_shared::TaskStatus
+help: a similar name exists in the module
+    |
+ 13 - use crate::agents::{AgentId, AgentMessage, Priority, Task, TaskResult, TaskStatus, Agent};
+ 13 + use crate::agents::{Agent, AgentMessage, Priority, Task, TaskResult, TaskStatus, Agent};
+    |
+help: a similar name exists in the module
+    |
+ 13 - use crate::agents::{AgentId, AgentMessage, Priority, Task, TaskResult, TaskStatus, Agent};
+ 13 + use crate::agents::{AgentId, AgentManager, Priority, Task, TaskResult, TaskStatus, Agent};
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentError`, `crate::agents::AgentId`, `crate::agents::AgentMetadata`, `crate::agents::AgentRegistry`, `crate::agents::AgentResult`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::AgentMessage`, `crate::agents::AlertSeverity`, `crate::agents::HealthStatus`, `crate::agents::MessageId`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/executive/noa_commander.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentError, AgentId, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |           |        |              |              |            |
+    |            |             |           |        |              |              |            no `AgentRole` in `agents`
+    |            |             |           |        |              |              no `AgentResult` in `agents`
+    |            |             |           |        |              no `AgentRegistry` in `agents`
+    |            |             |           |        no `AgentMetadata` in `agents`
+    |            |             |           no `AgentId` in `agents`
+    |            |             no `AgentError` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     AgentMessage, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |
+    |     |             no `AlertSeverity` in `agents`
+    |     no `AgentMessage` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this struct instead:
+            crate::workflows::seven_phase::phase_two::AgentRegistry
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentError, AgentId, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentError, Agent, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentError, AgentId, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentError, AgentId, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentStatus,
+    |
+help: a similar name exists in the module
+    |
+ 12 -     AgentMessage, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+ 12 +     AgentManager, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/executive/system_orchestrator.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/executive/resource_allocator.rs:12:12
+    |
+ 12 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 13 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/executive/priority_manager.rs:12:12
+    |
+ 12 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 13 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 12 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 12 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/executive/emergency_responder.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentRegistry`
+  --> core/src/agents/executive/mod.rs:17:28
+   |
+17 | use crate::agents::{Agent, AgentContext, AgentId, AgentRegistry, communication::CommunicationManager};
+   |                            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^^ no `AgentRegistry` in `agents`
+   |                            |             |
+   |                            |             no `AgentId` in `agents`
+   |                            |             help: a similar name exists in the module: `Agent`
+   |                            no `AgentContext` in `agents`
+   |
+   = help: consider importing this type alias instead:
+           agentaskit_shared::AgentId
+   = help: consider importing this struct instead:
+           crate::workflows::seven_phase::phase_two::AgentRegistry
+
+error[E0432]: unresolved imports `crate::agents::AgentMessage`, `crate::agents::MessageId`, `crate::agents::Priority`
+   --> core/src/agents/executive/mod.rs:225:25
+    |
+225 |     use crate::agents::{AgentMessage, Task, MessageId, Priority};
+    |                         ^^^^^^^^^^^^        ^^^^^^^^^  ^^^^^^^^ no `Priority` in `agents`
+    |                         |                   |
+    |                         |                   no `MessageId` in `agents`
+    |                         no `AgentMessage` in `agents`
+    |                         help: a similar name exists in the module: `AgentManager`
+    |
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/specialized/code_generation_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = note: unresolved item `crate::agents::executive::coordination::AgentContext` exists but is inaccessible
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/specialized/testing_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = note: unresolved item `crate::agents::executive::coordination::AgentContext` exists but is inaccessible
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/specialized/deployment_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = note: unresolved item `crate::agents::executive::coordination::AgentContext` exists but is inaccessible
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+   --> core/src/agents/specialized/monitoring_agent.rs:11:12
+    |
+ 11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+    |            |             |        |             |              |
+    |            |             |        |             |              no `AgentRole` in `agents`
+    |            |             |        |             no `AgentMetadata` in `agents`
+    |            |             |        no `AgentMessage` in `agents`
+    |            |             no `AgentId` in `agents`
+    |            no `AgentContext` in `agents`
+ 12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+    |     |             |                               |                    |
+    |     |             |                               |                    no `TaskResult` in `agents`
+    |     |             |                               no `ResourceUsage` in `agents`
+    |     |             no `Priority` in `agents`
+    |     no `HealthStatus` in `agents`
+    |
+    = note: unresolved item `crate::agents::executive::coordination::AgentContext` exists but is inaccessible
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMetadata
+    = help: consider importing this enum instead:
+            crate::workflows::seven_phase::phase_two::AgentRole
+    = help: consider importing one of these enums instead:
+            crate::monitoring::HealthStatus
+            agentaskit_shared::HealthStatus
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+    = help: consider importing one of these structs instead:
+            crate::monitoring::ResourceUsage
+            crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+    |
+help: a similar name exists in the module
+    |
+ 11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+ 11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentContext`, `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::AgentMetadata`, `crate::agents::AgentRole`, `crate::agents::AgentState`, `crate::agents::HealthStatus`, `crate::agents::Priority`, `crate::agents::ResourceUsage`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`
+  --> core/src/agents/specialized/learning_agent.rs:11:12
+   |
+11 |     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+   |            ^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^ no `AgentState` in `agents`
+   |            |             |        |             |              |
+   |            |             |        |             |              no `AgentRole` in `agents`
+   |            |             |        |             no `AgentMetadata` in `agents`
+   |            |             |        no `AgentMessage` in `agents`
+   |            |             no `AgentId` in `agents`
+   |            no `AgentContext` in `agents`
+12 |     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+   |     ^^^^^^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^
+   |     |             |                               |                    |
+   |     |             |                               |                    no `TaskResult` in `agents`
+   |     |             |                               no `ResourceUsage` in `agents`
+   |     |             no `Priority` in `agents`
+   |     no `HealthStatus` in `agents`
+   |
+   = note: unresolved item `crate::agents::executive::coordination::AgentContext` exists but is inaccessible
+   = help: consider importing this type alias instead:
+           agentaskit_shared::AgentId
+   = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+   = help: consider importing this struct instead:
+           agentaskit_shared::AgentMessage
+   = help: consider importing this struct instead:
+           agentaskit_shared::AgentMetadata
+   = help: consider importing this enum instead:
+           crate::workflows::seven_phase::phase_two::AgentRole
+   = help: consider importing one of these enums instead:
+           crate::monitoring::HealthStatus
+           agentaskit_shared::HealthStatus
+   = help: consider importing one of these items instead:
+           crate::Priority
+           crate::agents::specialized::learning_agent::PolicyType::Priority
+           crate::communication::Priority
+           agentaskit_shared::Priority
+   = help: consider importing one of these structs instead:
+           crate::monitoring::ResourceUsage
+           crate::workflows::seven_phase::phase_three::ResourceUsage
+help: a similar name exists in the module
+   |
+11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+11 +     Agent, AgentContext, Agent, AgentMessage, AgentMetadata, AgentRole, AgentState,
+   |
+help: a similar name exists in the module
+   |
+11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+11 +     Agent, AgentContext, AgentId, AgentManager, AgentMetadata, AgentRole, AgentState,
+   |
+help: a similar name exists in the module
+   |
+11 -     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
+11 +     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+   |
+
+error[E0432]: unresolved imports `crate::agents::AgentCapability`, `crate::agents::AgentError`, `crate::agents::AgentMessage`, `crate::agents::AgentResult`, `crate::agents::TaskResult`, `crate::agents::TaskStatus`, `crate::agents::MessageId`, `crate::agents::AgentId`, `crate::agents::ResourceUsage`, `crate::agents::AgentMetadata`, `crate::agents::HealthStatus`, `crate::agents::AlertSeverity`
+ --> core/src/agents/specialized/security_specialist_agent.rs:5:28
+  |
+5 | ...t, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskResult, TaskStatus, MessageId, AgentId, ResourceUsage, AgentMetadata, HealthStatus, AlertSeverity};
+  |       ^^^^^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^
+  |       |                |           |             |                  |           |           |          |        |              |
+  |       |                |           |             |                  |           |           |          |        |              no `AgentMetadata` in `agents`
+  |       |                |           |             |                  |           |           |          |        no `ResourceUsage` in `agents`
+  |       |                |           |             |                  |           |           |          no `AgentId` in `agents`
+  |       |                |           |             |                  |           |           no `MessageId` in `agents`
+  |       |                |           |             |                  |           no `TaskStatus` in `agents`
+  |       |                |           |             |                  no `TaskResult` in `agents`
+  |       |                |           |             no `AgentResult` in `agents`
+  |       |                |           no `AgentMessage` in `agents`
+  |       |                no `AgentError` in `agents`
+  |       no `AgentCapability` in `agents`
+  |
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMessage
+  = help: consider importing one of these enums instead:
+          crate::TaskStatus
+          agentaskit_shared::TaskStatus
+  = help: consider importing this type alias instead:
+          agentaskit_shared::AgentId
+  = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+  = help: consider importing one of these structs instead:
+          crate::monitoring::ResourceUsage
+          crate::workflows::seven_phase::phase_three::ResourceUsage
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMetadata
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskResult, TaskStatus, MessageId, AgentId, ResourceUsage, AgentMetadata, HealthStatus, AlertSeverity};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentManager, AgentResult, Task, TaskResult, TaskStatus, MessageId, AgentId, ResourceUsage, AgentMetadata, HealthStatus, AlertSeverity};
+  |
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskResult, TaskStatus, MessageId, AgentId, ResourceUsage, AgentMetadata, HealthStatus, AlertSeverity};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskResult, TaskStatus, MessageId, Agent, ResourceUsage, AgentMetadata, HealthStatus, AlertSeverity};
+  |
+
+error[E0432]: unresolved imports `crate::agents::AgentCapability`, `crate::agents::AgentError`, `crate::agents::AgentMessage`, `crate::agents::AgentResult`, `crate::agents::TaskStatus`, `crate::agents::AgentMetadata`, `crate::agents::MessageId`, `crate::agents::TaskResult`, `crate::agents::AgentState`, `crate::agents::HealthStatus`
+ --> core/src/agents/specialized/data_analytics_agent.rs:5:28
+  |
+5 | ...t, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, HealthStatus};
+  |       ^^^^^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^^^ no `HealthStatus` in `agents`
+  |       |                |           |             |                  |           |              |          |           |
+  |       |                |           |             |                  |           |              |          |           no `AgentState` in `agents`
+  |       |                |           |             |                  |           |              |          no `TaskResult` in `agents`
+  |       |                |           |             |                  |           |              no `MessageId` in `agents`
+  |       |                |           |             |                  |           no `AgentMetadata` in `agents`
+  |       |                |           |             |                  no `TaskStatus` in `agents`
+  |       |                |           |             no `AgentResult` in `agents`
+  |       |                |           no `AgentMessage` in `agents`
+  |       |                no `AgentError` in `agents`
+  |       no `AgentCapability` in `agents`
+  |
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMessage
+  = help: consider importing one of these enums instead:
+          crate::TaskStatus
+          agentaskit_shared::TaskStatus
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMetadata
+  = help: consider importing one of these enums instead:
+          crate::monitoring::HealthStatus
+          agentaskit_shared::HealthStatus
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, HealthStatus};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentManager, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, HealthStatus};
+  |
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, HealthStatus};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentStatus, HealthStatus};
+  |
+
+error[E0432]: unresolved imports `crate::agents::AgentCapability`, `crate::agents::AgentError`, `crate::agents::AgentMessage`, `crate::agents::AgentResult`, `crate::agents::TaskStatus`, `crate::agents::AgentMetadata`, `crate::agents::MessageId`, `crate::agents::TaskResult`, `crate::agents::AgentState`, `crate::agents::AgentRole`, `crate::agents::AgentId`, `crate::agents::Priority`, `crate::agents::HealthStatus`
+ --> core/src/agents/specialized/integration_agent.rs:5:28
+  |
+5 | ...t, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, AgentRole, AgentId, Priority, ResourceRequirements, HealthStatus};
+  |       ^^^^^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^        ^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^  ^^^^^^^^                        ^^^^^^^^^^^^
+  |       |                |           |             |                  |           |              |          |           |           |
+  |       |                |           |             |                  |           |              |          |           |           no `AgentRole` in `agents`
+  |       |                |           |             |                  |           |              |          |           no `AgentState` in `agents`
+  |       |                |           |             |                  |           |              |          no `TaskResult` in `agents`
+  |       |                |           |             |                  |           |              no `MessageId` in `agents`
+  |       |                |           |             |                  |           no `AgentMetadata` in `agents`
+  |       |                |           |             |                  no `TaskStatus` in `agents`
+  |       |                |           |             no `AgentResult` in `agents`
+  |       |                |           no `AgentMessage` in `agents`
+  |       |                no `AgentError` in `agents`
+  |       no `AgentCapability` in `agents`
+  |
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMessage
+  = help: consider importing one of these enums instead:
+          crate::TaskStatus
+          agentaskit_shared::TaskStatus
+  = help: consider importing this struct instead:
+          agentaskit_shared::AgentMetadata
+  = help: consider importing this enum instead:
+          crate::workflows::seven_phase::phase_two::AgentRole
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, AgentRole, AgentId, Priority, ResourceRequirements, HealthStatus};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentManager, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, AgentRole, AgentId, Priority, ResourceRequirements, HealthStatus};
+  |
+help: a similar name exists in the module
+  |
+5 - use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentState, AgentRole, AgentId, Priority, ResourceRequirements, HealthStatus};
+5 + use crate::agents::{Agent, AgentCapability, AgentError, AgentMessage, AgentResult, Task, TaskStatus, AgentMetadata, MessageId, TaskResult, AgentStatus, AgentRole, AgentId, Priority, ResourceRequirements, HealthStatus};
+  |
+
+error[E0432]: unresolved import `crate::agents::utils`
+ --> core/src/agents/specialized/integration_agent.rs:6:5
+  |
+6 | use crate::agents::utils;
+  |     ^^^^^^^^^^^^^^^^^^^^ no `utils` in `agents`
+  |
+help: consider importing one of these modules instead
+  |
+6 | use crate::agents::specialized::utils;
+  |                    +++++++++++++
+6 - use crate::agents::utils;
+6 + use agentaskit_shared::utils;
+  |
+6 - use crate::agents::utils;
+6 + use crossbeam::utils;
+  |
+
+error[E0432]: unresolved imports `crate::agents::AgentError`, `crate::agents::AgentResult`, `crate::agents::AgentId`, `crate::agents::AgentMessage`
+  --> core/src/agents/specialized/mod.rs:23:28
+   |
+23 | use crate::agents::{Agent, AgentError, AgentResult, Task, AgentId, AgentMessage};
+   |                            ^^^^^^^^^^  ^^^^^^^^^^^        ^^^^^^^  ^^^^^^^^^^^^ no `AgentMessage` in `agents`
+   |                            |           |                  |
+   |                            |           |                  no `AgentId` in `agents`
+   |                            |           no `AgentResult` in `agents`
+   |                            no `AgentError` in `agents`
+   |
+   = help: consider importing this type alias instead:
+           agentaskit_shared::AgentId
+   = note: unresolved item `crate::agents::executive::coordination::AgentId` exists but is inaccessible
+   = help: consider importing this struct instead:
+           agentaskit_shared::AgentMessage
+help: a similar name exists in the module
+   |
+23 - use crate::agents::{Agent, AgentError, AgentResult, Task, AgentId, AgentMessage};
+23 + use crate::agents::{Agent, AgentError, AgentResult, Task, Agent, AgentMessage};
+   |
+help: a similar name exists in the module
+   |
+23 - use crate::agents::{Agent, AgentError, AgentResult, Task, AgentId, AgentMessage};
+23 + use crate::agents::{Agent, AgentError, AgentResult, Task, AgentId, AgentManager};
+   |
+
+error[E0432]: unresolved imports `super::AgentId`, `super::AgentMessage`, `super::AgentRegistry`, `super::BroadcastScope`, `super::MessageId`, `super::Priority`
+   --> core/src/agents/communication/mod.rs:10:13
+    |
+ 10 | use super::{AgentId, AgentMessage, AgentRegistry, BroadcastScope, MessageId, Priority};
+    |             ^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^ no `Priority` in `agents`
+    |             |        |             |              |               |
+    |             |        |             |              |               no `MessageId` in `agents`
+    |             |        |             |              no `BroadcastScope` in `agents`
+    |             |        |             no `AgentRegistry` in `agents`
+    |             |        no `AgentMessage` in `agents`
+    |             no `AgentId` in `agents`
+    |
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::specialized::utils::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = note: unresolved item `crate::agents::specialized::utils::AgentMessage` exists but is inaccessible
+    = help: consider importing this struct instead:
+            crate::workflows::seven_phase::phase_two::AgentRegistry
+    = note: unresolved item `crate::agents::executive::coordination::AgentRegistry` exists but is inaccessible
+    = help: consider importing one of these enums instead:
+            crate::Priority
+            crate::communication::Priority
+            agentaskit_shared::Priority
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+help: a similar name exists in the module
+    |
+ 10 - use super::{AgentId, AgentMessage, AgentRegistry, BroadcastScope, MessageId, Priority};
+ 10 + use super::{Agent, AgentMessage, AgentRegistry, BroadcastScope, MessageId, Priority};
+    |
+help: a similar name exists in the module
+    |
+ 10 - use super::{AgentId, AgentMessage, AgentRegistry, BroadcastScope, MessageId, Priority};
+ 10 + use super::{AgentId, AgentManager, AgentRegistry, BroadcastScope, MessageId, Priority};
+    |
+
+error[E0432]: unresolved imports `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::TaskStatus`
+  --> core/src/workflows/seven_phase/mod.rs:23:21
+   |
+23 | use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+   |                     ^^^^^^^  ^^^^^^^^^^^^        ^^^^^^^^^^ no `TaskStatus` in `agents`
+   |                     |        |
+   |                     |        no `AgentMessage` in `agents`
+   |                     no `AgentId` in `agents`
+   |
+   = help: consider importing this type alias instead:
+           agentaskit_shared::AgentId
+   = note: unresolved item `crate::agents::specialized::utils::AgentId` exists but is inaccessible
+   = help: consider importing this struct instead:
+           agentaskit_shared::AgentMessage
+   = note: unresolved item `crate::agents::specialized::utils::AgentMessage` exists but is inaccessible
+   = help: consider importing one of these enums instead:
+           crate::TaskStatus
+           agentaskit_shared::TaskStatus
+help: a similar name exists in the module
+   |
+23 - use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+23 + use crate::agents::{Agent, AgentMessage, Task, TaskStatus};
+   |
+help: a similar name exists in the module
+   |
+23 - use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+23 + use crate::agents::{AgentId, AgentManager, Task, TaskStatus};
+   |
+
+error[E0432]: unresolved import `crate::agents::AgentId`
+  --> core/src/workflows/seven_phase/phase_two.rs:14:5
+   |
+14 | use crate::agents::AgentId;
+   |     ^^^^^^^^^^^^^^^^^^^^^^ no `AgentId` in `agents`
+   |
+help: a similar name exists in the module
+   |
+14 - use crate::agents::AgentId;
+14 + use crate::agents::Agent;
+   |
+help: consider importing one of these items instead
+   |
+14 - use crate::agents::AgentId;
+14 + use crate::workflows::seven_phase::AgentId;
+   |
+14 - use crate::agents::AgentId;
+14 + use agentaskit_shared::AgentId;
+   |
+
+error[E0432]: unresolved import `crate::agents::AgentId`
+  --> core/src/workflows/seven_phase/phase_three.rs:13:5
+   |
+13 | use crate::agents::AgentId;
+   |     ^^^^^^^^^^^^^^^^^^^^^^ no `AgentId` in `agents`
+   |
+help: a similar name exists in the module
+   |
+13 - use crate::agents::AgentId;
+13 + use crate::agents::Agent;
+   |
+help: consider importing one of these items instead
+   |
+13 - use crate::agents::AgentId;
+13 + use crate::workflows::seven_phase::AgentId;
+   |
+13 - use crate::agents::AgentId;
+13 + use agentaskit_shared::AgentId;
+   |
+
+error[E0432]: unresolved import `crate::agents::AgentId`
+  --> core/src/workflows/seven_phase/phase_four.rs:13:5
+   |
+13 | use crate::agents::AgentId;
+   |     ^^^^^^^^^^^^^^^^^^^^^^ no `AgentId` in `agents`
+   |
+help: a similar name exists in the module
+   |
+13 - use crate::agents::AgentId;
+13 + use crate::agents::Agent;
+   |
+help: consider importing one of these items instead
+   |
+13 - use crate::agents::AgentId;
+13 + use crate::workflows::seven_phase::AgentId;
+   |
+13 - use crate::agents::AgentId;
+13 + use agentaskit_shared::AgentId;
+   |
+
+error[E0432]: unresolved imports `crate::agents::AgentId`, `crate::agents::AgentMessage`, `crate::agents::TaskStatus`
+  --> core/src/workflows/mod.rs:31:21
+   |
+31 | use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+   |                     ^^^^^^^  ^^^^^^^^^^^^        ^^^^^^^^^^ no `TaskStatus` in `agents`
+   |                     |        |
+   |                     |        no `AgentMessage` in `agents`
+   |                     no `AgentId` in `agents`
+   |
+   = help: consider importing this type alias instead:
+           agentaskit_shared::AgentId
+   = note: unresolved item `crate::agents::specialized::utils::AgentId` exists but is inaccessible
+   = help: consider importing this struct instead:
+           agentaskit_shared::AgentMessage
+   = note: unresolved item `crate::agents::specialized::utils::AgentMessage` exists but is inaccessible
+   = help: consider importing one of these enums instead:
+           crate::TaskStatus
+           agentaskit_shared::TaskStatus
+help: a similar name exists in the module
+   |
+31 - use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+31 + use crate::agents::{Agent, AgentMessage, Task, TaskStatus};
+   |
+help: a similar name exists in the module
+   |
+31 - use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+31 + use crate::agents::{AgentId, AgentManager, Task, TaskStatus};
+   |
+
+error[E0432]: unresolved import `deliverable_manager::Priority`
+   --> core/src/workflows/mod.rs:639:13
+    |
+639 |         use deliverable_manager::Priority as DP;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `Priority` in `workflows::deliverable_manager`
+    |
+note: variant `crate::agents::specialized::learning_agent::PolicyType::Priority` exists but is inaccessible
+   --> core/src/agents/specialized/learning_agent.rs:787:5
+    |
+787 |     Priority,
+    |     ^^^^^^^^ not accessible
+help: consider importing one of these enums instead
+    |
+639 -         use deliverable_manager::Priority as DP;
+639 +         use crate::Priority as DP;
+    |
+639 -         use deliverable_manager::Priority as DP;
+639 +         use crate::communication::Priority as DP;
+    |
+639 -         use deliverable_manager::Priority as DP;
+639 +         use agentaskit_shared::Priority as DP;
+    |
+
+error[E0432]: unresolved imports `crate::agents::TaskStatus`, `crate::agents::AgentId`, `crate::agents::AgentMessage`
+   --> core/src/workflows/mod.rs:859:31
+    |
+859 | pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};
+    |                               ^^^^^^^^^^  ^^^^^^^  ^^^^^^^^^^^^ no `AgentMessage` in `agents`
+    |                               |           |
+    |                               |           no `AgentId` in `agents`
+    |                               no `TaskStatus` in `agents`
+    |
+    = help: consider importing one of these enums instead:
+            crate::TaskStatus
+            agentaskit_shared::TaskStatus
+    = help: consider importing this type alias instead:
+            agentaskit_shared::AgentId
+    = note: unresolved item `crate::agents::specialized::utils::AgentId` exists but is inaccessible
+    = help: consider importing this struct instead:
+            agentaskit_shared::AgentMessage
+    = note: unresolved item `crate::agents::specialized::utils::AgentMessage` exists but is inaccessible
+help: a similar name exists in the module
+    |
+859 - pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};
+859 + pub use crate::agents::{Task, TaskStatus, Agent, AgentMessage};
+    |
+help: a similar name exists in the module
+    |
+859 - pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};
+859 + pub use crate::agents::{Task, TaskStatus, AgentId, AgentManager};
+    |
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/board/strategy_board_agent.rs:735:40
+    |
+735 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/board/operations_board_agent.rs:1112:40
+     |
+1112 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/board/finance_board_agent.rs:973:40
+    |
+973 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/board/legal_compliance_board_agent.rs:1063:40
+     |
+1063 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/board/digest_agent.rs:1226:40
+     |
+1226 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/executive/system_orchestrator.rs:781:40
+    |
+781 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/executive/resource_allocator.rs:986:40
+    |
+986 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/executive/priority_manager.rs:982:40
+    |
+982 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/executive/emergency_responder.rs:1159:40
+     |
+1159 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentState` in `agents`
+   --> core/src/agents/executive/mod.rs:153:58
+    |
+153 |             .filter(|h| matches!(h.state, crate::agents::AgentState::Active))
+    |                                                          ^^^^^^^^^^
+    |                                                          |
+    |                                                          could not find `AgentState` in `agents`
+    |                                                          help: an enum with a similar name exists: `AgentStatus`
+
+error[E0433]: failed to resolve: could not find `BroadcastScope` in `agents`
+   --> core/src/agents/executive/mod.rs:285:35
+    |
+285 |             scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
+    |                                   ^^^^^^^^^^^^^^ could not find `BroadcastScope` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+   --> core/src/agents/specialized/code_generation_agent.rs:925:40
+    |
+925 |                     id: crate::agents::MessageId::new(),
+    |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/specialized/testing_agent.rs:1045:40
+     |
+1045 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/specialized/deployment_agent.rs:1548:40
+     |
+1548 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/specialized/monitoring_agent.rs:1209:40
+     |
+1209 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `MessageId` in `agents`
+    --> core/src/agents/specialized/learning_agent.rs:1282:40
+     |
+1282 |                     id: crate::agents::MessageId::new(),
+     |                                        ^^^^^^^^^ could not find `MessageId` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentState` in `agents`
+   --> core/src/agents/specialized/security_specialist_agent.rs:975:28
+    |
+975 |             crate::agents::AgentState::Active
+    |                            ^^^^^^^^^^
+    |                            |
+    |                            could not find `AgentState` in `agents`
+    |                            help: an enum with a similar name exists: `AgentStatus`
+
+error[E0433]: failed to resolve: could not find `AgentState` in `agents`
+   --> core/src/agents/specialized/security_specialist_agent.rs:977:28
+    |
+977 |             crate::agents::AgentState::Idle
+    |                            ^^^^^^^^^^
+    |                            |
+    |                            could not find `AgentState` in `agents`
+    |                            help: an enum with a similar name exists: `AgentStatus`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:302:28
+    |
+302 |             crate::agents::AgentCapability::CodeGeneration => Some("code_generation"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:303:28
+    |
+303 |             crate::agents::AgentCapability::Testing => Some("testing"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:304:28
+    |
+304 |             crate::agents::AgentCapability::Deployment => Some("deployment"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:305:28
+    |
+305 |             crate::agents::AgentCapability::Monitoring => Some("monitoring"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:306:28
+    |
+306 |             crate::agents::AgentCapability::MachineLearning => Some("learning"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:307:28
+    |
+307 |             crate::agents::AgentCapability::SecurityScanning => Some("security_specialist"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:308:28
+    |
+308 |             crate::agents::AgentCapability::DataProcessing => Some("data_analytics"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0433]: failed to resolve: could not find `AgentCapability` in `agents`
+   --> core/src/agents/specialized/mod.rs:309:28
+    |
+309 |             crate::agents::AgentCapability::SystemIntegration => Some("integration"),
+    |                            ^^^^^^^^^^^^^^^ could not find `AgentCapability` in `agents`
+
+error[E0106]: missing lifetime specifier
+   --> core/src/workflows/sop_parser.rs:335:67
+    |
+335 | pub fn get_procedure_by_id(sop: &SOPDocument, id: &str) -> Option<&SOPProcedure> {
+    |                                 ------------      ----            ^ expected named lifetime parameter
+    |
+    = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `sop` or `id`
+help: consider introducing a named lifetime parameter
+    |
+335 | pub fn get_procedure_by_id<'a>(sop: &'a SOPDocument, id: &'a str) -> Option<&'a SOPProcedure> {
+    |                           ++++       ++                   ++                 ++
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/board/strategy_board_agent.rs:659:6
+    |
+659 | impl Agent for StrategyBoardAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/board/operations_board_agent.rs:1036:6
+     |
+1036 | impl Agent for OperationsBoardAgent {
+     |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/board/finance_board_agent.rs:879:6
+    |
+879 | impl Agent for FinanceBoardAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/board/legal_compliance_board_agent.rs:983:6
+    |
+983 | impl Agent for LegalComplianceBoardAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/board/digest_agent.rs:1128:6
+     |
+1128 | impl Agent for DigestAgent {
+     |      ^^^^^ not a trait
+
+error[E0433]: failed to resolve: could not find `ResourceUsage` in `agents`
+   --> core/src/agents/board/mod.rs:607:52
+    |
+607 |                     resource_usage: crate::agents::ResourceUsage::default(),
+    |                                                    ^^^^^^^^^^^^^ could not find `ResourceUsage` in `agents`
+    |
+help: consider importing one of these structs
+    |
+  7 + use crate::monitoring::ResourceUsage;
+    |
+  7 + use crate::workflows::seven_phase::phase_three::ResourceUsage;
+    |
+help: if you import `ResourceUsage`, refer to it directly
+    |
+607 -                     resource_usage: crate::agents::ResourceUsage::default(),
+607 +                     resource_usage: ResourceUsage::default(),
+    |
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/executive/noa_commander.rs:1129:6
+     |
+1129 | impl Agent for NoaCommander {
+     |      ^^^^^ not a trait
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `agents`
+    --> core/src/agents/executive/noa_commander.rs:1285:54
+     |
+1285 |                 if matches!(severity, crate::agents::AlertSeverity::Emergency | crate::agents::AlertSeverity::Critical) {
+     |                                                      ^^^^^^^^^^^^^ could not find `AlertSeverity` in `agents`
+     |
+note: these enums exist but are inaccessible
+    --> core/src/agents/executive/resource_allocator.rs:481:1
+     |
+ 481 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+     |
+    ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+     |
+ 671 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `agents`
+    --> core/src/agents/executive/noa_commander.rs:1285:96
+     |
+1285 |                 if matches!(severity, crate::agents::AlertSeverity::Emergency | crate::agents::AlertSeverity::Critical) {
+     |                                                                                                ^^^^^^^^^^^^^ could not find `AlertSeverity` in `agents`
+     |
+note: these enums exist but are inaccessible
+    --> core/src/agents/executive/resource_allocator.rs:481:1
+     |
+ 481 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+     |
+    ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+     |
+ 671 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/executive/system_orchestrator.rs:684:6
+    |
+684 | impl Agent for SystemOrchestrator {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/executive/resource_allocator.rs:900:6
+    |
+900 | impl Agent for ResourceAllocator {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/executive/priority_manager.rs:883:6
+    |
+883 | impl Agent for PriorityManager {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/executive/emergency_responder.rs:1070:6
+     |
+1070 | impl Agent for EmergencyResponder {
+     |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+  --> core/src/agents/executive/mod.rs:31:25
+   |
+31 |     agents: Vec<Box<dyn Agent>>,
+   |                         ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+  --> core/src/agents/executive/mod.rs:84:37
+   |
+84 |         let mut agents: Vec<Box<dyn Agent>> = vec![
+   |                                     ^^^^^ not a trait
+
+error[E0412]: cannot find type `HealthStatus` in module `crate::agents`
+   --> core/src/agents/executive/mod.rs:136:67
+    |
+136 |     pub async fn health_check(&self) -> Result<Vec<crate::agents::HealthStatus>> {
+    |                                                                   ^^^^^^^^^^^^ not found in `crate::agents`
+    |
+help: consider importing one of these enums
+    |
+  7 + use crate::monitoring::HealthStatus;
+    |
+  7 + use agentaskit_shared::HealthStatus;
+    |
+help: if you import `HealthStatus`, refer to it directly
+    |
+136 -     pub async fn health_check(&self) -> Result<Vec<crate::agents::HealthStatus>> {
+136 +     pub async fn health_check(&self) -> Result<Vec<HealthStatus>> {
+    |
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/executive/mod.rs:188:64
+    |
+188 |     pub fn get_agent_by_name(&self, name: &str) -> Option<&dyn Agent> {
+    |                                                                ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/executive/mod.rs:202:60
+    |
+202 |                     let ptr = agent.as_ref() as *const dyn Agent;
+    |                                                            ^^^^^ not a trait
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `agents`
+   --> core/src/agents/executive/mod.rs:273:38
+    |
+273 |             severity: crate::agents::AlertSeverity::Emergency,
+    |                                      ^^^^^^^^^^^^^ could not find `AlertSeverity` in `agents`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AgentRole` in `agents`
+   --> core/src/agents/executive/mod.rs:285:71
+    |
+285 |             scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
+    |                                                                       ^^^^^^^^^ could not find `AgentRole` in `agents`
+    |
+help: consider importing this enum
+    |
+224 +     use crate::workflows::seven_phase::phase_two::AgentRole;
+    |
+help: if you import `AgentRole`, refer to it directly
+    |
+285 -             scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
+285 +             scope: crate::agents::BroadcastScope::Role(AgentRole::Executive),
+    |
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/specialized/code_generation_agent.rs:841:6
+    |
+841 | impl Agent for CodeGenerationAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/specialized/testing_agent.rs:978:6
+    |
+978 | impl Agent for TestingAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/specialized/deployment_agent.rs:1483:6
+     |
+1483 | impl Agent for DeploymentAgent {
+     |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/specialized/monitoring_agent.rs:1111:6
+     |
+1111 | impl Agent for MonitoringAgent {
+     |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+    --> core/src/agents/specialized/learning_agent.rs:1213:6
+     |
+1213 | impl Agent for LearningAgent {
+     |      ^^^^^ not a trait
+
+error[E0433]: failed to resolve: could not find `AgentRole` in `agents`
+   --> core/src/agents/specialized/security_specialist_agent.rs:559:34
+    |
+559 |             role: crate::agents::AgentRole::Specialized,
+    |                                  ^^^^^^^^^ could not find `AgentRole` in `agents`
+    |
+help: consider importing this enum
+    |
+  5 + use crate::workflows::seven_phase::phase_two::AgentRole;
+    |
+help: if you import `AgentRole`, refer to it directly
+    |
+559 -             role: crate::agents::AgentRole::Specialized,
+559 +             role: AgentRole::Specialized,
+    |
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/specialized/security_specialist_agent.rs:908:6
+    |
+908 | impl Agent for SecuritySpecialistAgent {
+    |      ^^^^^ not a trait
+
+error[E0412]: cannot find type `AgentState` in module `crate::agents`
+   --> core/src/agents/specialized/security_specialist_agent.rs:972:45
+    |
+972 |     async fn state(&self) -> crate::agents::AgentState {
+    |                                             ^^^^^^^^^^ help: an enum with a similar name exists: `AgentStatus`
+    |
+   ::: core/src/agents/mod.rs:49:1
+    |
+ 49 | pub enum AgentStatus {
+    | -------------------- similarly named enum `AgentStatus` defined here
+
+error[E0422]: cannot find struct, variant or union type `HealthStatus` in module `crate::agents`
+    --> core/src/agents/specialized/security_specialist_agent.rs:1000:27
+     |
+1000 |         Ok(crate::agents::HealthStatus {
+     |                           ^^^^^^^^^^^^ not found in `crate::agents`
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `agents`
+    --> core/src/agents/specialized/security_specialist_agent.rs:1165:54
+     |
+1165 |                 if matches!(severity, crate::agents::AlertSeverity::Critical | crate::agents::AlertSeverity::Emergency) {
+     |                                                      ^^^^^^^^^^^^^ could not find `AlertSeverity` in `agents`
+     |
+note: these enums exist but are inaccessible
+    --> core/src/agents/executive/resource_allocator.rs:481:1
+     |
+ 481 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+     |
+    ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+     |
+ 671 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `agents`
+    --> core/src/agents/specialized/security_specialist_agent.rs:1165:95
+     |
+1165 |                 if matches!(severity, crate::agents::AlertSeverity::Critical | crate::agents::AlertSeverity::Emergency) {
+     |                                                                                               ^^^^^^^^^^^^^ could not find `AlertSeverity` in `agents`
+     |
+note: these enums exist but are inaccessible
+    --> core/src/agents/executive/resource_allocator.rs:481:1
+     |
+ 481 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+     |
+    ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+     |
+ 671 | enum AlertSeverity {
+     | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/specialized/data_analytics_agent.rs:881:6
+    |
+881 | impl Agent for DataAnalyticsAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+   --> core/src/agents/specialized/integration_agent.rs:885:6
+    |
+885 | impl Agent for IntegrationAgent {
+    |      ^^^^^ not a trait
+
+error[E0404]: expected trait, found struct `Agent`
+  --> core/src/agents/specialized/mod.rs:33:46
+   |
+33 |     agents: Arc<RwLock<HashMap<Uuid, Box<dyn Agent>>>>,
+   |                                              ^^^^^ not a trait
+
+error[E0412]: cannot find type `AgentCapability` in module `crate::agents`
+   --> core/src/agents/specialized/mod.rs:300:64
+    |
+300 |     pub fn get_agent_for_capability(capability: crate::agents::AgentCapability) -> Option<&'static str> {
+    |                                                                ^^^^^^^^^^^^^^^ not found in `crate::agents`
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `super`
+   --> core/src/agents/communication/mod.rs:117:24
+    |
+117 |                 super::AlertSeverity::Emergency => 0,
+    |                        ^^^^^^^^^^^^^ could not find `AlertSeverity` in `super`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `super`
+   --> core/src/agents/communication/mod.rs:118:24
+    |
+118 |                 super::AlertSeverity::Critical => 1,
+    |                        ^^^^^^^^^^^^^ could not find `AlertSeverity` in `super`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `super`
+   --> core/src/agents/communication/mod.rs:119:24
+    |
+119 |                 super::AlertSeverity::Warning => 2,
+    |                        ^^^^^^^^^^^^^ could not find `AlertSeverity` in `super`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `super`
+   --> core/src/agents/communication/mod.rs:120:24
+    |
+120 |                 super::AlertSeverity::Info => 3,
+    |                        ^^^^^^^^^^^^^ could not find `AlertSeverity` in `super`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0433]: failed to resolve: could not find `AlertSeverity` in `super`
+   --> core/src/agents/communication/mod.rs:121:24
+    |
+121 |                 super::AlertSeverity::Debug => 4,
+    |                        ^^^^^^^^^^^^^ could not find `AlertSeverity` in `super`
+    |
+note: these enums exist but are inaccessible
+   --> core/src/agents/executive/resource_allocator.rs:481:1
+    |
+481 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::executive::resource_allocator::AlertSeverity`: not accessible
+    |
+   ::: core/src/agents/specialized/monitoring_agent.rs:671:1
+    |
+671 | enum AlertSeverity {
+    | ^^^^^^^^^^^^^^^^^^ `crate::agents::specialized::monitoring_agent::AlertSeverity`: not accessible
+
+error[E0412]: cannot find type `ResolvedLocation` in module `location_manager`
+   --> core/src/workflows/mod.rs:590:77
+    |
+590 |     async fn convert_to_target_location(&self, resolved: &location_manager::ResolvedLocation) -> Result<TargetLocation> {
+    |                                                                             ^^^^^^^^^^^^^^^^ not found in `location_manager`
+
+error[E0412]: cannot find type `Priority` in module `deliverable_manager`
+   --> core/src/workflows/mod.rs:638:112
+    |
+638 |     async fn convert_to_deliverable_priority(&self, priority: &RequestPriority) -> Result<deliverable_manager::Priority> {
+    |                                                                                                                ^^^^^^^^ not found in `deliverable_manager`
+    |
+help: consider importing one of these enums
+    |
+ 15 + use crate::Priority;
+    |
+ 15 + use crate::communication::Priority;
+    |
+ 15 + use agentaskit_shared::Priority;
+    |
+help: if you import `Priority`, refer to it directly
+    |
+638 -     async fn convert_to_deliverable_priority(&self, priority: &RequestPriority) -> Result<deliverable_manager::Priority> {
+638 +     async fn convert_to_deliverable_priority(&self, priority: &RequestPriority) -> Result<Priority> {
+    |
+
+error[E0603]: struct import `Task` is private
+  --> core/src/workflows/seven_phase/mod.rs:23:44
+   |
+23 | use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+   |                                            ^^^^ private struct import
+   |
+note: the struct import `Task` is defined here...
+  --> core/src/agents/mod.rs:18:5
+   |
+18 | use crate::orchestration::Task;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: ...and refers to the struct `Task` which is defined here
+  --> core/src/orchestration/mod.rs:29:1
+   |
+29 | pub struct Task {
+   | ^^^^^^^^^^^^^^^ you could import this directly
+help: import `Task` directly
+   |
+23 | use crate::agents::{AgentId, AgentMessage, orchestration::Task, TaskStatus};
+   |                                            +++++++++++++++
+
+error[E0603]: enum import `DeliverableType` is private
+   --> core/src/workflows/mod.rs:15:31
+    |
+ 15 | pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
+    |                               ^^^^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `DeliverableType` is defined here...
+   --> core/src/workflows/deliverable_manager.rs:14:18
+    |
+ 14 |     Deliverable, DeliverableType, TargetLocation, LocationType,
+    |                  ^^^^^^^^^^^^^^^
+note: ...and refers to the enum `DeliverableType` which is defined here
+   --> core/src/workflows/mod.rs:271:1
+    |
+271 | pub enum DeliverableType {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: import `DeliverableType` directly
+    |
+ 15 | pub use deliverable_manager::{workflows::DeliverableType, LocationType, TargetLocation};
+    |                               +++++++++++
+
+error[E0603]: enum import `LocationType` is private
+   --> core/src/workflows/mod.rs:15:48
+    |
+ 15 | pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
+    |                                                ^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `LocationType` is defined here...
+   --> core/src/workflows/deliverable_manager.rs:14:51
+    |
+ 14 |     Deliverable, DeliverableType, TargetLocation, LocationType,
+    |                                                   ^^^^^^^^^^^^
+note: ...and refers to the enum `LocationType` which is defined here
+   --> core/src/workflows/mod.rs:294:1
+    |
+294 | pub enum LocationType {
+    | ^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: import `LocationType` directly
+    |
+ 15 | pub use deliverable_manager::{DeliverableType, workflows::LocationType, TargetLocation};
+    |                                                +++++++++++
+
+error[E0603]: struct import `TargetLocation` is private
+   --> core/src/workflows/mod.rs:15:62
+    |
+ 15 | pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
+    |                                                              ^^^^^^^^^^^^^^ private struct import
+    |
+note: the struct import `TargetLocation` is defined here...
+   --> core/src/workflows/deliverable_manager.rs:14:35
+    |
+ 14 |     Deliverable, DeliverableType, TargetLocation, LocationType,
+    |                                   ^^^^^^^^^^^^^^
+note: ...and refers to the struct `TargetLocation` which is defined here
+   --> core/src/workflows/mod.rs:284:1
+    |
+284 | pub struct TargetLocation {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: import `TargetLocation` directly
+    |
+ 15 | pub use deliverable_manager::{DeliverableType, LocationType, workflows::TargetLocation};
+    |                                                              +++++++++++
+
+error[E0603]: struct import `Task` is private
+  --> core/src/workflows/mod.rs:31:44
+   |
+31 | use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+   |                                            ^^^^ private struct import
+   |
+note: the struct import `Task` is defined here...
+  --> core/src/agents/mod.rs:18:5
+   |
+18 | use crate::orchestration::Task;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: ...and refers to the struct `Task` which is defined here
+  --> core/src/orchestration/mod.rs:29:1
+   |
+29 | pub struct Task {
+   | ^^^^^^^^^^^^^^^ you could import this directly
+help: import `Task` directly
+   |
+31 | use crate::agents::{AgentId, AgentMessage, orchestration::Task, TaskStatus};
+   |                                            +++++++++++++++
+
+error[E0603]: enum import `LocationType` is private
+   --> core/src/workflows/mod.rs:603:31
+    |
+603 |         use location_manager::LocationType as LM;
+    |                               ^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `LocationType` is defined here...
+   --> core/src/workflows/location_manager.rs:11:30
+    |
+ 11 | use super::{DeliverableType, LocationType, TargetLocation};
+    |                              ^^^^^^^^^^^^
+note: ...and refers to the enum `LocationType` which is defined here
+   --> core/src/workflows/mod.rs:294:1
+    |
+294 | pub enum LocationType {
+    | ^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: import `LocationType` directly
+    |
+603 -         use location_manager::LocationType as LM;
+603 +         use workflows::LocationType;
+    |
+
+error[E0603]: enum import `LocationType` is private
+   --> core/src/workflows/mod.rs:650:31
+    |
+650 |         use location_manager::LocationType as LM;
+    |                               ^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `LocationType` is defined here...
+   --> core/src/workflows/location_manager.rs:11:30
+    |
+ 11 | use super::{DeliverableType, LocationType, TargetLocation};
+    |                              ^^^^^^^^^^^^
+note: ...and refers to the enum `LocationType` which is defined here
+   --> core/src/workflows/mod.rs:294:1
+    |
+294 | pub enum LocationType {
+    | ^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: import `LocationType` directly
+    |
+650 -         use location_manager::LocationType as LM;
+650 +         use workflows::LocationType;
+    |
+
+error[E0603]: struct import `Task` is private
+   --> core/src/workflows/mod.rs:859:25
+    |
+859 | pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};
+    |                         ^^^^ private struct import
+    |
+note: the struct import `Task` is defined here...
+   --> core/src/agents/mod.rs:18:5
+    |
+ 18 | use crate::orchestration::Task;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: ...and refers to the struct `Task` which is defined here
+   --> core/src/orchestration/mod.rs:29:1
+    |
+ 29 | pub struct Task {
+    | ^^^^^^^^^^^^^^^ you could import this directly
+help: import `Task` directly
+    |
+859 | pub use crate::agents::{orchestration::Task, TaskStatus, AgentId, AgentMessage};
+    |                         +++++++++++++++
+
+error[E0603]: enum import `LocationType` is private
+   --> core/src/workflows/mod.rs:602:72
+    |
+602 |     async fn convert_location_type(&self, loc_type: &location_manager::LocationType) -> Result<LocationType> {
+    |                                                                        ^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `LocationType` is defined here...
+   --> core/src/workflows/location_manager.rs:11:30
+    |
+ 11 | use super::{DeliverableType, LocationType, TargetLocation};
+    |                              ^^^^^^^^^^^^
+note: ...and refers to the enum `LocationType` which is defined here
+   --> core/src/workflows/mod.rs:294:1
+    |
+294 | pub enum LocationType {
+    | ^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: consider importing this enum through its public re-export instead
+    |
+602 -     async fn convert_location_type(&self, loc_type: &location_manager::LocationType) -> Result<LocationType> {
+602 +     async fn convert_location_type(&self, loc_type: &crate::LocationType) -> Result<LocationType> {
+    |
+help: import `LocationType` directly
+    |
+602 -     async fn convert_location_type(&self, loc_type: &location_manager::LocationType) -> Result<LocationType> {
+602 +     async fn convert_location_type(&self, loc_type: &workflows::LocationType) -> Result<LocationType> {
+    |
+
+error[E0603]: enum import `LocationType` is private
+   --> core/src/workflows/mod.rs:649:86
+    |
+649 |     async fn get_organization_rules_for_location(&self, loc_type: &location_manager::LocationType) -> Result<Vec<String>> {
+    |                                                                                      ^^^^^^^^^^^^ private enum import
+    |
+note: the enum import `LocationType` is defined here...
+   --> core/src/workflows/location_manager.rs:11:30
+    |
+ 11 | use super::{DeliverableType, LocationType, TargetLocation};
+    |                              ^^^^^^^^^^^^
+note: ...and refers to the enum `LocationType` which is defined here
+   --> core/src/workflows/mod.rs:294:1
+    |
+294 | pub enum LocationType {
+    | ^^^^^^^^^^^^^^^^^^^^^ you could import this directly
+help: consider importing this enum through its public re-export instead
+    |
+649 -     async fn get_organization_rules_for_location(&self, loc_type: &location_manager::LocationType) -> Result<Vec<String>> {
+649 +     async fn get_organization_rules_for_location(&self, loc_type: &crate::LocationType) -> Result<Vec<String>> {
+    |
+help: import `LocationType` directly
+    |
+649 -     async fn get_organization_rules_for_location(&self, loc_type: &location_manager::LocationType) -> Result<Vec<String>> {
+649 +     async fn get_organization_rules_for_location(&self, loc_type: &workflows::LocationType) -> Result<Vec<String>> {
+    |
+
+warning: unused import: `uuid::Uuid`
+ --> core/src/agents/board/finance_board_agent.rs:8:5
+  |
+8 | use uuid::Uuid;
+  |     ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Agent`
+  --> core/src/agents/board/mod.rs:13:84
+   |
+13 | use crate::agents::{AgentId, AgentMessage, Priority, Task, TaskResult, TaskStatus, Agent};
+   |                                                                                    ^^^^^
+
+warning: unused import: `mpsc`
+ --> core/src/agents/executive/noa_commander.rs:7:19
+  |
+7 | use tokio::sync::{mpsc, RwLock};
+  |                   ^^^^
+
+warning: unused imports: `communication::CommunicationManager` and `specialized::integration_agent::MessageBroker`
+  --> core/src/agents/executive/noa_commander.rs:13:5
+   |
+13 |     communication::CommunicationManager,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |     specialized::integration_agent::MessageBroker,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mpsc`
+ --> core/src/agents/executive/system_orchestrator.rs:7:19
+  |
+7 | use tokio::sync::{mpsc, RwLock};
+  |                   ^^^^
+
+warning: unused import: `mpsc`
+ --> core/src/agents/executive/resource_allocator.rs:8:19
+  |
+8 | use tokio::sync::{mpsc, RwLock};
+  |                   ^^^^
+
+warning: unused import: `Reverse`
+ --> core/src/agents/executive/priority_manager.rs:5:26
+  |
+5 | use std::cmp::{Ordering, Reverse};
+  |                          ^^^^^^^
+
+warning: unused import: `mpsc`
+ --> core/src/agents/executive/priority_manager.rs:8:19
+  |
+8 | use tokio::sync::{mpsc, RwLock};
+  |                   ^^^^
+
+warning: unused import: `HashSet`
+ --> core/src/agents/executive/emergency_responder.rs:4:33
+  |
+4 | use std::collections::{HashMap, HashSet, VecDeque};
+  |                                 ^^^^^^^
+
+warning: unused import: `mpsc`
+ --> core/src/agents/executive/emergency_responder.rs:7:19
+  |
+7 | use tokio::sync::{mpsc, RwLock};
+  |                   ^^^^
+
+warning: variant `A_B_Testing` should have an upper camel case name
+  --> core/src/agents/specialized/deployment_agent.rs:77:5
+   |
+77 |     A_B_Testing,
+   |     ^^^^^^^^^^^ help: convert the identifier to upper camel case: `ABTesting`
+   |
+   = note: `#[warn(non_camel_case_types)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: variant `Budget_Exceeded` should have an upper camel case name
+   --> core/src/agents/specialized/deployment_agent.rs:960:5
+    |
+960 |     Budget_Exceeded,
+    |     ^^^^^^^^^^^^^^^ help: convert the identifier to upper camel case: `BudgetExceeded`
+
+warning: unused import: `warn`
+  --> core/src/agents/specialized/security_specialist_agent.rs:11:35
+   |
+11 | use tracing::{debug, error, info, warn};
+   |                                   ^^^^
+
+warning: unused import: `warn`
+  --> core/src/agents/specialized/data_analytics_agent.rs:12:35
+   |
+12 | use tracing::{debug, error, info, warn};
+   |                                   ^^^^
+
+warning: variant `ROC_AUC` should have an upper camel case name
+   --> core/src/agents/specialized/data_analytics_agent.rs:360:5
+    |
+360 |     ROC_AUC,
+    |     ^^^^^^^ help: convert the identifier to upper camel case: `RocAuc`
+
+warning: unused import: `warn`
+  --> core/src/agents/specialized/integration_agent.rs:12:35
+   |
+12 | use tracing::{debug, error, info, warn};
+   |                                   ^^^^
+
+warning: variant `gRPC` should have an upper camel case name
+   --> core/src/agents/specialized/integration_agent.rs:446:5
+    |
+446 |     gRPC,
+    |     ^^^^ help: convert the identifier to upper camel case: `GRpc`
+
+warning: variant `gRPC` should have an upper camel case name
+   --> core/src/agents/specialized/integration_agent.rs:501:5
+    |
+501 |     gRPC,
+    |     ^^^^ help: convert the identifier to upper camel case: `GRpc`
+
+warning: unused import: `Instant`
+ --> core/src/agents/communication/mod.rs:5:27
+  |
+5 | use std::time::{Duration, Instant};
+  |                           ^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+ --> core/src/agents/communication/mod.rs:7:5
+  |
+7 | use uuid::Uuid;
+  |     ^^^^^^^^^^
+
+warning: unused imports: `DateTime` and `Utc`
+ --> core/src/agents/communication/mod.rs:8:14
+  |
+8 | use chrono::{DateTime, Utc};
+  |              ^^^^^^^^  ^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> core/src/agents/mod.rs:10:5
+   |
+10 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `error`
+  --> core/src/agents/mod.rs:16:27
+   |
+16 | use tracing::{info, warn, error, debug};
+   |                           ^^^^^
+
+warning: unused import: `async_trait::async_trait`
+ --> core/src/orchestration/mod.rs:7:5
+  |
+7 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mpsc`
+  --> core/src/orchestration/mod.rs:11:27
+   |
+11 | use tokio::sync::{RwLock, mpsc};
+   |                           ^^^^
+
+warning: unused import: `async_trait::async_trait`
+ --> core/src/communication/mod.rs:2:5
+  |
+2 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `digest`
+ --> core/src/security/mod.rs:8:12
+  |
+8 | use ring::{digest, hmac};
+  |            ^^^^^^
+
+warning: unused imports: `error` and `warn`
+ --> core/src/security/mod.rs:9:21
+  |
+9 | use tracing::{info, warn, error, debug};
+  |                     ^^^^  ^^^^^
+
+warning: unused import: `Duration`
+ --> core/src/monitoring/mod.rs:7:29
+  |
+7 | use chrono::{DateTime, Utc, Duration};
+  |                             ^^^^^^^^
+
+warning: unused imports: `debug` and `warn`
+ --> core/src/monitoring/mod.rs:8:21
+  |
+8 | use tracing::{info, warn, error, debug};
+  |                     ^^^^         ^^^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> core/src/workflows/seven_phase/mod.rs:15:5
+   |
+15 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DateTime` and `Utc`
+  --> core/src/workflows/seven_phase/phase_two.rs:12:14
+   |
+12 | use chrono::{DateTime, Utc};
+   |              ^^^^^^^^  ^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> core/src/workflows/seven_phase/phase_four.rs:10:5
+   |
+10 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DateTime` and `Utc`
+  --> core/src/workflows/seven_phase/phase_four.rs:11:14
+   |
+11 | use chrono::{DateTime, Utc};
+   |              ^^^^^^^^  ^^^
+
+warning: unused imports: `DateTime` and `Utc`
+  --> core/src/workflows/seven_phase/phase_five.rs:11:14
+   |
+11 | use chrono::{DateTime, Utc};
+   |              ^^^^^^^^  ^^^
+
+warning: unused imports: `DateTime` and `Utc`
+  --> core/src/workflows/seven_phase/phase_seven.rs:11:14
+   |
+11 | use chrono::{DateTime, Utc};
+   |              ^^^^^^^^  ^^^
+
+warning: unused import: `Context`
+ --> core/src/workflows/sop_parser.rs:6:22
+  |
+6 | use anyhow::{Result, Context};
+  |                      ^^^^^^^
+
+warning: unused import: `Context`
+ --> core/src/workflows/methodology_engine.rs:6:22
+  |
+6 | use anyhow::{Result, Context};
+  |                      ^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+ --> core/src/workflows/methodology_engine.rs:8:5
+  |
+8 | use std::collections::HashMap;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ChatRequest`, `Deliverable`, `ExecutionStep`, `OptimizationTechnique`, `RequestType`, `TargetLocation`, and `VerificationProtocol`
+  --> core/src/workflows/methodology_engine.rs:11:5
+   |
+11 |     ChatRequest, DeconstructPhase, DiagnosePhase, DevelopPhase, DeliverPhase,
+   |     ^^^^^^^^^^^
+12 |     SpecificityLevel, ComplexityLevel, RequestType, OptimizationTechnique,
+   |                                        ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+13 |     VerificationProtocol, ExecutionStep, Deliverable, TargetLocation,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:140:18
+    |
+140 |         score += (entity_count.min(5) as f32 * 4.0);
+    |                  ^                                ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+140 -         score += (entity_count.min(5) as f32 * 4.0);
+140 +         score += entity_count.min(5) as f32 * 4.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:144:18
+    |
+144 |         score += (output_count.min(5) as f32 * 4.0);
+    |                  ^                                ^
+    |
+help: remove these parentheses
+    |
+144 -         score += (output_count.min(5) as f32 * 4.0);
+144 +         score += output_count.min(5) as f32 * 4.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:148:18
+    |
+148 |         score += (constraint_count.min(5) as f32 * 3.0);
+    |                  ^                                    ^
+    |
+help: remove these parentheses
+    |
+148 -         score += (constraint_count.min(5) as f32 * 3.0);
+148 +         score += constraint_count.min(5) as f32 * 3.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:166:18
+    |
+166 |         score += (phase.clarity_gaps.len().min(5) as f32 * 4.0);
+    |                  ^                                            ^
+    |
+help: remove these parentheses
+    |
+166 -         score += (phase.clarity_gaps.len().min(5) as f32 * 4.0);
+166 +         score += phase.clarity_gaps.len().min(5) as f32 * 4.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:169:18
+    |
+169 |         score += (phase.ambiguity_points.len().min(5) as f32 * 4.0);
+    |                  ^                                                ^
+    |
+help: remove these parentheses
+    |
+169 -         score += (phase.ambiguity_points.len().min(5) as f32 * 4.0);
+169 +         score += phase.ambiguity_points.len().min(5) as f32 * 4.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:183:18
+    |
+183 |         score += (phase.structure_needs.len().min(5) as f32 * 2.0);
+    |                  ^                                               ^
+    |
+help: remove these parentheses
+    |
+183 -         score += (phase.structure_needs.len().min(5) as f32 * 2.0);
+183 +         score += phase.structure_needs.len().min(5) as f32 * 2.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:205:18
+    |
+205 |         score += (technique_count.min(5) as f32 * 6.0);
+    |                  ^                                   ^
+    |
+help: remove these parentheses
+    |
+205 -         score += (technique_count.min(5) as f32 * 6.0);
+205 +         score += technique_count.min(5) as f32 * 6.0;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:237:18
+    |
+237 |         score += (step_count.min(10) as f32 * 2.5);
+    |                  ^                               ^
+    |
+help: remove these parentheses
+    |
+237 -         score += (step_count.min(10) as f32 * 2.5);
+237 +         score += step_count.min(10) as f32 * 2.5;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:244:18
+    |
+244 |         score += (deliverable_count.min(8) as f32 * 2.5);
+    |                  ^                                     ^
+    |
+help: remove these parentheses
+    |
+244 -         score += (deliverable_count.min(8) as f32 * 2.5);
+244 +         score += deliverable_count.min(8) as f32 * 2.5;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> core/src/workflows/methodology_engine.rs:248:18
+    |
+248 |         score += (location_count.min(6) as f32 * 2.5);
+    |                  ^                                  ^
+    |
+help: remove these parentheses
+    |
+248 -         score += (location_count.min(6) as f32 * 2.5);
+248 +         score += location_count.min(6) as f32 * 2.5;
+    |
+
+warning: unused import: `Context`
+ --> core/src/workflows/deliverable_manager.rs:6:22
+  |
+6 | use anyhow::{Result, Context};
+  |                      ^^^^^^^
+
+warning: unused import: `Deliverable`
+  --> core/src/workflows/deliverable_manager.rs:14:5
+   |
+14 |     Deliverable, DeliverableType, TargetLocation, LocationType,
+   |     ^^^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> core/src/workflows/location_manager.rs:7:13
+  |
+7 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `Context`
+ --> core/src/workflows/ai_sop_interface.rs:6:22
+  |
+6 | use anyhow::{Result, Context};
+  |                      ^^^^^^^
+
+warning: unused import: `SOPStep`
+ --> core/src/workflows/ai_sop_interface.rs:9:52
+  |
+9 | use super::sop_parser::{SOPDocument, SOPProcedure, SOPStep};
+  |                                                    ^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> core/src/workflows/mod.rs:21:5
+   |
+21 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mpsc`
+  --> core/src/autonomous.rs:10:27
+   |
+10 | use tokio::sync::{RwLock, mpsc};
+   |                           ^^^^
+
+warning: unused import: `warn`
+  --> core/src/autonomous.rs:12:21
+   |
+12 | use tracing::{info, warn, error, debug};
+   |                     ^^^^
+
+warning: unused import: `async_trait::async_trait`
+ --> core/src/self_improving.rs:7:5
+  |
+7 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mpsc`
+  --> core/src/self_improving.rs:11:27
+   |
+11 | use tokio::sync::{RwLock, mpsc, Mutex};
+   |                           ^^^^
+
+warning: unused import: `error`
+  --> core/src/self_improving.rs:13:27
+   |
+13 | use tracing::{info, warn, error, debug};
+   |                           ^^^^^
+
+warning: unused import: `MLEngine`
+  --> core/src/self_improving.rs:17:45
+   |
+17 | use crate::autonomous::{AutonomousPipeline, MLEngine};
+   |                                             ^^^^^^^^
+
+Some errors have detailed explanations: E0106, E0404, E0412, E0422, E0432, E0433, E0603.
+For more information about an error, try `rustc --explain E0106`.
+warning: `agentaskit-core` (lib) generated 62 warnings
+error: could not compile `agentaskit-core` (lib) due to 111 previous errors; 62 warnings emitted
