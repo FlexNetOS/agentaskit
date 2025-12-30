@@ -559,7 +559,7 @@ impl SystemOrchestrator {
                 WorkflowStep {
                     id: step_template.id.clone(),
                     name: step_template.name.clone(),
-                    step_type: step_template.step_type,
+                    step_type: step_template.step_type.clone(),
                     target_agent: None,
                     required_capabilities: step_template.required_capabilities.clone(),
                     input_data: serde_json::Value::Null,
