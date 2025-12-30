@@ -15,7 +15,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use tracing::{info, warn, error, debug};
-use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
+use agentaskit_shared::{AgentId, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
