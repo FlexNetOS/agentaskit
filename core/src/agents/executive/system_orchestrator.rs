@@ -812,10 +812,9 @@ impl Agent for SystemOrchestrator {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"scheduled": true, "priority": format!("{:?}", priority)}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"scheduled": true, "priority": format!("{:?}", priority)})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "execute-workflow" => {
@@ -828,10 +827,9 @@ impl Agent for SystemOrchestrator {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"workflow_id": workflow_id, "status": "started"}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"workflow_id": workflow_id, "status": "started"})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "detect-deadlocks" => {
@@ -840,13 +838,12 @@ impl Agent for SystemOrchestrator {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "deadlocks_found": detections.len(),
                         "detections": detections.len(), // Simplified
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-metrics" => {
@@ -855,20 +852,18 @@ impl Agent for SystemOrchestrator {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::to_value(metrics)?,
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::to_value(metrics)?),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => {
                 Ok(TaskResult {
                     task_id: task.id,
-                    status: TaskStatus::Failed("Task execution failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    status: TaskStatus::Failed,
+                    output_data: None,
+                    error_message: Some(format!("Unknown task type: {}", task.name)),
+                    completed_at: chrono::Utc::now(),
                 })
             }
         }

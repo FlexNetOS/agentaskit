@@ -1015,10 +1015,9 @@ impl Agent for PriorityManager {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"priority": priority}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"priority": priority})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "schedule-task" => {
@@ -1027,10 +1026,9 @@ impl Agent for PriorityManager {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"scheduled": true}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"scheduled": true})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "escalate-priority" => {
@@ -1048,10 +1046,9 @@ impl Agent for PriorityManager {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"escalated": true, "factor": escalation_factor}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"escalated": true, "factor": escalation_factor})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-statistics" => {
@@ -1060,27 +1057,25 @@ impl Agent for PriorityManager {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_assignments": stats.total_assignments,
                         "avg_priority": stats.avg_priority,
                         "emergency_count": stats.emergency_count,
                         "critical_count": stats.critical_count,
                         "escalation_events": stats.escalation_events,
                         "sla_violations": stats.sla_violations,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => {
                 Ok(TaskResult {
                     task_id: task.id,
-                    status: TaskStatus::Failed("Priority management failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    status: TaskStatus::Failed,
+                    output_data: None,
+                    error_message: Some(format!("Unknown task type: {}", task.name)),
+                    completed_at: chrono::Utc::now(),
                 })
             }
         }
