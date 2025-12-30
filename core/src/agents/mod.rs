@@ -368,16 +368,6 @@ impl Agent for ManagedAgent {
     }
 
     async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
-        let status = self.status.read().await;
-        match *status {
-            AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
-            AgentStatus::Error => Ok(HealthStatus::Critical),
-            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
-            _ => Ok(HealthStatus::Unknown),
-        }
-    }
-
-    async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
         debug!("Updating configuration for agent: {}", self.name);
         Ok(())
     }
