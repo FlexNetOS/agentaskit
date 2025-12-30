@@ -314,7 +314,15 @@ impl Agent for ManagedAgent {
     }
 
     async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
-        debug!("Agent {} received message: {:?}", self.name, message.message_type);
+        let message_type = match &message {
+            AgentMessage::Request { .. } => "Request",
+            AgentMessage::Response { .. } => "Response",
+            AgentMessage::Broadcast { .. } => "Broadcast",
+            AgentMessage::Alert { .. } => "Alert",
+            AgentMessage::Heartbeat { .. } => "Heartbeat",
+            AgentMessage::Registration { .. } => "Registration",
+        };
+        debug!("Agent {} received message: {}", self.name, message_type);
         // Basic message handling - can be extended
         Ok(None)
     }
