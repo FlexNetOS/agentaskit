@@ -197,14 +197,6 @@ impl Default for PerformanceMetrics {
     }
 }
 
-/// Basic agent implementation for generic agents
-pub struct BasicAgent {
-    metadata: AgentMetadata,
-    state: RwLock<AgentStatus>,
-    layer: AgentLayer,
-    capabilities: Vec<String>,
-}
-
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
 pub struct ManagedAgent {
@@ -328,7 +320,13 @@ impl Agent for ManagedAgent {
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
-        Ok(HealthStatus::Healthy)
+        let status = self.status.read().await;
+        match *status {
+            AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
     async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
