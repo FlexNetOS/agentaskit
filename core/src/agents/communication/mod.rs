@@ -341,17 +341,11 @@ impl CommunicationManager {
             BroadcastScope::All => {
                 registry.all_agents().into_iter().map(|meta| meta.id).collect()
             }
+            BroadcastScope::Layer(layer) => {
+                registry.find_by_layer(layer)
+            }
             BroadcastScope::Role(role) => {
                 registry.find_by_role(role)
-            }
-            BroadcastScope::Cluster(cluster) => {
-                registry.find_by_cluster(cluster)
-            }
-            BroadcastScope::Capability(capability) => {
-                registry.find_by_capability(capability)
-            }
-            BroadcastScope::Custom(agents) => {
-                agents.clone()
             }
         };
         
@@ -516,7 +510,7 @@ impl HeartbeatManager {
             for agent_id in stale_agents {
                 tracing::warn!("Agent {} appears to be stale, removing from registry", agent_id.0);
                 // Note: In production, this should trigger more sophisticated recovery
-                registry.deregister_agent(agent_id).await?;
+                registry.deregister_agent(agent_id)?;
             }
         }
     }

@@ -848,8 +848,9 @@ impl PriorityManager {
     
     /// Calculate age factor for task priority
     fn calculate_age_factor(&self, task: &Task) -> f64 {
+        // Use the task's created_at field directly since Task has it
         let age = chrono::Utc::now().signed_duration_since(task.created_at);
-        age.num_seconds() as f64 * self.config.priority_aging_factor
+        age.num_seconds().max(0) as f64 * self.config.priority_aging_factor
     }
     
     /// Check if policy conditions are met

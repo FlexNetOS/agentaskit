@@ -1438,7 +1438,7 @@ impl NoaCommander {
             emergency_type: EmergencyType::Other(message.clone()),
             severity: EmergencySeverity::Critical,
             description: message,
-            start_time: chrono::Utc::now(),
+            start_time: Instant::now(),
             affected_components: Vec::new(), // TODO: Parse from context
             response_actions: Vec::new(),
             status: EmergencyStatus::Detected,

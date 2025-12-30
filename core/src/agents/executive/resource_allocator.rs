@@ -620,22 +620,23 @@ impl ResourceAllocator {
         let suitable_pool_key = self.find_suitable_resource_pool(&resource_manager, &capacity).await?;
         
         // Create allocation
-        let allocation = ResourceAllocation {
+        let mut allocation = ResourceAllocation {
             agent_id,
             allocated_resources: capacity.clone(),
             allocation_time: Instant::now(),
             last_updated: Instant::now(),
             allocation_priority: priority,
             constraints: Vec::new(),
-            cost: 0.0, // Placeholder; calculate based on pool if needed
+            cost: 0.0, // Will be calculated below
             utilization: ResourceUtilization::default(),
         };
         
-        // Update resource pools using the key
+        // Update resource pools using the key and calculate cost
         if let Some(pool) = resource_manager.available_resources.get_mut(&suitable_pool_key) {
             self.subtract_capacity(&mut pool.available_capacity, &capacity);
             self.add_capacity(&mut pool.allocated_capacity, &capacity);
-            allocation.cost = pool.cost_per_unit * self.calculate_resource_units(&capacity);
+            let cost = pool.cost_per_unit * self.calculate_resource_units(&capacity);
+            allocation.cost = cost;
         }
         
         resource_manager.allocations.insert(agent_id, allocation.clone());
@@ -1139,7 +1140,7 @@ impl ResourceAllocator {
                 provider: ResourceProvider::Local,
                 location: "datacenter-1".to_string(),
                 constraints: Vec::new(),
-                last_updated: chrono::Utc::now(),
+                last_updated: Instant::now(),
             },
             ResourcePool {
                 resource_type: ResourceType::Memory,
@@ -1165,7 +1166,7 @@ impl ResourceAllocator {
                 provider: ResourceProvider::Local,
                 location: "datacenter-1".to_string(),
                 constraints: Vec::new(),
-                last_updated: chrono::Utc::now(),
+                last_updated: Instant::now(),
             },
         ];
         
