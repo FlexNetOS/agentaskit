@@ -1,0 +1,84 @@
+﻿# Cross-reference Report (archives V2–V7 → production)
+- Files total: 1018 (archive: 462, production: 316, other: 240)
+- Lineage pairs (archive↔production filename collisions): 146
+- Duplicate groups (identical sha across different paths): 195
+## Basenames present outside production but not in final package (top 200)
+- .gitattributes
+- .gitignore
+- .qoderignore
+- agent_map_crosswalk.md
+- agentaskit.todo
+- analyze_all_repositories.csv
+- ark-os repository analysis_ comprehensive feature catalog.md
+- ark-os_ architectural positioning for agenticai os scaffold.md
+- codeowners
+- comprehensive agenticai os repository analysis.md
+- contributing.md
+- crosscheck_report.md
+- data.csv
+- enhanced_workflow_implementation.md
+- final_report.md
+- healing_report.md
+- inference.capnp
+- multi-agent-task-kit.md
+- noaos_comprehensive_enhanced.xlsx
+- optimize.ps1
+- readme.txt
+- reply.bin
+- request.bin
+- system_unification_success.md
+- unification_summary.md
+- unified_docs
+- update.prompt.md
+## Basenames present in final package but not elsewhere (top 200)
+- 4d_method_enhancement.md
+- agent_factory.py
+- agent_performance.rs
+- agentask.sop
+- agentask.subject.todo
+- autonomous.rs
+- autonomous_deployment_report.md
+- backpressure.md
+- backpressure.yaml
+- capacity_plan.md
+- comprehensive_7phase_system.md
+- comprehensive_workflow_processor.rs
+- cross_reference.ps1
+- cross_reference.py
+- deliverable_automation.sh
+- deliverable_management.md
+- deliverable_manager.rs
+- deployment-manifest.schema.json
+- dispatch_run_todo.ps1
+- fetch.sh
+- final_7phase_implementation_verification.md
+- generate_integrity.py
+- integration_test.rs
+- integration_test_report.md
+- limits.yaml
+- location_manager.rs
+- logging.md
+- manifest.json
+- manifest_validator.py
+- messaging_throughput.rs
+- methodology_engine.rs
+- model_selector_bridge.md
+- model_selector_bridge.rs
+- models.yaml
+- ops-dedup-todo.md
+- overview.json
+- performance_tests.rs
+- phase_five.rs
+- phase_four.rs
+- phase_one.rs
+- phase_seven.rs
+- phase_six.rs
+- phase_three.rs
+- phase_two.rs
+- plan.md
+- policies.yaml
+- production_readiness_analysis.md
+- production_readiness_certification.md
+- production_ready_summary.md
+- production-deployment.json
+… and 38 more

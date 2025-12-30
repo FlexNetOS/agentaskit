@@ -1,0 +1,2 @@
+AgentID,Name,Description,Capabilities,Integration_Type,Status
+AGENT_001,TemplateAgent,Template agent description,capability1;capability2,primary,active

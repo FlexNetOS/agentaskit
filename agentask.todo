@@ -1,0 +1,16 @@
+# AgentTask TODO (Compatibility Alias)
+
+This file exists to keep historical tooling and documentation references working.
+
+- Canonical backlog: `agentaskit-production/.todo`
+- Subject intake inbox: `agentaskit-production/agentask.subject.todo`
+- Execution SOP: `agentaskit-production/agentask.sop`
+- Completion ledger: `agentaskit-production/core/src/orchestration/sot.md`
+
+### Unified TODO Workflow (Summary)
+1. Capture new subjects in `agentask.subject.todo` with `[REF]`, context tags, and evidence expectations.
+2. Apply the 4D methodology; when ready, promote the subject into `.todo` with full owner/deps/acc/evid fields.
+3. Execute changes under `agentask.sop` and the Update & Heal prompt, gathering hashes and transcripts.
+4. Mark the `.todo` item complete, append the executed-task record to `sot.md`, and mirror closure back in the subject inbox.
+
+> All automation, CI validations, and documentation should reference `.todo` as the single source of backlog truth.

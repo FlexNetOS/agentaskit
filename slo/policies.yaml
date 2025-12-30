@@ -1,0 +1,55 @@
+# SLA Policy for AgentAsKit Production System
+
+# Reference: SLA-001 - Achieve SLA targets
+
+# 1. Service Level Objectives (SLOs)
+slo:
+  - name: Cold Start Latency
+    target: 95th Percentile < 100ms
+    metric: startup_lt_ms
+    time_window: 7d
+    error_budget_policy: Burn Rate < 1.0 (weekly)
+
+  - name: Core Response Latency
+    target: 95th Percentile < 50ms at 2x peak load
+    metric: response_lt_ms
+    time_window: 7d
+    error_budget_policy: Burn Rate < 1.0 (weekly)
+
+# 2. Service Level Indicators (SLIs)
+sli:
+  - name: Cold Start Success Rate
+    metric_source: agentaskit.core.startup.success_rate
+    good: "Successful startup within 100ms"
+    total: "Total startup attempts"
+
+  - name: Core API Success Rate
+    metric_source: agentaskit.core.api.success_rate
+    good: "Successful API response within 50ms"
+    total: "Total API requests"
+
+# 3. Redlines and Paging Policy (Acceptance Criteria Requirement)
+redlines:
+  - name: Critical System Failure
+    description: "Unrecoverable failure of the core orchestration layer (CECCA/Executive agents)."
+    trigger: "HealthStatus::Critical for CECCA or Executive layer agents."
+    action: "Immediate PagerDuty alert to @sre and @perf-oncall. Automated rollback initiated."
+    severity: P1
+
+  - name: Error Budget Exhaustion
+    description: "Weekly error budget burn rate exceeds 1.0."
+    trigger: "BurnRate > 1.0 for any SLO."
+    action: "P2 alert to @sre. Post-mortem process initiated. Feature freeze for non-critical changes."
+    severity: P2
+
+  - name: Response Latency Breach
+    description: "Core Response Latency p95 exceeds 50ms for 15 consecutive minutes."
+    trigger: "response_lt_ms.p95 > 50ms for 15m."
+    action: "P3 alert to @perf-oncall. Automated scaling review and load shedding initiated."
+    severity: P3
+
+# 4. Validation Workflow
+validation:
+  workflow: .github/workflows/slo-check.yml
+  test_script: TEST/slo/test_slo_check.py
+  log_output: TEST/slo/slo_check.log

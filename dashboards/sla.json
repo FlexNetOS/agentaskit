@@ -1,0 +1,48 @@
+{
+  "dashboard_id": "sla-001-dashboard",
+  "title": "AgentAsKit Service Level Agreement (SLA) Dashboard",
+  "description": "Monitors key SLOs and Error Budget Burn Rate for SLA-001.",
+  "panels": [
+    {
+      "id": "cold_start_latency_slo",
+      "title": "Cold Start Latency (p95 < 100ms)",
+      "type": "timeseries",
+      "query": "p95(agentaskit.core.startup.latency_ms)",
+      "thresholds": [
+        {"value": 100, "color": "red", "label": "SLO Target"}
+      ],
+      "time_range": "7d"
+    },
+    {
+      "id": "core_response_latency_slo",
+      "title": "Core Response Latency (p95 < 50ms)",
+      "type": "timeseries",
+      "query": "p95(agentaskit.core.api.response_time_ms)",
+      "thresholds": [
+        {"value": 50, "color": "red", "label": "SLO Target"}
+      ],
+      "time_range": "7d"
+    },
+    {
+      "id": "weekly_error_budget_burn_rate",
+      "title": "Weekly Error Budget Burn Rate",
+      "type": "gauge",
+      "query": "burn_rate(slo_cold_start_latency, 7d) + burn_rate(slo_core_response_latency, 7d)",
+      "thresholds": [
+        {"value": 0.5, "color": "yellow", "label": "Warning"},
+        {"value": 1.0, "color": "red", "label": "Exhausted"}
+      ],
+      "time_range": "7d"
+    },
+    {
+      "id": "redline_alerts",
+      "title": "Redline Alert Status",
+      "type": "stat",
+      "query": "count(alert_status{severity=P1, P2})",
+      "thresholds": [
+        {"value": 0, "color": "green", "label": "No Active Redlines"}
+      ],
+      "time_range": "1h"
+    }
+  ]
+}

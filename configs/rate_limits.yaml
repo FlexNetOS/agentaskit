@@ -1,0 +1,33 @@
+# Rate Limiting and Throttling Strategy Configuration
+
+# Reference: PERF-RATE - Rate-limiting and throttling strategy
+
+global:
+  # Global limits apply to the entire system regardless of tenant
+  max_requests_per_second: 50000
+  max_concurrent_connections: 10000
+  burst_limit: 100000
+
+default_tenant_policy:
+  # Default policy for tenants without a specific override
+  max_requests_per_minute: 6000
+  max_requests_per_hour: 200000
+  burst_limit: 10000
+  # HTTP headers to be returned on throttling
+  backoff_headers:
+    RateLimit-Limit: 6000
+    RateLimit-Remaining: 0
+    RateLimit-Reset: 60
+
+tenant_overrides:
+  # Example of a specific tenant with higher limits
+  premium_tenant_a:
+    max_requests_per_minute: 12000
+    max_requests_per_hour: 400000
+    burst_limit: 20000
+
+  # Example of a specific tenant with lower limits
+  free_tier_tenant_b:
+    max_requests_per_minute: 600
+    max_requests_per_hour: 20000
+    burst_limit: 1000

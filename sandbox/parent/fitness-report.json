@@ -1,0 +1,6 @@
+{
+    "tasks_per_sec": 8500,
+    "p99_latency_ms": 65,
+    "error_rate": 0.05,
+    "timestamp": 1767115604.911325
+}
