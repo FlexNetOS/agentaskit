@@ -85,6 +85,7 @@ pub mod task_utils {
             max_retries: 3,
             error_message: None,
             tags: HashMap::new(),
+            required_capabilities: Vec::new(),
         }
     }
     
