@@ -107,7 +107,7 @@ impl Default for PerformanceMetrics {
 
 /// The agent management system that handles the six-layer hierarchy
 pub struct AgentManager {
-    agents: Arc<RwLock<HashMap<Uuid, Agent>>>,
+    agents: Arc<RwLock<HashMap<Uuid, Arc<dyn Agent>>>>,
     layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<Uuid>>>>,
     security_manager: Arc<SecurityManager>,
     next_agent_number: Arc<RwLock<u32>>,
