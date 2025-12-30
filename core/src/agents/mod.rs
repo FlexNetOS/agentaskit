@@ -286,11 +286,6 @@ impl ManagedAgent {
     }
 }
 
-#[async_trait]
-impl Agent for BasicAgent {
-    async fn start(&mut self) -> AgentResult<()> {
-        let mut state = self.state.write().await;
-        *state = AgentStatus::Active;
 impl Agent for ManagedAgent {
     async fn start(&mut self) -> AgentResult<()> {
         info!("Starting agent: {}", self.name);
