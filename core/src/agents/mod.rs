@@ -15,7 +15,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use tracing::{info, warn, error, debug};
-use agentaskit_shared::{AgentId, AgentMessage, Task, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
+use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
@@ -134,7 +134,7 @@ impl ManagedAgent {
         let now = chrono::Utc::now();
         
         let metadata = AgentMetadata {
-            id: agentaskit_shared::AgentId(id),
+            id,
             name: name.clone(),
             agent_type: format!("{:?}", layer),
             version: "1.0.0".to_string(),
