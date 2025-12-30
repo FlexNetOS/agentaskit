@@ -341,17 +341,11 @@ impl CommunicationManager {
             BroadcastScope::All => {
                 registry.all_agents().into_iter().map(|meta| meta.id).collect()
             }
+            BroadcastScope::Layer(layer) => {
+                registry.find_by_layer(layer)
+            }
             BroadcastScope::Role(role) => {
                 registry.find_by_role(role)
-            }
-            BroadcastScope::Cluster(cluster) => {
-                registry.find_by_cluster(cluster)
-            }
-            BroadcastScope::Capability(capability) => {
-                registry.find_by_capability(capability)
-            }
-            BroadcastScope::Custom(agents) => {
-                agents.clone()
             }
         };
         

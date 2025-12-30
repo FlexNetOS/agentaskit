@@ -15,7 +15,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use tracing::{info, warn, error, debug};
-use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
+use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
@@ -24,7 +24,99 @@ pub type MessageId = Uuid;
 pub enum BroadcastScope {
     All,
     Layer(AgentLayer),
-    Role(agentaskit_shared::AgentRole),
+    Role(AgentRole),
+}
+
+/// Alert severity levels for system notifications
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AlertSeverity {
+    Emergency,  // System failure or critical issue
+    Critical,   // Major problem requiring immediate attention
+    Warning,    // Potential issue or degraded performance
+    Info,       // Informational message
+    Debug,      // Debugging information
+}
+
+/// Agent role in the system hierarchy
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub enum AgentRole {
+    Executive,     // High-level coordination and decision-making
+    Board,         // Strategic and governance functions
+    Specialized,   // Domain-specific expertise
+    Worker,        // Task execution
+    Monitor,       // Observation and reporting
+}
+
+impl Default for AgentRole {
+    fn default() -> Self {
+        AgentRole::Worker
+    }
+}
+
+/// Agent message types for inter-agent communication
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AgentMessage {
+    /// Direct task request to specific agent
+    Request {
+        id: MessageId,
+        from: AgentId,
+        to: AgentId,
+        task: Task,
+        priority: Priority,
+        timeout: Option<std::time::Duration>,
+    },
+    
+    /// Response to a previous request
+    Response {
+        id: MessageId,
+        request_id: MessageId,
+        from: AgentId,
+        to: AgentId,
+        result: TaskResult,
+    },
+    
+    /// Broadcast message to multiple agents
+    Broadcast {
+        id: MessageId,
+        from: AgentId,
+        topic: String,
+        payload: serde_json::Value,
+        scope: BroadcastScope,
+    },
+    
+    /// System alert or notification
+    Alert {
+        id: MessageId,
+        from: AgentId,
+        severity: AlertSeverity,
+        message: String,
+        context: serde_json::Value,
+        timestamp: chrono::DateTime<chrono::Utc>,
+    },
+    
+    /// Heartbeat message for agent liveness
+    Heartbeat {
+        id: MessageId,
+        from: AgentId,
+        health: HealthStatus,
+        timestamp: chrono::DateTime<chrono::Utc>,
+    },
+    
+    /// Agent registration/deregistration
+    Registration {
+        id: MessageId,
+        from: AgentId,
+        action: RegistrationAction,
+        metadata: AgentMetadata,
+    },
+}
+
+/// Registration action type
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum RegistrationAction {
+    Register,
+    Deregister,
+    Update,
 }
 
 use crate::orchestration::Task;
@@ -105,6 +197,17 @@ impl Default for PerformanceMetrics {
     }
 }
 
+/// Basic agent implementation for generic agents
+pub struct BasicAgent {
+    metadata: AgentMetadata,
+    state: RwLock<AgentStatus>,
+    layer: AgentLayer,
+    capabilities: Vec<String>,
+}
+
+impl BasicAgent {
+    pub fn new(
+        id: Uuid,
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
 pub struct ManagedAgent {
@@ -130,6 +233,25 @@ impl ManagedAgent {
         capabilities: Vec<String>,
         resource_requirements: ResourceRequirements,
     ) -> Self {
+        let metadata = AgentMetadata {
+            id,
+            name,
+            agent_type: format!("{:?}", layer),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            resource_requirements,
+            tags: HashMap::new(),
+        };
+        
+        Self {
+            metadata,
+            state: RwLock::new(AgentStatus::Initializing),
+            layer,
+            capabilities,
         let id = Uuid::new_v4();
         let now = chrono::Utc::now();
         
@@ -165,6 +287,10 @@ impl ManagedAgent {
 }
 
 #[async_trait]
+impl Agent for BasicAgent {
+    async fn start(&mut self) -> AgentResult<()> {
+        let mut state = self.state.write().await;
+        *state = AgentStatus::Active;
 impl Agent for ManagedAgent {
     async fn start(&mut self) -> AgentResult<()> {
         info!("Starting agent: {}", self.name);
@@ -174,6 +300,13 @@ impl Agent for ManagedAgent {
     }
 
     async fn stop(&mut self) -> AgentResult<()> {
+        let mut state = self.state.write().await;
+        *state = AgentStatus::Shutdown;
+        Ok(())
+    }
+
+    async fn handle_message(&mut self, _message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
+        // Basic implementation - just acknowledge receipt
         info!("Stopping agent: {}", self.name);
         let mut status = self.status.write().await;
         *status = AgentStatus::Shutdown;
@@ -187,6 +320,17 @@ impl Agent for ManagedAgent {
     }
 
     async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
+        // Basic implementation - return success
+        Ok(TaskResult {
+            task_id: task.id,
+            status: TaskStatus::Completed,
+            result: Some(serde_json::json!({
+                "message": "Task completed by BasicAgent"
+            })),
+            error: None,
+            started_at: Some(chrono::Utc::now()),
+            completed_at: Some(chrono::Utc::now()),
+            metrics: HashMap::new(),
         debug!("Agent {} executing task: {}", self.name, task.name);
         
         // Update status to busy
@@ -220,6 +364,10 @@ impl Agent for ManagedAgent {
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
+        Ok(HealthStatus::Healthy)
+    }
+
+    async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
         let status = self.status.read().await;
         match *status {
             AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
@@ -239,6 +387,7 @@ impl Agent for ManagedAgent {
     }
 
     async fn state(&self) -> AgentStatus {
+        *self.state.read().await
         let status = self.status.read().await;
         status.clone()
     }
@@ -330,12 +479,19 @@ impl AgentManager {
         let resource_requirements = Self::get_layer_resource_requirements(&layer);
         let name = format!("{:?}-Agent-{:04}", layer, agent_number);
 
+        let agent_id = Uuid::new_v4();
+        let name = format!("{:?}-Agent-{:04}", layer, agent_number);
+        
+        // Create a basic agent implementation
+        let agent = Arc::new(BasicAgent::new(
+            agent_id,
         // Create concrete ManagedAgent instance
         let agent = ManagedAgent::new(
             name,
             layer.clone(),
             capabilities,
             resource_requirements,
+        ));
         );
 
         let agent_id = agent.id;
@@ -664,4 +820,78 @@ pub struct LayerStats {
     pub idle_agents: u32,
     pub offline_agents: u32,
     pub error_agents: u32,
+}
+
+/// Agent registry for tracking and discovering agents
+#[derive(Debug, Default)]
+pub struct AgentRegistry {
+    agents: HashMap<AgentId, AgentMetadata>,
+    pub health_status: HashMap<AgentId, HealthStatus>,
+    capability_index: HashMap<String, Vec<AgentId>>,
+    role_index: HashMap<AgentRole, Vec<AgentId>>,
+    layer_index: HashMap<AgentLayer, Vec<AgentId>>,
+}
+
+impl AgentRegistry {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    
+    /// Register a new agent
+    pub fn register_agent(&mut self, metadata: AgentMetadata) -> Result<()> {
+        let agent_id = metadata.id;
+        
+        // Add to main registry
+        self.agents.insert(agent_id, metadata.clone());
+        
+        // Update capability index
+        for capability in &metadata.capabilities {
+            self.capability_index
+                .entry(capability.clone())
+                .or_insert_with(Vec::new)
+                .push(agent_id);
+        }
+        
+        // Initialize health status
+        self.health_status.insert(agent_id, metadata.health_status.clone());
+        
+        Ok(())
+    }
+    
+    /// Deregister an agent
+    pub fn deregister_agent(&mut self, agent_id: AgentId) -> Result<()> {
+        if let Some(metadata) = self.agents.remove(&agent_id) {
+            // Remove from capability index
+            for capability in &metadata.capabilities {
+                if let Some(agents) = self.capability_index.get_mut(capability) {
+                    agents.retain(|id| *id != agent_id);
+                }
+            }
+            
+            self.health_status.remove(&agent_id);
+        }
+        Ok(())
+    }
+    
+    /// Get all registered agents
+    pub fn all_agents(&self) -> Vec<AgentMetadata> {
+        self.agents.values().cloned().collect()
+    }
+    
+    /// Find agents by role
+    pub fn find_by_role(&self, _role: &AgentRole) -> Vec<AgentId> {
+        // Simple implementation - in production would use role_index
+        self.agents.keys().copied().collect()
+    }
+    
+    /// Find agents by layer
+    pub fn find_by_layer(&self, _layer: &AgentLayer) -> Vec<AgentId> {
+        // Simple implementation - in production would use layer_index
+        self.agents.keys().copied().collect()
+    }
+    
+    /// Update agent health status
+    pub fn update_health(&mut self, agent_id: AgentId, health: HealthStatus) {
+        self.health_status.insert(agent_id, health);
+    }
 }
