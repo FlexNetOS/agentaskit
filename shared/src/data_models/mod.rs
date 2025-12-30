@@ -100,6 +100,17 @@ pub struct Task {
     pub max_retries: u32,
     pub error_message: Option<String>,
     pub tags: HashMap<String, String>,
+    pub required_capabilities: Vec<String>,
+}
+
+/// Task execution result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskResult {
+    pub task_id: TaskId,
+    pub status: TaskStatus,
+    pub output_data: Option<serde_json::Value>,
+    pub error_message: Option<String>,
+    pub completed_at: DateTime<Utc>,
 }
 
 /// Capability token structure for FlexNetOS integration

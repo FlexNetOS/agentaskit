@@ -15,7 +15,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use tracing::{info, warn, error, debug};
-use agentaskit_shared::{AgentId, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
+use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
@@ -208,6 +208,26 @@ pub struct BasicAgent {
 impl BasicAgent {
     pub fn new(
         id: Uuid,
+/// Concrete agent implementation that can be managed by AgentManager
+#[derive(Clone)]
+pub struct ManagedAgent {
+    pub id: Uuid,
+    pub name: String,
+    pub layer: AgentLayer,
+    pub capabilities: Vec<String>,
+    pub status: Arc<RwLock<AgentStatus>>,
+    pub resource_requirements: ResourceRequirements,
+    pub performance_metrics: Arc<RwLock<PerformanceMetrics>>,
+    pub escalation_path: Option<Uuid>,
+    pub subordinates: Arc<RwLock<Vec<Uuid>>>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub last_heartbeat: Arc<RwLock<Option<chrono::DateTime<chrono::Utc>>>>,
+    pub metadata: AgentMetadata,
+}
+
+impl ManagedAgent {
+    /// Create a new managed agent
+    pub fn new(
         name: String,
         layer: AgentLayer,
         capabilities: Vec<String>,
@@ -232,6 +252,36 @@ impl BasicAgent {
             state: RwLock::new(AgentStatus::Initializing),
             layer,
             capabilities,
+        let id = Uuid::new_v4();
+        let now = chrono::Utc::now();
+        
+        let metadata = AgentMetadata {
+            id,
+            name: name.clone(),
+            agent_type: format!("{:?}", layer),
+            version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: now,
+            last_updated: now,
+            resource_requirements: resource_requirements.clone(),
+            tags: HashMap::new(),
+        };
+
+        Self {
+            id,
+            name,
+            layer,
+            capabilities,
+            status: Arc::new(RwLock::new(AgentStatus::Initializing)),
+            resource_requirements,
+            performance_metrics: Arc::new(RwLock::new(PerformanceMetrics::default())),
+            escalation_path: None,
+            subordinates: Arc::new(RwLock::new(Vec::new())),
+            created_at: now,
+            last_heartbeat: Arc::new(RwLock::new(None)),
+            metadata,
         }
     }
 }
@@ -241,6 +291,11 @@ impl Agent for BasicAgent {
     async fn start(&mut self) -> AgentResult<()> {
         let mut state = self.state.write().await;
         *state = AgentStatus::Active;
+impl Agent for ManagedAgent {
+    async fn start(&mut self) -> AgentResult<()> {
+        info!("Starting agent: {}", self.name);
+        let mut status = self.status.write().await;
+        *status = AgentStatus::Active;
         Ok(())
     }
 
@@ -252,6 +307,15 @@ impl Agent for BasicAgent {
 
     async fn handle_message(&mut self, _message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         // Basic implementation - just acknowledge receipt
+        info!("Stopping agent: {}", self.name);
+        let mut status = self.status.write().await;
+        *status = AgentStatus::Shutdown;
+        Ok(())
+    }
+
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
+        debug!("Agent {} received message: {:?}", self.name, message.message_type);
+        // Basic message handling - can be extended
         Ok(None)
     }
 
@@ -267,6 +331,35 @@ impl Agent for BasicAgent {
             started_at: Some(chrono::Utc::now()),
             completed_at: Some(chrono::Utc::now()),
             metrics: HashMap::new(),
+        debug!("Agent {} executing task: {}", self.name, task.name);
+        
+        // Update status to busy
+        {
+            let mut status = self.status.write().await;
+            *status = AgentStatus::Busy;
+        }
+        
+        // Simulate task execution
+        // In a real implementation, this would delegate to specialized handlers
+        
+        // Update metrics
+        {
+            let mut metrics = self.performance_metrics.write().await;
+            metrics.tasks_completed += 1;
+        }
+        
+        // Update status back to active
+        {
+            let mut status = self.status.write().await;
+            *status = AgentStatus::Active;
+        }
+        
+        Ok(TaskResult {
+            task_id: task.id,
+            status: TaskStatus::Completed,
+            output_data: Some(serde_json::json!({"result": "success"})),
+            error_message: None,
+            completed_at: chrono::Utc::now(),
         })
     }
 
@@ -275,6 +368,17 @@ impl Agent for BasicAgent {
     }
 
     async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
+        let status = self.status.read().await;
+        match *status {
+            AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            _ => Ok(HealthStatus::Unknown),
+        }
+    }
+
+    async fn update_config(&mut self, _config: serde_json::Value) -> AgentResult<()> {
+        debug!("Updating configuration for agent: {}", self.name);
         Ok(())
     }
 
@@ -284,6 +388,8 @@ impl Agent for BasicAgent {
 
     async fn state(&self) -> AgentStatus {
         *self.state.read().await
+        let status = self.status.read().await;
+        status.clone()
     }
 
     fn metadata(&self) -> &AgentMetadata {
@@ -297,6 +403,10 @@ pub struct AgentManager {
     layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<Uuid>>>>,
     security_manager: Arc<SecurityManager>,
     next_agent_number: Arc<RwLock<u32>>,
+    // Store hierarchy relationships separately since they're not part of the Agent trait
+    escalation_paths: Arc<RwLock<HashMap<Uuid, Uuid>>>,
+    subordinates_map: Arc<RwLock<HashMap<Uuid, Vec<Uuid>>>>,
+    agent_layers: Arc<RwLock<HashMap<Uuid, AgentLayer>>>,
 }
 
 impl AgentManager {
@@ -306,6 +416,9 @@ impl AgentManager {
             layer_assignments: Arc::new(RwLock::new(HashMap::new())),
             security_manager: Arc::new(security_manager.clone()),
             next_agent_number: Arc::new(RwLock::new(1)),
+            escalation_paths: Arc::new(RwLock::new(HashMap::new())),
+            subordinates_map: Arc::new(RwLock::new(HashMap::new())),
+            agent_layers: Arc::new(RwLock::new(HashMap::new())),
         };
 
         // Initialize the agent hierarchy with appropriate distribution
@@ -364,6 +477,7 @@ impl AgentManager {
 
         let capabilities = Self::get_layer_capabilities(&layer);
         let resource_requirements = Self::get_layer_resource_requirements(&layer);
+        let name = format!("{:?}-Agent-{:04}", layer, agent_number);
 
         let agent_id = Uuid::new_v4();
         let name = format!("{:?}-Agent-{:04}", layer, agent_number);
@@ -371,22 +485,30 @@ impl AgentManager {
         // Create a basic agent implementation
         let agent = Arc::new(BasicAgent::new(
             agent_id,
+        // Create concrete ManagedAgent instance
+        let agent = ManagedAgent::new(
             name,
             layer.clone(),
             capabilities,
             resource_requirements,
         ));
+        );
+
+        let agent_id = agent.id;
         
-        // Store agent
-        self.agents.write().await.insert(agent_id, agent);
+        // Store agent as trait object
+        self.agents.write().await.insert(agent_id, Arc::new(agent));
         
         // Add to layer assignments
         self.layer_assignments.write().await
-            .entry(layer)
+            .entry(layer.clone())
             .or_insert_with(Vec::new)
             .push(agent_id);
+        
+        // Store layer information
+        self.agent_layers.write().await.insert(agent_id, layer);
 
-        debug!("Created agent: {} ({})", agent_id, agent_number);
+        debug!("Created agent: {} ({:04})", agent_id, agent_number);
         Ok(agent_id)
     }
 
@@ -440,40 +562,52 @@ impl AgentManager {
     fn get_layer_resource_requirements(layer: &AgentLayer) -> ResourceRequirements {
         match layer {
             AgentLayer::CECCA => ResourceRequirements {
-                cpu_cores: 4.0,
-                memory_mb: 8192,
-                storage_mb: 10240,
-                network_bandwidth_mbps: 100,
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             AgentLayer::Board => ResourceRequirements {
-                cpu_cores: 2.0,
-                memory_mb: 4096,
-                storage_mb: 5120,
-                network_bandwidth_mbps: 50,
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             AgentLayer::Executive => ResourceRequirements {
-                cpu_cores: 2.0,
-                memory_mb: 4096,
-                storage_mb: 5120,
-                network_bandwidth_mbps: 50,
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             AgentLayer::StackChief => ResourceRequirements {
-                cpu_cores: 1.5,
-                memory_mb: 2048,
-                storage_mb: 2560,
-                network_bandwidth_mbps: 25,
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(2560),
+                network_bandwidth_mbps: Some(25),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             AgentLayer::Specialist => ResourceRequirements {
-                cpu_cores: 1.0,
-                memory_mb: 1024,
-                storage_mb: 1280,
-                network_bandwidth_mbps: 10,
+                cpu_cores: Some(1),
+                memory_mb: Some(1024),
+                storage_mb: Some(1280),
+                network_bandwidth_mbps: Some(10),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             AgentLayer::Micro => ResourceRequirements {
-                cpu_cores: 0.25,
-                memory_mb: 256,
-                storage_mb: 512,
-                network_bandwidth_mbps: 5,
+                cpu_cores: Some(1),
+                memory_mb: Some(256),
+                storage_mb: Some(512),
+                network_bandwidth_mbps: Some(5),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
         }
     }
@@ -482,28 +616,86 @@ impl AgentManager {
         info!("Establishing hierarchy relationships");
 
         let layer_assignments = self.layer_assignments.read().await;
-        let mut agents = self.agents.write().await;
+        let mut escalation_paths = self.escalation_paths.write().await;
+        let mut subordinates_map = self.subordinates_map.write().await;
 
         // CECCA -> Board relationships
         if let (Some(cecca_agents), Some(board_agents)) = 
             (layer_assignments.get(&AgentLayer::CECCA), layer_assignments.get(&AgentLayer::Board)) {
             
-            for board_id in board_agents {
-                if let Some(board_agent) = agents.get_mut(board_id) {
-                    board_agent.escalation_path = cecca_agents.first().copied();
-                }
-                
-                if let Some(cecca_agent) = agents.get_mut(&cecca_agents[0]) {
-                    cecca_agent.subordinates.push(*board_id);
+            if let Some(cecca_id) = cecca_agents.first() {
+                for board_id in board_agents {
+                    // Set escalation path for board agents
+                    escalation_paths.insert(*board_id, *cecca_id);
+                    
+                    // Add board agent as subordinate of CECCA
+                    subordinates_map
+                        .entry(*cecca_id)
+                        .or_insert_with(Vec::new)
+                        .push(*board_id);
                 }
             }
         }
 
-        // Continue hierarchy establishment for other layers...
-        // Board -> Executive, Executive -> StackChief, StackChief -> Specialist, Specialist -> Micro
+        // Board -> Executive relationships
+        if let (Some(board_agents), Some(executive_agents)) = 
+            (layer_assignments.get(&AgentLayer::Board), layer_assignments.get(&AgentLayer::Executive)) {
+            
+            if let Some(board_id) = board_agents.first() {
+                for exec_id in executive_agents {
+                    escalation_paths.insert(*exec_id, *board_id);
+                    subordinates_map
+                        .entry(*board_id)
+                        .or_insert_with(Vec::new)
+                        .push(*exec_id);
+                }
+            }
+        }
 
-        drop(agents);
-        drop(layer_assignments);
+        // Executive -> StackChief relationships
+        if let (Some(executive_agents), Some(stack_chief_agents)) = 
+            (layer_assignments.get(&AgentLayer::Executive), layer_assignments.get(&AgentLayer::StackChief)) {
+            
+            if let Some(exec_id) = executive_agents.first() {
+                for chief_id in stack_chief_agents {
+                    escalation_paths.insert(*chief_id, *exec_id);
+                    subordinates_map
+                        .entry(*exec_id)
+                        .or_insert_with(Vec::new)
+                        .push(*chief_id);
+                }
+            }
+        }
+
+        // StackChief -> Specialist relationships
+        if let (Some(stack_chief_agents), Some(specialist_agents)) = 
+            (layer_assignments.get(&AgentLayer::StackChief), layer_assignments.get(&AgentLayer::Specialist)) {
+            
+            if let Some(chief_id) = stack_chief_agents.first() {
+                for specialist_id in specialist_agents {
+                    escalation_paths.insert(*specialist_id, *chief_id);
+                    subordinates_map
+                        .entry(*chief_id)
+                        .or_insert_with(Vec::new)
+                        .push(*specialist_id);
+                }
+            }
+        }
+
+        // Specialist -> Micro relationships
+        if let (Some(specialist_agents), Some(micro_agents)) = 
+            (layer_assignments.get(&AgentLayer::Specialist), layer_assignments.get(&AgentLayer::Micro)) {
+            
+            if let Some(specialist_id) = specialist_agents.first() {
+                for micro_id in micro_agents {
+                    escalation_paths.insert(*micro_id, *specialist_id);
+                    subordinates_map
+                        .entry(*specialist_id)
+                        .or_insert_with(Vec::new)
+                        .push(*micro_id);
+                }
+            }
+        }
         
         info!("Hierarchy relationships established");
         Ok(())
@@ -514,10 +706,12 @@ impl AgentManager {
         
         // Find agents with matching capabilities and available status
         for (agent_id, agent) in agents.iter() {
-            if agent.status == AgentStatus::Active || agent.status == AgentStatus::Idle {
+            let status = agent.state().await;
+            if status == AgentStatus::Active {
                 // Check if agent has required capabilities
+                let agent_caps = agent.capabilities();
                 let has_capabilities = task.required_capabilities.iter()
-                    .all(|cap| agent.capabilities.contains(cap));
+                    .all(|cap| agent_caps.contains(cap));
                 
                 if has_capabilities {
                     return Ok(*agent_id);
@@ -529,31 +723,34 @@ impl AgentManager {
     }
 
     pub async fn send_task_to_agent(&self, agent_id: Uuid, task: &Task) -> Result<()> {
-        // Update agent status
-        {
-            let mut agents = self.agents.write().await;
-            if let Some(agent) = agents.get_mut(&agent_id) {
-                agent.status = AgentStatus::Busy;
-            }
+        // Get the agent and execute the task
+        let agents = self.agents.read().await;
+        if let Some(agent) = agents.get(&agent_id) {
+            // Clone the agent to avoid holding the read lock during task execution
+            let agent_clone = Arc::clone(agent);
+            drop(agents);
+            
+            // Note: We can't call mutable methods on Arc<dyn Agent>
+            // In a real implementation, we would send the task to the agent via message passing
+            debug!("Task {} sent to agent {}", task.id, agent_id);
         }
-
-        // TODO: Send task to actual agent implementation
-        debug!("Task {} sent to agent {}", task.id, agent_id);
         
         Ok(())
     }
 
     pub async fn health_check(&self) -> Result<()> {
-        let mut agents = self.agents.write().await;
-        let current_time = chrono::Utc::now();
+        let agents = self.agents.read().await;
         
-        for agent in agents.values_mut() {
-            // Check if agent has sent heartbeat recently
-            if let Some(last_heartbeat) = agent.last_heartbeat {
-                let duration = current_time.signed_duration_since(last_heartbeat);
-                if duration.num_seconds() > 60 {
-                    warn!("Agent {} heartbeat timeout", agent.id);
-                    agent.status = AgentStatus::Offline;
+        for (agent_id, agent) in agents.iter() {
+            // Call health_check on each agent
+            match agent.health_check().await {
+                Ok(health_status) => {
+                    if health_status == HealthStatus::Critical {
+                        warn!("Agent {} is in critical health state", agent_id);
+                    }
+                }
+                Err(e) => {
+                    error!("Health check failed for agent {}: {}", agent_id, e);
                 }
             }
         }
@@ -564,13 +761,9 @@ impl AgentManager {
     pub async fn start(&self) -> Result<()> {
         info!("Starting agent manager");
         
-        // Set all agents to active status
-        let mut agents = self.agents.write().await;
-        for agent in agents.values_mut() {
-            if agent.status == AgentStatus::Initializing {
-                agent.status = AgentStatus::Active;
-            }
-        }
+        // In a real implementation, we would start each agent via a message bus
+        // or internal command system since we can't mutate Arc<dyn Agent>
+        info!("Agent manager started. {} agents initialized", self.agents.read().await.len());
         
         Ok(())
     }
@@ -578,37 +771,40 @@ impl AgentManager {
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down agent manager");
         
-        // Set all agents to offline
-        let mut agents = self.agents.write().await;
-        for agent in agents.values_mut() {
-            agent.status = AgentStatus::Offline;
-        }
+        // In a real implementation, we would send shutdown messages to agents
+        info!("Agent manager shutdown initiated");
         
         Ok(())
     }
 
     pub async fn get_agent_status(&self, agent_id: Uuid) -> Result<AgentStatus> {
         let agents = self.agents.read().await;
-        agents.get(&agent_id)
-            .map(|agent| agent.status.clone())
-            .ok_or_else(|| anyhow::anyhow!("Agent not found: {}", agent_id))
+        if let Some(agent) = agents.get(&agent_id) {
+            Ok(agent.state().await)
+        } else {
+            Err(anyhow::anyhow!("Agent not found: {}", agent_id))
+        }
     }
 
     pub async fn get_layer_statistics(&self) -> HashMap<AgentLayer, LayerStats> {
         let agents = self.agents.read().await;
+        let agent_layers = self.agent_layers.read().await;
         let mut stats = HashMap::new();
 
-        for agent in agents.values() {
-            let layer_stats = stats.entry(agent.layer.clone()).or_insert(LayerStats::default());
-            layer_stats.total_agents += 1;
-            
-            match agent.status {
-                AgentStatus::Active => layer_stats.active_agents += 1,
-                AgentStatus::Busy => layer_stats.busy_agents += 1,
-                AgentStatus::Idle => layer_stats.idle_agents += 1,
-                AgentStatus::Offline => layer_stats.offline_agents += 1,
-                AgentStatus::Error => layer_stats.error_agents += 1,
-                _ => {}
+        for (agent_id, agent) in agents.iter() {
+            if let Some(layer) = agent_layers.get(agent_id) {
+                let layer_stats = stats.entry(layer.clone()).or_insert(LayerStats::default());
+                layer_stats.total_agents += 1;
+                
+                let status = agent.state().await;
+                match status {
+                    AgentStatus::Active => layer_stats.active_agents += 1,
+                    AgentStatus::Busy => layer_stats.busy_agents += 1,
+                    AgentStatus::Inactive => layer_stats.idle_agents += 1,
+                    AgentStatus::Shutdown => layer_stats.offline_agents += 1,
+                    AgentStatus::Error => layer_stats.error_agents += 1,
+                    _ => {}
+                }
             }
         }
 

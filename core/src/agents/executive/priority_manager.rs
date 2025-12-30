@@ -848,9 +848,22 @@ impl PriorityManager {
     
     /// Calculate age factor for task priority
     fn calculate_age_factor(&self, task: &Task) -> f64 {
-        // Use the task's created_at field directly since Task has it
-        let age = chrono::Utc::now().signed_duration_since(task.created_at);
-        age.num_seconds().max(0) as f64 * self.config.priority_aging_factor
+        // Prefer a created_at timestamp stored in task parameters.
+        // Expected format: RFC3339 (e.g., "2024-01-01T12:34:56Z").
+        if let Some(created_at_str) = task
+            .parameters
+            .get("created_at")
+            .and_then(|v| v.as_str())
+        {
+            if let Ok(created_at) = chrono::DateTime::parse_from_rfc3339(created_at_str) {
+                let created_at_utc = created_at.with_timezone(&chrono::Utc);
+                let age = chrono::Utc::now().signed_duration_since(created_at_utc);
+                return age.num_seconds().max(0) as f64 * self.config.priority_aging_factor;
+            }
+        }
+
+        // If no valid created_at is available, do not apply an age-based adjustment.
+        0.0
     }
     
     /// Check if policy conditions are met
