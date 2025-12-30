@@ -516,7 +516,7 @@ impl HeartbeatManager {
             for agent_id in stale_agents {
                 tracing::warn!("Agent {} appears to be stale, removing from registry", agent_id.0);
                 // Note: In production, this should trigger more sophisticated recovery
-                registry.deregister_agent(agent_id).await?;
+                registry.deregister_agent(agent_id)?;
             }
         }
     }
