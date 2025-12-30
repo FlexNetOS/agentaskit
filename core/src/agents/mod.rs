@@ -430,19 +430,12 @@ impl AgentManager {
         let resource_requirements = Self::get_layer_resource_requirements(&layer);
         let name = format!("{:?}-Agent-{:04}", layer, agent_number);
 
-        let agent_id = Uuid::new_v4();
-        let name = format!("{:?}-Agent-{:04}", layer, agent_number);
-        
-        // Create a basic agent implementation
-        let agent = Arc::new(BasicAgent::new(
-            agent_id,
         // Create concrete ManagedAgent instance
         let agent = ManagedAgent::new(
             name,
             layer.clone(),
             capabilities,
             resource_requirements,
-        ));
         );
 
         let agent_id = agent.id;

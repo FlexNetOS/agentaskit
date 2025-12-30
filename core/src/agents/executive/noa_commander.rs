@@ -1335,11 +1335,10 @@ impl Agent for NoaCommander {
                     _ => {
                         return Ok(TaskResult {
                             task_id: task.id,
-                            status: TaskStatus::Failed("Task execution failed".to_string()),
-                            result: serde_json::Value::Null,
-                            error: Some(format!("Unknown decision type: {}", decision_type)),
-                            execution_time: start_time.elapsed(),
-                            resource_usage: ResourceUsage::default(),
+                            status: TaskStatus::Failed,
+                            output_data: None,
+                            error_message: Some(format!("Unknown decision type: {}", decision_type)),
+                            completed_at: chrono::Utc::now(),
                         });
                     }
                 };
@@ -1347,10 +1346,9 @@ impl Agent for NoaCommander {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::to_value(decision)?,
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::to_value(decision)?),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "system-status" => {
@@ -1359,10 +1357,9 @@ impl Agent for NoaCommander {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: system_status,
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(system_status),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "emergency-response" => {
@@ -1371,20 +1368,18 @@ impl Agent for NoaCommander {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: response,
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(response),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => {
                 Ok(TaskResult {
                     task_id: task.id,
-                    status: TaskStatus::Failed("Task execution failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    status: TaskStatus::Failed,
+                    output_data: None,
+                    error_message: Some(format!("Unknown task type: {}", task.name)),
+                    completed_at: chrono::Utc::now(),
                 })
             }
         }
