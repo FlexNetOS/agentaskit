@@ -15,7 +15,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use tracing::{info, warn, error, debug};
-use agentaskit_shared::{AgentId, AgentMessage, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
+use agentaskit_shared::{AgentId, AgentMetadata, Task as SharedTask, TaskStatus, Priority, ResourceRequirements, HealthStatus, AgentStatus, TaskResult};
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
@@ -197,17 +197,6 @@ impl Default for PerformanceMetrics {
     }
 }
 
-/// Basic agent implementation for generic agents
-pub struct BasicAgent {
-    metadata: AgentMetadata,
-    state: RwLock<AgentStatus>,
-    layer: AgentLayer,
-    capabilities: Vec<String>,
-}
-
-impl BasicAgent {
-    pub fn new(
-        id: Uuid,
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
 pub struct ManagedAgent {
@@ -233,25 +222,6 @@ impl ManagedAgent {
         capabilities: Vec<String>,
         resource_requirements: ResourceRequirements,
     ) -> Self {
-        let metadata = AgentMetadata {
-            id,
-            name,
-            agent_type: format!("{:?}", layer),
-            version: env!("CARGO_PKG_VERSION").to_string(),
-            capabilities: capabilities.clone(),
-            status: AgentStatus::Initializing,
-            health_status: HealthStatus::Unknown,
-            created_at: chrono::Utc::now(),
-            last_updated: chrono::Utc::now(),
-            resource_requirements,
-            tags: HashMap::new(),
-        };
-        
-        Self {
-            metadata,
-            state: RwLock::new(AgentStatus::Initializing),
-            layer,
-            capabilities,
         let id = Uuid::new_v4();
         let now = chrono::Utc::now();
         
@@ -287,10 +257,6 @@ impl ManagedAgent {
 }
 
 #[async_trait]
-impl Agent for BasicAgent {
-    async fn start(&mut self) -> AgentResult<()> {
-        let mut state = self.state.write().await;
-        *state = AgentStatus::Active;
 impl Agent for ManagedAgent {
     async fn start(&mut self) -> AgentResult<()> {
         info!("Starting agent: {}", self.name);
@@ -300,13 +266,6 @@ impl Agent for ManagedAgent {
     }
 
     async fn stop(&mut self) -> AgentResult<()> {
-        let mut state = self.state.write().await;
-        *state = AgentStatus::Shutdown;
-        Ok(())
-    }
-
-    async fn handle_message(&mut self, _message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
-        // Basic implementation - just acknowledge receipt
         info!("Stopping agent: {}", self.name);
         let mut status = self.status.write().await;
         *status = AgentStatus::Shutdown;
@@ -328,17 +287,6 @@ impl Agent for ManagedAgent {
     }
 
     async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
-        // Basic implementation - return success
-        Ok(TaskResult {
-            task_id: task.id,
-            status: TaskStatus::Completed,
-            result: Some(serde_json::json!({
-                "message": "Task completed by BasicAgent"
-            })),
-            error: None,
-            started_at: Some(chrono::Utc::now()),
-            completed_at: Some(chrono::Utc::now()),
-            metrics: HashMap::new(),
         debug!("Agent {} executing task: {}", self.name, task.name);
         
         // Update status to busy
@@ -385,7 +333,6 @@ impl Agent for ManagedAgent {
     }
 
     async fn state(&self) -> AgentStatus {
-        *self.state.read().await
         let status = self.status.read().await;
         status.clone()
     }
