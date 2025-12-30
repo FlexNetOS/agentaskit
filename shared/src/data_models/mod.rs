@@ -100,6 +100,17 @@ pub struct Task {
     pub max_retries: u32,
     pub error_message: Option<String>,
     pub tags: HashMap<String, String>,
+    pub required_capabilities: Vec<String>,
+}
+
+/// Task execution result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskResult {
+    pub task_id: TaskId,
+    pub status: TaskStatus,
+    pub output_data: Option<serde_json::Value>,
+    pub error_message: Option<String>,
+    pub completed_at: DateTime<Utc>,
 }
 
 /// Capability token structure for FlexNetOS integration
@@ -218,5 +229,53 @@ impl Default for ResourceRequirements {
             gpu_required: false,
             special_capabilities: Vec::new(),
         }
+    }
+}
+
+/// Task result structure for completed tasks
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskResult {
+    pub task_id: TaskId,
+    pub status: TaskStatus,
+    pub result: Option<serde_json::Value>,
+    pub error: Option<String>,
+    pub started_at: Option<DateTime<Utc>>,
+    pub completed_at: Option<DateTime<Utc>>,
+    pub metrics: HashMap<String, f64>,
+}
+
+/// Resource usage metrics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceUsage {
+    pub cpu_percent: f64,
+    pub memory_mb: u64,
+    pub storage_mb: u64,
+    pub network_bandwidth_mbps: f64,
+    pub timestamp: DateTime<Utc>,
+}
+
+/// Agent context for execution environment
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentContext {
+    pub agent_id: AgentId,
+    pub environment: HashMap<String, String>,
+    pub working_directory: String,
+    pub resource_limits: ResourceRequirements,
+    pub permissions: Vec<String>,
+}
+
+/// Agent role in the system hierarchy
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub enum AgentRole {
+    Executive,     // High-level coordination and decision-making
+    Board,         // Strategic and governance functions
+    Specialized,   // Domain-specific expertise
+    Worker,        // Task execution
+    Monitor,       // Observation and reporting
+}
+
+impl Default for AgentRole {
+    fn default() -> Self {
+        AgentRole::Worker
     }
 }
