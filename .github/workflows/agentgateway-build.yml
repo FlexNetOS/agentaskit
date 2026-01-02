@@ -106,7 +106,7 @@ jobs:
     name: Build Integration Module
     runs-on: ubuntu-latest
     needs: build-gateway
-    if: always()  # Run even if build-gateway is skipped
+    if: always() && needs.build-gateway.result != 'cancelled'  # Run unless build-gateway is cancelled
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
