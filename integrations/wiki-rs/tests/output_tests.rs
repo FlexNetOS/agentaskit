@@ -5,7 +5,10 @@ use std::path::PathBuf;
 #[path = "../src/output.rs"]
 mod output;
 
+mod test_utils;
+
 use output::*;
+use test_utils::generate_test_timestamp;
 
 #[test]
 fn test_doc_tree_new() {
@@ -59,7 +62,7 @@ fn test_doc_metadata() {
     let metadata = DocMetadata {
         project_name: Some("MyProject".to_string()),
         version: Some("1.0.0".to_string()),
-        generated_at: Some("2024-01-01T00:00:00Z".to_string()),
+        generated_at: Some(generate_test_timestamp()),
         generator_version: Some("1.2.7".to_string()),
         language: Some("en".to_string()),
         files_analyzed: 150,

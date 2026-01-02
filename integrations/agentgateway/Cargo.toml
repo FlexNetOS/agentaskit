@@ -6,6 +6,9 @@ authors = ["AgentasKit Contributors"]
 license = "MIT OR Apache-2.0"
 description = "Integration bridge between AgentasKit and Agentgateway"
 
+[workspace]
+# This is a standalone package, not part of the parent workspace
+
 [dependencies]
 # Async runtime
 tokio = { version = "1.0", features = ["full", "process"] }

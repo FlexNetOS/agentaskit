@@ -3,7 +3,10 @@
 #[path = "../src/a2a.rs"]
 mod a2a;
 
+mod test_utils;
+
 use a2a::*;
+use test_utils::{generate_test_timestamp, generate_test_timestamp_offset};
 
 #[test]
 fn test_agent_card() {
@@ -85,7 +88,7 @@ fn test_task_response() {
         status: TaskStatus {
             state: TaskState::Completed,
             message: None,
-            timestamp: Some("2024-01-01T00:00:00Z".to_string()),
+            timestamp: Some(generate_test_timestamp()),
         },
         artifacts: vec![
             Artifact {
@@ -103,12 +106,12 @@ fn test_task_response() {
             TaskHistoryEntry {
                 state: TaskState::Submitted,
                 message: None,
-                timestamp: Some("2024-01-01T00:00:00Z".to_string()),
+                timestamp: Some(generate_test_timestamp_offset(-2)),
             },
             TaskHistoryEntry {
                 state: TaskState::Working,
                 message: None,
-                timestamp: Some("2024-01-01T00:00:01Z".to_string()),
+                timestamp: Some(generate_test_timestamp_offset(-1)),
             },
         ],
         metadata: std::collections::HashMap::new(),
