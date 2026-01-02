@@ -1,5 +1,5 @@
 //! Self-Improving Agent Orchestration System
-//! 
+//!
 //! Advanced agent orchestration with autonomous learning, self-healing,
 //! and continuous improvement capabilities following NOA principles.
 
@@ -8,13 +8,13 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{RwLock, mpsc, Mutex};
+use tokio::sync::{mpsc, Mutex, RwLock};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use tracing::{info, warn, error, debug};
 
 use crate::agents::AgentManager;
-use crate::verification::NoaVerificationSystem;
 use crate::autonomous::{AutonomousPipeline, MLEngine};
+use crate::verification::NoaVerificationSystem;
 
 /// Self-improving orchestration system with autonomous capabilities
 pub struct SelfImprovingOrchestrator {
@@ -255,7 +255,10 @@ impl SelfImprovingOrchestrator {
 
     /// Start the self-improving orchestration system
     pub async fn start(&mut self) -> Result<()> {
-        info!("Starting Self-Improving Orchestration System: {}", self.orchestrator_id);
+        info!(
+            "Starting Self-Improving Orchestration System: {}",
+            self.orchestrator_id
+        );
 
         *self.running.write().await = true;
 
@@ -384,11 +387,17 @@ impl SelfImprovingOrchestrator {
     }
 
     /// Learn from task execution and outcomes
-    pub async fn learn_from_execution(&mut self, task_id: Uuid, outcome: TaskExecutionOutcome) -> Result<()> {
+    pub async fn learn_from_execution(
+        &mut self,
+        task_id: Uuid,
+        outcome: TaskExecutionOutcome,
+    ) -> Result<()> {
         debug!("Learning from task execution: {}", task_id);
 
         let training_example = self.create_training_example(&outcome).await?;
-        self.learning_engine.add_training_example(training_example).await?;
+        self.learning_engine
+            .add_training_example(training_example)
+            .await?;
 
         // Update models if enough new data
         if self.learning_engine.should_retrain().await? {
@@ -401,11 +410,17 @@ impl SelfImprovingOrchestrator {
 
     /// Implement system improvement
     pub async fn implement_improvement(&mut self, improvement: SystemImprovement) -> Result<bool> {
-        info!("Implementing system improvement: {}", improvement.description);
+        info!(
+            "Implementing system improvement: {}",
+            improvement.description
+        );
 
         // Verify improvement safety
         if improvement.risk_assessment > RiskLevel::Medium {
-            warn!("High-risk improvement rejected: {}", improvement.description);
+            warn!(
+                "High-risk improvement rejected: {}",
+                improvement.description
+            );
             return Ok(false);
         }
 
@@ -414,20 +429,32 @@ impl SelfImprovingOrchestrator {
 
         // Apply improvement
         let success = match improvement.improvement_type {
-            ImprovementType::AgentOptimization => self.apply_agent_optimization(&improvement).await?,
-            ImprovementType::TaskScheduling => self.apply_task_scheduling_improvement(&improvement).await?,
-            ImprovementType::ResourceAllocation => self.apply_resource_optimization(&improvement).await?,
-            ImprovementType::CommunicationProtocol => self.apply_communication_improvement(&improvement).await?,
-            ImprovementType::LearningAlgorithm => self.apply_learning_improvement(&improvement).await?,
+            ImprovementType::AgentOptimization => {
+                self.apply_agent_optimization(&improvement).await?
+            }
+            ImprovementType::TaskScheduling => {
+                self.apply_task_scheduling_improvement(&improvement).await?
+            }
+            ImprovementType::ResourceAllocation => {
+                self.apply_resource_optimization(&improvement).await?
+            }
+            ImprovementType::CommunicationProtocol => {
+                self.apply_communication_improvement(&improvement).await?
+            }
+            ImprovementType::LearningAlgorithm => {
+                self.apply_learning_improvement(&improvement).await?
+            }
             ImprovementType::SelfHealing => self.apply_healing_improvement(&improvement).await?,
         };
 
         if success {
             // Verify improvement with NOA system
             let verification_passed = self.verify_improvement(&improvement).await?;
-            
+
             if verification_passed {
-                self.improvement_tracker.record_improvement(improvement).await?;
+                self.improvement_tracker
+                    .record_improvement(improvement)
+                    .await?;
                 info!("Improvement successfully implemented and verified");
                 Ok(true)
             } else {
@@ -443,7 +470,10 @@ impl SelfImprovingOrchestrator {
     }
 
     // Implementation helper methods
-    async fn create_training_example(&self, outcome: &TaskExecutionOutcome) -> Result<TrainingExample> {
+    async fn create_training_example(
+        &self,
+        outcome: &TaskExecutionOutcome,
+    ) -> Result<TrainingExample> {
         // Extract features from outcome for training
         let mut input_features = Vec::new();
         let mut target_output = Vec::new();
@@ -459,14 +489,18 @@ impl SelfImprovingOrchestrator {
         target_output.push((outcome.execution_time_ms as f64).ln().max(0.0)); // Log-normalized time
 
         // Calculate system-wide success rate for context
-        let success_rate = self.improvement_tracker.lock().await
+        let success_rate = self
+            .improvement_tracker
+            .lock()
+            .await
             .metrics_history
             .iter()
             .rev()
             .take(100)
             .filter(|m| m.success_rate > 0.0)
             .map(|m| m.success_rate)
-            .sum::<f64>() / 100.0.max(1.0);
+            .sum::<f64>()
+            / 100.0.max(1.0);
 
         Ok(TrainingExample {
             example_id: Uuid::new_v4(),
@@ -513,9 +547,11 @@ impl SelfImprovingOrchestrator {
             "timestamp": chrono::Utc::now().to_rfc3339(),
         });
 
-        info!("System backup created with {} improvements and {} training examples",
-              improvement_tracker.improvements.len(),
-              learning_engine.training_data.len());
+        info!(
+            "System backup created with {} improvements and {} training examples",
+            improvement_tracker.improvements.len(),
+            learning_engine.training_data.len()
+        );
 
         Ok(SystemBackup {
             backup_id: Uuid::new_v4(),
@@ -527,7 +563,9 @@ impl SelfImprovingOrchestrator {
     async fn verify_improvement(&mut self, improvement: &SystemImprovement) -> Result<bool> {
         // Use NOA verification system
         let workspace_path = std::env::current_dir()?;
-        self.verification_system.execute_verification(&workspace_path).await
+        self.verification_system
+            .execute_verification(&workspace_path)
+            .await
     }
 
     // Additional implementation methods would continue...
@@ -538,7 +576,10 @@ impl SelfImprovingOrchestrator {
         // Optimization strategies based on improvement data
         if let Some(confidence) = improvement.confidence_score {
             if confidence < 0.7 {
-                warn!("Low confidence optimization ({}), applying conservatively", confidence);
+                warn!(
+                    "Low confidence optimization ({}), applying conservatively",
+                    confidence
+                );
                 // Apply with reduced effect
                 return Ok(false);
             }
@@ -554,9 +595,15 @@ impl SelfImprovingOrchestrator {
         Ok(true)
     }
 
-    async fn apply_task_scheduling_improvement(&self, improvement: &SystemImprovement) -> Result<bool> {
+    async fn apply_task_scheduling_improvement(
+        &self,
+        improvement: &SystemImprovement,
+    ) -> Result<bool> {
         // Improve task scheduling algorithms
-        info!("Applying task scheduling improvement: {}", improvement.description);
+        info!(
+            "Applying task scheduling improvement: {}",
+            improvement.description
+        );
 
         // Scheduling improvements:
         // - Priority queue rebalancing
@@ -566,7 +613,10 @@ impl SelfImprovingOrchestrator {
 
         let expected_improvement = improvement.expected_improvement;
         if expected_improvement > 0.2 {
-            info!("High-impact scheduling improvement ({}%), applying aggressively", expected_improvement * 100.0);
+            info!(
+                "High-impact scheduling improvement ({}%), applying aggressively",
+                expected_improvement * 100.0
+            );
         }
 
         // Update scheduling parameters
@@ -576,7 +626,10 @@ impl SelfImprovingOrchestrator {
 
     async fn apply_resource_optimization(&self, improvement: &SystemImprovement) -> Result<bool> {
         // Optimize system resource utilization
-        info!("Applying resource optimization: {}", improvement.description);
+        info!(
+            "Applying resource optimization: {}",
+            improvement.description
+        );
 
         // Resource optimization strategies:
         // - Memory pool sizing adjustments
@@ -597,9 +650,15 @@ impl SelfImprovingOrchestrator {
         Ok(true)
     }
 
-    async fn apply_communication_improvement(&self, improvement: &SystemImprovement) -> Result<bool> {
+    async fn apply_communication_improvement(
+        &self,
+        improvement: &SystemImprovement,
+    ) -> Result<bool> {
         // Enhance inter-agent communication efficiency
-        info!("Applying communication improvement: {}", improvement.description);
+        info!(
+            "Applying communication improvement: {}",
+            improvement.description
+        );
 
         // Communication improvements:
         // - Message routing optimization
@@ -632,9 +691,12 @@ impl SelfImprovingOrchestrator {
 
         if improvement.expected_improvement > 0.15 {
             // Significant improvement, update learning rate
-            learning_engine.learning_metrics.model_accuracy += improvement.expected_improvement * 0.1;
-            info!("Learning model accuracy improved to {:.2}%",
-                  learning_engine.learning_metrics.model_accuracy * 100.0);
+            learning_engine.learning_metrics.model_accuracy +=
+                improvement.expected_improvement * 0.1;
+            info!(
+                "Learning model accuracy improved to {:.2}%",
+                learning_engine.learning_metrics.model_accuracy * 100.0
+            );
         }
 
         info!("Learning improvement applied successfully");
@@ -656,7 +718,10 @@ impl SelfImprovingOrchestrator {
         let suggestion_count = performance_analyzer.optimization_suggestions.len();
 
         if suggestion_count > 10 {
-            info!("Multiple optimization suggestions ({}), prioritizing healing", suggestion_count);
+            info!(
+                "Multiple optimization suggestions ({}), prioritizing healing",
+                suggestion_count
+            );
         }
 
         info!("Healing improvement applied successfully");
@@ -671,8 +736,13 @@ impl SelfImprovingOrchestrator {
 
         // Restore improvement tracker state
         if let Some(improvements_data) = state_data.get("improvements") {
-            info!("Restoring {} improvements from backup",
-                  improvements_data.get("count").and_then(|v| v.as_u64()).unwrap_or(0));
+            info!(
+                "Restoring {} improvements from backup",
+                improvements_data
+                    .get("count")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0)
+            );
         }
 
         // Restore learning engine state
@@ -763,7 +833,10 @@ impl LearningEngine {
     }
 
     async fn retrain_models(&mut self) -> Result<()> {
-        info!("Retraining learning models with {} examples", self.training_data.len());
+        info!(
+            "Retraining learning models with {} examples",
+            self.training_data.len()
+        );
 
         if self.training_data.is_empty() {
             warn!("No training data available for retraining");
@@ -774,7 +847,10 @@ impl LearningEngine {
         let split_index = (self.training_data.len() * 80) / 100;
         let validation_size = self.training_data.len() - split_index;
 
-        info!("Training set size: {}, Validation set size: {}", split_index, validation_size);
+        info!(
+            "Training set size: {}, Validation set size: {}",
+            split_index, validation_size
+        );
 
         // Simulate model retraining process
         // In production, this would:
@@ -789,9 +865,11 @@ impl LearningEngine {
         self.learning_metrics.model_accuracy = (previous_accuracy + 0.05).min(0.99); // Simulate improvement
         self.learning_metrics.last_training = Some(chrono::Utc::now());
 
-        info!("Model retraining complete. Accuracy: {:.2}% -> {:.2}%",
-              previous_accuracy * 100.0,
-              self.learning_metrics.model_accuracy * 100.0);
+        info!(
+            "Model retraining complete. Accuracy: {:.2}% -> {:.2}%",
+            previous_accuracy * 100.0,
+            self.learning_metrics.model_accuracy * 100.0
+        );
 
         // Clear training data after successful retraining
         self.training_data.clear();

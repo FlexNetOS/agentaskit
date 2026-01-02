@@ -14,7 +14,7 @@ use agentaskit_shared::{
 };
 
 /// Monitoring Agent - Comprehensive system monitoring and observability
-/// 
+///
 /// The Monitoring Agent is responsible for:
 /// - System metrics collection and analysis
 /// - Application performance monitoring
@@ -26,19 +26,19 @@ pub struct MonitoringAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Metrics collector
     metrics_collector: Arc<RwLock<MetricsCollector>>,
-    
+
     /// Alert manager
     alert_manager: Arc<RwLock<AlertManager>>,
-    
+
     /// Log analyzer
     log_analyzer: Arc<RwLock<LogAnalyzer>>,
-    
+
     /// Health monitor
     health_monitor: Arc<RwLock<HealthMonitor>>,
-    
+
     /// Configuration
     config: MonitoringConfig,
 }
@@ -48,22 +48,22 @@ pub struct MonitoringAgent {
 pub struct MonitoringConfig {
     /// Metrics collection settings
     pub metrics_config: MetricsConfig,
-    
+
     /// Alerting configuration
     pub alerting_config: AlertingConfig,
-    
+
     /// Logging configuration
     pub logging_config: LoggingConfig,
-    
+
     /// Health monitoring settings
     pub health_config: HealthConfig,
-    
+
     /// Dashboard configuration
     pub dashboard_config: DashboardConfig,
-    
+
     /// Retention policies
     pub retention_policies: RetentionPolicies,
-    
+
     /// Performance settings
     pub performance_config: PerformanceConfig,
 }
@@ -497,10 +497,10 @@ impl Default for MonitoringConfig {
             },
             retention_policies: RetentionPolicies {
                 metrics_retention: Duration::from_secs(30 * 24 * 60 * 60), // 30 days
-                logs_retention: Duration::from_secs(7 * 24 * 60 * 60), // 7 days
-                alerts_retention: Duration::from_secs(90 * 24 * 60 * 60), // 90 days
-                traces_retention: Duration::from_secs(3 * 24 * 60 * 60), // 3 days
-                compression_after: Duration::from_secs(1 * 24 * 60 * 60), // 1 day
+                logs_retention: Duration::from_secs(7 * 24 * 60 * 60),     // 7 days
+                alerts_retention: Duration::from_secs(90 * 24 * 60 * 60),  // 90 days
+                traces_retention: Duration::from_secs(3 * 24 * 60 * 60),   // 3 days
+                compression_after: Duration::from_secs(1 * 24 * 60 * 60),  // 1 day
             },
             performance_config: PerformanceConfig {
                 max_series: 10000000,
@@ -519,16 +519,16 @@ impl Default for MonitoringConfig {
 struct MetricsCollector {
     /// Active metric streams
     metric_streams: HashMap<String, MetricStream>,
-    
+
     /// Collected metrics
     collected_metrics: VecDeque<CollectedMetric>,
-    
+
     /// Metric definitions
     metric_definitions: HashMap<String, MetricDefinition>,
-    
+
     /// Aggregated metrics
     aggregated_metrics: HashMap<String, AggregatedMetric>,
-    
+
     /// Collection statistics
     collection_stats: CollectionStats,
 }
@@ -636,16 +636,16 @@ struct CollectionStats {
 struct AlertManager {
     /// Active alerts
     active_alerts: HashMap<String, Alert>,
-    
+
     /// Alert rules
     alert_rules: HashMap<String, AlertRule>,
-    
+
     /// Alert history
     alert_history: VecDeque<AlertEvent>,
-    
+
     /// Notification channels
     notification_channels: HashMap<String, NotificationChannel>,
-    
+
     /// Alert statistics
     alert_stats: AlertStats,
 }
@@ -763,16 +763,16 @@ struct AlertStats {
 struct LogAnalyzer {
     /// Log streams
     log_streams: HashMap<String, LogStream>,
-    
+
     /// Parsed logs
     parsed_logs: VecDeque<ParsedLog>,
-    
+
     /// Log patterns
     log_patterns: HashMap<String, LogPattern>,
-    
+
     /// Anomaly detection
     anomaly_detector: AnomalyDetector,
-    
+
     /// Analysis statistics
     analysis_stats: AnalysisStats,
 }
@@ -899,16 +899,16 @@ struct AnalysisStats {
 struct HealthMonitor {
     /// Health checks
     health_checks: HashMap<String, HealthCheck>,
-    
+
     /// Service health status
     service_health: HashMap<String, ServiceHealth>,
-    
+
     /// Dependency map
     dependency_map: HashMap<String, Vec<String>>,
-    
+
     /// Health history
     health_history: VecDeque<HealthEvent>,
-    
+
     /// Health statistics
     health_stats: HealthStats,
 }
@@ -1014,10 +1014,10 @@ impl MonitoringAgent {
             cluster_assignment: Some("specialized".to_string()),
             resource_requirements: ResourceRequirements {
                 min_cpu: 1.0,
-                min_memory: 4 * 1024 * 1024 * 1024, // 4GB
+                min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
                 min_storage: 50 * 1024 * 1024 * 1024, // 50GB
                 max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024, // 32GB
+                max_memory: 32 * 1024 * 1024 * 1024,    // 32GB
                 max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
             },
             health_check_interval: Duration::from_secs(30),
@@ -1038,11 +1038,11 @@ impl MonitoringAgent {
     /// Start monitoring a service
     pub async fn start_monitoring(&self, service_name: String) -> Result<String> {
         tracing::info!("Starting monitoring for service: {}", service_name);
-        
+
         let mut health_monitor = self.health_monitor.write().await;
-        
+
         let monitoring_id = format!("mon-{}", Uuid::new_v4());
-        
+
         let service_health = ServiceHealth {
             service_name: service_name.clone(),
             overall_status: HealthStatus {
@@ -1062,11 +1062,13 @@ impl MonitoringAgent {
             availability: 100.0,
             response_time: Duration::from_millis(100),
         };
-        
-        health_monitor.service_health.insert(service_name, service_health);
+
+        health_monitor
+            .service_health
+            .insert(service_name, service_health);
         health_monitor.health_stats.total_services_monitored += 1;
         health_monitor.health_stats.healthy_services += 1;
-        
+
         tracing::info!("Monitoring started for service with ID: {}", monitoring_id);
         Ok(monitoring_id)
     }
@@ -1077,7 +1079,7 @@ impl MonitoringAgent {
         let alert_manager = self.alert_manager.read().await;
         let log_analyzer = self.log_analyzer.read().await;
         let health_monitor = self.health_monitor.read().await;
-        
+
         Ok(MonitoringStatus {
             active_metric_streams: metrics_collector.metric_streams.len(),
             total_metrics_collected: metrics_collector.collection_stats.total_metrics_collected,
@@ -1120,36 +1122,37 @@ impl Agent for MonitoringAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Monitoring Agent");
-        
+
         // Initialize metrics collection
         let mut metrics_collector = self.metrics_collector.write().await;
-        self.initialize_metrics_collection(&mut metrics_collector).await?;
-        
+        self.initialize_metrics_collection(&mut metrics_collector)
+            .await?;
+
         // Initialize alert rules
         let mut alert_manager = self.alert_manager.write().await;
         self.initialize_alert_rules(&mut alert_manager).await?;
-        
+
         // Initialize log processing
         let mut log_analyzer = self.log_analyzer.write().await;
         self.initialize_log_processing(&mut log_analyzer).await?;
-        
+
         // Initialize health checks
         let mut health_monitor = self.health_monitor.write().await;
         self.initialize_health_checks(&mut health_monitor).await?;
-        
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Monitoring Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Monitoring Agent");
-        
+
         // Start metrics collection
         let metrics_collector = self.metrics_collector.clone();
         let collection_interval = self.config.metrics_config.collection_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(collection_interval);
             loop {
@@ -1159,11 +1162,11 @@ impl Agent for MonitoringAgent {
                 }
             }
         });
-        
+
         // Start alert evaluation
         let alert_manager = self.alert_manager.clone();
         let alert_interval = self.config.alerting_config.alert_evaluation_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(alert_interval);
             loop {
@@ -1173,11 +1176,11 @@ impl Agent for MonitoringAgent {
                 }
             }
         });
-        
+
         // Start health monitoring
         let health_monitor = self.health_monitor.clone();
         let health_interval = self.config.health_config.health_check_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(health_interval);
             loop {
@@ -1187,16 +1190,16 @@ impl Agent for MonitoringAgent {
                 }
             }
         });
-        
+
         tracing::info!("Monitoring Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Monitoring Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Monitoring Agent stopped successfully");
         Ok(())
     }
@@ -1205,7 +1208,7 @@ impl Agent for MonitoringAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -1220,16 +1223,18 @@ impl Agent for MonitoringAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "start-monitoring" => {
-                let service_name = task.parameters.get("service_name")
+                let service_name = task
+                    .parameters
+                    .get("service_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-service")
                     .to_string();
-                
+
                 let monitoring_id = self.start_monitoring(service_name).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1244,7 +1249,7 @@ impl Agent for MonitoringAgent {
             }
             "get-status" => {
                 let status = self.get_monitoring_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1261,28 +1266,26 @@ impl Agent for MonitoringAgent {
                     resource_usage: ResourceUsage::default(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Monitoring task failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed("Monitoring task failed".to_string()),
+                result: serde_json::Value::Null,
+                error: Some(format!("Unknown task type: {}", task.name)),
+                execution_time: start_time.elapsed(),
+                resource_usage: ResourceUsage::default(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
         let metrics_collector = self.metrics_collector.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0, // Placeholder
+            cpu_usage: 15.0,                      // Placeholder
             memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
             task_queue_size: metrics_collector.metric_streams.len() as usize,
             completed_tasks: metrics_collector.collection_stats.total_metrics_collected,
@@ -1303,7 +1306,10 @@ impl Agent for MonitoringAgent {
 
 impl MonitoringAgent {
     /// Initialize metrics collection
-    async fn initialize_metrics_collection(&self, metrics_collector: &mut MetricsCollector) -> Result<()> {
+    async fn initialize_metrics_collection(
+        &self,
+        metrics_collector: &mut MetricsCollector,
+    ) -> Result<()> {
         // Initialize collection statistics
         metrics_collector.collection_stats = CollectionStats {
             total_metrics_collected: 0,
@@ -1313,11 +1319,11 @@ impl MonitoringAgent {
             storage_size_bytes: 0,
             collection_rate: 0.0,
         };
-        
+
         tracing::info!("Initialized metrics collection");
         Ok(())
     }
-    
+
     /// Initialize alert rules
     async fn initialize_alert_rules(&self, alert_manager: &mut AlertManager) -> Result<()> {
         // Initialize alert statistics
@@ -1330,11 +1336,11 @@ impl MonitoringAgent {
             escalation_rate: 0.05,
             notification_success_rate: 0.98,
         };
-        
+
         tracing::info!("Initialized alert rules and statistics");
         Ok(())
     }
-    
+
     /// Initialize log processing
     async fn initialize_log_processing(&self, log_analyzer: &mut LogAnalyzer) -> Result<()> {
         // Initialize analysis statistics
@@ -1346,11 +1352,11 @@ impl MonitoringAgent {
             processing_rate: 0.0,
             average_processing_time: Duration::from_millis(1),
         };
-        
+
         tracing::info!("Initialized log processing");
         Ok(())
     }
-    
+
     /// Initialize health checks
     async fn initialize_health_checks(&self, health_monitor: &mut HealthMonitor) -> Result<()> {
         // Initialize health statistics
@@ -1363,38 +1369,38 @@ impl MonitoringAgent {
             total_downtime: Duration::from_secs(0),
             incident_count: 0,
         };
-        
+
         tracing::info!("Initialized health monitoring");
         Ok(())
     }
-    
+
     /// Collect metrics (background task)
     async fn collect_metrics(metrics_collector: Arc<RwLock<MetricsCollector>>) -> Result<()> {
         let mut collector = metrics_collector.write().await;
-        
+
         // TODO: Implement actual metrics collection
         collector.collection_stats.total_metrics_collected += 1;
-        
+
         tracing::debug!("Metrics collection cycle completed");
         Ok(())
     }
-    
+
     /// Evaluate alerts (background task)
     async fn evaluate_alerts(alert_manager: Arc<RwLock<AlertManager>>) -> Result<()> {
         let _alert_manager = alert_manager.read().await;
-        
+
         // TODO: Implement alert evaluation logic
-        
+
         tracing::debug!("Alert evaluation cycle completed");
         Ok(())
     }
-    
+
     /// Perform health checks (background task)
     async fn perform_health_checks(health_monitor: Arc<RwLock<HealthMonitor>>) -> Result<()> {
         let _health_monitor = health_monitor.read().await;
-        
+
         // TODO: Implement health check logic
-        
+
         tracing::debug!("Health check cycle completed");
         Ok(())
     }

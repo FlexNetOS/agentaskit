@@ -1,11 +1,11 @@
 use anyhow::Result;
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use chrono::{DateTime, Utc, Duration};
-use tracing::{info, warn, error, debug};
 
 /// System metrics collected for monitoring
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -157,14 +157,14 @@ impl MetricsCollector {
 
     pub async fn start(&self) -> Result<()> {
         info!("Starting metrics collection");
-        
+
         *self.collection_enabled.write().await = true;
-        
+
         // Start periodic metrics collection
         self.start_system_metrics_collection().await?;
         self.start_health_monitoring().await?;
         self.start_alert_processing().await?;
-        
+
         Ok(())
     }
 
@@ -174,24 +174,24 @@ impl MetricsCollector {
 
         tokio::spawn(async move {
             info!("System metrics collection started");
-            
+
             while *collection_enabled.read().await {
                 // Collect system metrics
                 let metrics = Self::collect_system_metrics().await;
-                
+
                 // Store metrics (keep last 1000 entries)
                 {
                     let mut metrics_store = system_metrics.write().await;
                     metrics_store.push(metrics);
-                    
+
                     if metrics_store.len() > 1000 {
                         metrics_store.remove(0);
                     }
                 }
-                
+
                 tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
             }
-            
+
             info!("System metrics collection stopped");
         });
 
@@ -207,21 +207,19 @@ impl MetricsCollector {
 
         tokio::spawn(async move {
             info!("Health monitoring started");
-            
+
             while *collection_enabled.read().await {
                 // Check system health
-                if let Err(e) = Self::check_system_health(
-                    &system_metrics,
-                    &agent_metrics,
-                    &alerts,
-                    &thresholds,
-                ).await {
+                if let Err(e) =
+                    Self::check_system_health(&system_metrics, &agent_metrics, &alerts, &thresholds)
+                        .await
+                {
                     error!("Health check failed: {}", e);
                 }
-                
+
                 tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
             }
-            
+
             info!("Health monitoring stopped");
         });
 
@@ -234,31 +232,31 @@ impl MetricsCollector {
 
         tokio::spawn(async move {
             info!("Alert processing started");
-            
+
             while *collection_enabled.read().await {
                 // Process and potentially auto-resolve alerts
                 {
                     let mut alerts_store = alerts.write().await;
                     let now = Utc::now();
-                    
+
                     // Auto-resolve old info alerts (1 hour)
                     for alert in alerts_store.iter_mut() {
-                        if alert.level == AlertLevel::Info 
-                            && !alert.resolved 
-                            && now.signed_duration_since(alert.timestamp).num_hours() >= 1 {
+                        if alert.level == AlertLevel::Info
+                            && !alert.resolved
+                            && now.signed_duration_since(alert.timestamp).num_hours() >= 1
+                        {
                             alert.resolved = true;
                         }
                     }
-                    
+
                     // Remove very old alerts (7 days)
-                    alerts_store.retain(|alert| {
-                        now.signed_duration_since(alert.timestamp).num_days() < 7
-                    });
+                    alerts_store
+                        .retain(|alert| now.signed_duration_since(alert.timestamp).num_days() < 7);
                 }
-                
+
                 tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
             }
-            
+
             info!("Alert processing stopped");
         });
 
@@ -284,27 +282,29 @@ impl MetricsCollector {
 
     pub async fn record_agent_metrics(&self, metrics: AgentMetrics) -> Result<()> {
         let mut agent_metrics = self.agent_metrics.write().await;
-        
-        let agent_history = agent_metrics.entry(metrics.agent_id).or_insert_with(Vec::new);
+
+        let agent_history = agent_metrics
+            .entry(metrics.agent_id)
+            .or_insert_with(Vec::new);
         agent_history.push(metrics);
-        
+
         // Keep only the last 100 metrics per agent
         if agent_history.len() > 100 {
             agent_history.remove(0);
         }
-        
+
         Ok(())
     }
 
     pub async fn record_task_metrics(&self, metrics: TaskMetrics) -> Result<()> {
         let mut task_metrics = self.task_metrics.write().await;
         task_metrics.push(metrics);
-        
+
         // Keep only the last 10000 task metrics
         if task_metrics.len() > 10000 {
             task_metrics.remove(0);
         }
-        
+
         Ok(())
     }
 
@@ -315,14 +315,15 @@ impl MetricsCollector {
         thresholds: &Arc<RwLock<PerformanceThresholds>>,
     ) -> Result<()> {
         let thresholds = thresholds.read().await.clone();
-        
+
         // Check latest system metrics
         {
             let metrics = system_metrics.read().await;
             if let Some(latest) = metrics.last() {
                 let cpu_usage = latest.cpu_usage_percent;
-                let memory_usage = (latest.memory_usage_mb as f64 / latest.memory_total_mb as f64) * 100.0;
-                
+                let memory_usage =
+                    (latest.memory_usage_mb as f64 / latest.memory_total_mb as f64) * 100.0;
+
                 // Check CPU usage
                 if cpu_usage >= thresholds.cpu_usage_critical {
                     Self::create_alert(
@@ -332,7 +333,8 @@ impl MetricsCollector {
                         format!("CPU usage is at {:.1}%", cpu_usage),
                         "system_monitor".to_string(),
                         serde_json::json!({ "cpu_usage": cpu_usage }),
-                    ).await;
+                    )
+                    .await;
                 } else if cpu_usage >= thresholds.cpu_usage_warning {
                     Self::create_alert(
                         alerts,
@@ -341,9 +343,10 @@ impl MetricsCollector {
                         format!("CPU usage is at {:.1}%", cpu_usage),
                         "system_monitor".to_string(),
                         serde_json::json!({ "cpu_usage": cpu_usage }),
-                    ).await;
+                    )
+                    .await;
                 }
-                
+
                 // Check memory usage
                 if memory_usage >= thresholds.memory_usage_critical {
                     Self::create_alert(
@@ -353,7 +356,8 @@ impl MetricsCollector {
                         format!("Memory usage is at {:.1}%", memory_usage),
                         "system_monitor".to_string(),
                         serde_json::json!({ "memory_usage": memory_usage }),
-                    ).await;
+                    )
+                    .await;
                 } else if memory_usage >= thresholds.memory_usage_warning {
                     Self::create_alert(
                         alerts,
@@ -362,7 +366,8 @@ impl MetricsCollector {
                         format!("Memory usage is at {:.1}%", memory_usage),
                         "system_monitor".to_string(),
                         serde_json::json!({ "memory_usage": memory_usage }),
-                    ).await;
+                    )
+                    .await;
                 }
             }
         }
@@ -371,11 +376,15 @@ impl MetricsCollector {
         {
             let agent_metrics = agent_metrics.read().await;
             let now = Utc::now();
-            
+
             for (agent_id, metrics_history) in agent_metrics.iter() {
                 if let Some(latest) = metrics_history.last() {
                     // Check if agent has been silent for too long
-                    if now.signed_duration_since(latest.last_activity).num_minutes() > 5 {
+                    if now
+                        .signed_duration_since(latest.last_activity)
+                        .num_minutes()
+                        > 5
+                    {
                         Self::create_alert(
                             alerts,
                             AlertLevel::Warning,
@@ -383,26 +392,32 @@ impl MetricsCollector {
                             format!("Agent {} has not been active for over 5 minutes", agent_id),
                             "agent_monitor".to_string(),
                             serde_json::json!({ "agent_id": agent_id }),
-                        ).await;
+                        )
+                        .await;
                     }
-                    
+
                     // Check task failure rate
                     let total_tasks = latest.tasks_completed + latest.tasks_failed;
                     if total_tasks > 0 {
-                        let failure_rate = (latest.tasks_failed as f64 / total_tasks as f64) * 100.0;
-                        
+                        let failure_rate =
+                            (latest.tasks_failed as f64 / total_tasks as f64) * 100.0;
+
                         if failure_rate >= thresholds.task_failure_rate_critical {
                             Self::create_alert(
                                 alerts,
                                 AlertLevel::Critical,
                                 "High Task Failure Rate".to_string(),
-                                format!("Agent {} has {:.1}% task failure rate", agent_id, failure_rate),
+                                format!(
+                                    "Agent {} has {:.1}% task failure rate",
+                                    agent_id, failure_rate
+                                ),
                                 "agent_monitor".to_string(),
-                                serde_json::json!({ 
+                                serde_json::json!({
                                     "agent_id": agent_id,
-                                    "failure_rate": failure_rate 
+                                    "failure_rate": failure_rate
                                 }),
-                            ).await;
+                            )
+                            .await;
                         }
                     }
                 }
@@ -436,10 +451,11 @@ impl MetricsCollector {
         {
             let existing_alerts = alerts.read().await;
             let similar_exists = existing_alerts.iter().any(|a| {
-                a.title == title && !a.resolved && 
-                Utc::now().signed_duration_since(a.timestamp).num_minutes() < 30
+                a.title == title
+                    && !a.resolved
+                    && Utc::now().signed_duration_since(a.timestamp).num_minutes() < 30
             });
-            
+
             if similar_exists {
                 return; // Don't create duplicate alerts
             }
@@ -456,16 +472,18 @@ impl MetricsCollector {
 
         // This is called by the orchestrator periodically
         // Additional metrics collection logic can be added here
-        
+
         Ok(())
     }
 
     pub async fn get_system_health(&self) -> Result<HealthStatus> {
         let alerts = self.alerts.read().await;
-        let recent_critical = alerts.iter()
+        let recent_critical = alerts
+            .iter()
             .filter(|a| a.level == AlertLevel::Critical && !a.resolved)
             .count();
-        let recent_warnings = alerts.iter()
+        let recent_warnings = alerts
+            .iter()
             .filter(|a| a.level == AlertLevel::Warning && !a.resolved)
             .count();
 
@@ -482,9 +500,10 @@ impl MetricsCollector {
 
     pub async fn get_alerts(&self, level: Option<AlertLevel>) -> Vec<Alert> {
         let alerts = self.alerts.read().await;
-        
+
         if let Some(filter_level) = level {
-            alerts.iter()
+            alerts
+                .iter()
                 .filter(|alert| alert.level == filter_level)
                 .cloned()
                 .collect()
@@ -495,7 +514,7 @@ impl MetricsCollector {
 
     pub async fn acknowledge_alert(&self, alert_id: Uuid) -> Result<()> {
         let mut alerts = self.alerts.write().await;
-        
+
         if let Some(alert) = alerts.iter_mut().find(|a| a.id == alert_id) {
             alert.acknowledged = true;
             info!("Acknowledged alert: {}", alert.title);
@@ -507,7 +526,7 @@ impl MetricsCollector {
 
     pub async fn resolve_alert(&self, alert_id: Uuid) -> Result<()> {
         let mut alerts = self.alerts.write().await;
-        
+
         if let Some(alert) = alerts.iter_mut().find(|a| a.id == alert_id) {
             alert.resolved = true;
             info!("Resolved alert: {}", alert.title);
@@ -519,9 +538,9 @@ impl MetricsCollector {
 
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down metrics collector");
-        
+
         *self.collection_enabled.write().await = false;
-        
+
         info!("Metrics collector shutdown complete");
         Ok(())
     }

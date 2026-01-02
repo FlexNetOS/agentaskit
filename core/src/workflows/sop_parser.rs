@@ -3,7 +3,7 @@
 //! This module provides comprehensive parsing and analysis of .sop files
 //! following the AgentTask SOP format with three-plane architecture.
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -116,7 +116,7 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
 
     while i < lines.len() {
         let line = lines[i].trim();
-        
+
         // Parse version and generated timestamp
         if line.starts_with("Version:") {
             if let Some(version) = line.split("Version:").nth(1) {
@@ -126,7 +126,7 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                 doc.generated = generated.trim().to_string();
             }
         }
-        
+
         // Detect section headers
         if line.contains("====") && i + 1 < lines.len() {
             current_section = lines[i + 1].trim().to_string();
@@ -153,7 +153,9 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                     // Parse limitations
                     i += 1;
                     while i < lines.len() && lines[i].trim().starts_with('-') {
-                        doc.scope.limitations.push(lines[i].trim()[1..].trim().to_string());
+                        doc.scope
+                            .limitations
+                            .push(lines[i].trim()[1..].trim().to_string());
                         i += 1;
                     }
                     i -= 1;
@@ -179,7 +181,9 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                 if line.starts_with("Required tools") {
                     i += 1;
                     while i < lines.len() && lines[i].trim().starts_with("•") {
-                        doc.materials.required_tools.push(lines[i].trim()[1..].trim().to_string());
+                        doc.materials
+                            .required_tools
+                            .push(lines[i].trim()[1..].trim().to_string());
                         i += 1;
                     }
                     i -= 1;
@@ -189,7 +193,7 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                         let env_line = lines[i].trim()[1..].trim();
                         if let Some(dash_pos) = env_line.find('–') {
                             let key = env_line[..dash_pos].trim().to_string();
-                            let value = env_line[dash_pos+3..].trim().to_string();
+                            let value = env_line[dash_pos + 3..].trim().to_string();
                             doc.materials.environment_variables.insert(key, value);
                         }
                         i += 1;
@@ -209,13 +213,20 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                     let id = parts[0].trim().to_string();
                     let name = parts.get(1).unwrap_or(&"").trim().to_string();
                     let mut steps = Vec::new();
-                    
+
                     i += 1;
                     while i < lines.len() {
                         let step_line = lines[i].trim();
                         if step_line.starts_with(char::is_alphabetic) && step_line.contains('.') {
-                            let substep = step_line.split('.').next().unwrap_or("").trim().to_string();
-                            let description = step_line.split('.').skip(1).collect::<Vec<_>>().join(".").trim().to_string();
+                            let substep =
+                                step_line.split('.').next().unwrap_or("").trim().to_string();
+                            let description = step_line
+                                .split('.')
+                                .skip(1)
+                                .collect::<Vec<_>>()
+                                .join(".")
+                                .trim()
+                                .to_string();
                             steps.push(SOPStep {
                                 substep,
                                 command: None,
@@ -227,7 +238,7 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                         }
                         i += 1;
                     }
-                    
+
                     doc.procedures.push(SOPProcedure {
                         id,
                         name,
@@ -242,21 +253,27 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                 if line.starts_with("Build-time Gates") {
                     i += 1;
                     while i < lines.len() && lines[i].trim().starts_with("•") {
-                        doc.quality_checks.build_time_gates.push(lines[i].trim()[1..].trim().to_string());
+                        doc.quality_checks
+                            .build_time_gates
+                            .push(lines[i].trim()[1..].trim().to_string());
                         i += 1;
                     }
                     i -= 1;
                 } else if line.starts_with("Runtime Guards") {
                     i += 1;
                     while i < lines.len() && lines[i].trim().starts_with("•") {
-                        doc.quality_checks.runtime_guards.push(lines[i].trim()[1..].trim().to_string());
+                        doc.quality_checks
+                            .runtime_guards
+                            .push(lines[i].trim()[1..].trim().to_string());
                         i += 1;
                     }
                     i -= 1;
                 } else if line.starts_with("Metrics to Watch") {
                     i += 1;
                     while i < lines.len() && lines[i].trim().starts_with("•") {
-                        doc.quality_checks.metrics_to_watch.push(lines[i].trim()[1..].trim().to_string());
+                        doc.quality_checks
+                            .metrics_to_watch
+                            .push(lines[i].trim()[1..].trim().to_string());
                         i += 1;
                     }
                     i -= 1;
@@ -266,10 +283,8 @@ pub fn parse_sop(text: &str) -> Result<SOPDocument> {
                 if line.contains(':') && !line.is_empty() {
                     let parts: Vec<&str> = line.splitn(2, ':').collect();
                     if parts.len() == 2 {
-                        doc.glossary.insert(
-                            parts[0].trim().to_string(),
-                            parts[1].trim().to_string()
-                        );
+                        doc.glossary
+                            .insert(parts[0].trim().to_string(), parts[1].trim().to_string());
                     }
                 }
             }
@@ -303,7 +318,7 @@ pub fn parse_sop_steps(text: &str) -> Vec<String> {
 /// Validate SOP compliance for a given task
 pub fn validate_sop_compliance(sop: &SOPDocument, task_description: &str) -> Vec<String> {
     let mut violations = Vec::new();
-    
+
     // Check for required procedures mentioned
     for procedure in &sop.procedures {
         if task_description.contains(&procedure.name) {
@@ -318,7 +333,7 @@ pub fn validate_sop_compliance(sop: &SOPDocument, task_description: &str) -> Vec
             }
         }
     }
-    
+
     violations
 }
 

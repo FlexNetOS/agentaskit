@@ -3,7 +3,7 @@
 //! Provides AI-powered content analysis and procedure validation
 //! for Standard Operating Procedures.
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 use super::sop_parser::{SOPDocument, SOPProcedure, SOPStep};
@@ -92,7 +92,8 @@ impl AISopAnalyzer {
                     completeness_score -= 0.05;
                 }
                 if procedure.description.is_empty() {
-                    recommendations.push(format!("Add description to procedure '{}'", procedure.name));
+                    recommendations
+                        .push(format!("Add description to procedure '{}'", procedure.name));
                 }
             }
         }
@@ -135,20 +136,21 @@ impl AISopAnalyzer {
 
         // Simple keyword matching (in production, use actual AI model)
         let task_keywords = self.extract_keywords(task_description);
-        
+
         for step in &procedure.steps {
-            let step_text = format!("{} {}", 
+            let step_text = format!(
+                "{} {}",
                 step.command.as_ref().unwrap_or(&String::new()),
                 step.description
             );
-            
+
             let mut relevance = 0.0f32;
             for keyword in &task_keywords {
                 if step_text.to_lowercase().contains(&keyword.to_lowercase()) {
                     relevance += 0.1;
                 }
             }
-            
+
             if relevance > 0.0 {
                 relevant_steps.push(RelevantStep {
                     substep: step.substep.clone(),
@@ -177,7 +179,9 @@ impl AISopAnalyzer {
             alignment_score: alignment_score.max(0.0),
             relevant_steps,
             gaps,
-            required_steps: procedure.steps.iter()
+            required_steps: procedure
+                .steps
+                .iter()
                 .filter(|s| s.required)
                 .map(|s| s.substep.clone())
                 .collect(),
@@ -243,10 +247,13 @@ impl AISopAnalyzer {
         let task_keywords = self.extract_keywords(task_description);
 
         for procedure in &sop.procedures {
-            let procedure_text = format!("{} {} {}",
+            let procedure_text = format!(
+                "{} {} {}",
                 procedure.name,
                 procedure.description,
-                procedure.steps.iter()
+                procedure
+                    .steps
+                    .iter()
                     .map(|s| s.description.clone())
                     .collect::<Vec<_>>()
                     .join(" ")
@@ -254,7 +261,10 @@ impl AISopAnalyzer {
 
             let mut relevance = 0.0f32;
             for keyword in &task_keywords {
-                if procedure_text.to_lowercase().contains(&keyword.to_lowercase()) {
+                if procedure_text
+                    .to_lowercase()
+                    .contains(&keyword.to_lowercase())
+                {
                     relevance += 0.15;
                 }
             }
@@ -279,14 +289,28 @@ impl AISopAnalyzer {
     // Helper methods
     fn get_analyzed_sections(&self, sop: &SOPDocument) -> Vec<String> {
         let mut sections = vec!["Title".to_string(), "Purpose".to_string()];
-        
-        if sop.scope.is_some() { sections.push("Scope".to_string()); }
-        if !sop.roles.is_empty() { sections.push("Roles".to_string()); }
-        if sop.materials.is_some() { sections.push("Materials".to_string()); }
-        if sop.architecture.is_some() { sections.push("Architecture".to_string()); }
-        if !sop.procedures.is_empty() { sections.push("Procedures".to_string()); }
-        if sop.quality_checks.is_some() { sections.push("Quality Checks".to_string()); }
-        if !sop.glossary.is_empty() { sections.push("Glossary".to_string()); }
+
+        if sop.scope.is_some() {
+            sections.push("Scope".to_string());
+        }
+        if !sop.roles.is_empty() {
+            sections.push("Roles".to_string());
+        }
+        if sop.materials.is_some() {
+            sections.push("Materials".to_string());
+        }
+        if sop.architecture.is_some() {
+            sections.push("Architecture".to_string());
+        }
+        if !sop.procedures.is_empty() {
+            sections.push("Procedures".to_string());
+        }
+        if sop.quality_checks.is_some() {
+            sections.push("Quality Checks".to_string());
+        }
+        if !sop.glossary.is_empty() {
+            sections.push("Glossary".to_string());
+        }
 
         sections
     }
@@ -371,7 +395,7 @@ mod tests {
     #[tokio::test]
     async fn test_ai_analyzer() {
         let analyzer = AISopAnalyzer::new("test-model".to_string());
-        
+
         let mut sop = SOPDocument {
             version: "1.0".to_string(),
             generated: "2025-01-01".to_string(),

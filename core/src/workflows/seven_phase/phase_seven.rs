@@ -1,14 +1,14 @@
 //! Phase 7: Post-Delivery Operations
-//! 
+//!
 //! This module handles post-delivery operations:
 //! - Execution artifact archiving for compliance
 //! - Agent health assessment and continuous learning
 //! - System state cleanup and optimization
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 use super::PhaseResult;
 
@@ -68,7 +68,10 @@ impl PostDeliveryManager {
         Ok(Self)
     }
 
-    pub async fn handle_post_delivery(&self, phase_results: &HashMap<super::PhaseType, PhaseResult>) -> Result<Phase7Result> {
+    pub async fn handle_post_delivery(
+        &self,
+        phase_results: &HashMap<super::PhaseType, PhaseResult>,
+    ) -> Result<Phase7Result> {
         // TODO: Implement post-delivery operations
         Ok(Phase7Result {
             archiving_status: ArchivingStatus {
