@@ -477,6 +477,7 @@
   - [ ] .gitignore
   - [ ] .gitmodules
   - [ ] .qoderignore
+  - [ ] a2a.rs
   - [ ] agent_directory_template.csv
   - [ ] agent_map_crosswalk.md
   - [ ] agent_schema_template.json
@@ -492,17 +493,20 @@
   - [ ] anchor-20251005-080803.json
   - [ ] ark-os repository analysis_ comprehensive feature catalog.md
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
+  - [ ] auth.rs
   - [ ] capsule.schema.v2_20251005-081849.json
   - [ ] capsule.schema_20251005-081849.json
   - [ ] check_errors.txt
   - [ ] check_errors_2.txt
   - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] config.rs
   - [ ] crosscheck_report.md
   - [ ] csv_schema.md
   - [ ] csv_schema_v1_20251005-081849.md
   - [ ] csv_schema_v2_20251005-081849.md
   - [ ] csv_schema_v3_20251005-081849.md
   - [ ] data.csv
+  - [ ] dependency_analysis.md
   - [ ] dispatch_run_todo.ps1
   - [ ] enhanced_workflow_components_report.md
   - [ ] enhanced_workflow_implementation.md
@@ -510,19 +514,15 @@
   - [ ] final_report.md
   - [ ] final_summary.md
   - [ ] fitness-report.json
+  - [ ] gateway.rs
   - [ ] healing_report.md
   - [ ] how-to-use.md
   - [ ] how-to-use_v3_1_20251005-081849.md
   - [ ] how-to-use_v3_1_extended_20251005-081849.md
   - [ ] inference.capnp
+  - [ ] local.yaml
   - [ ] manifest.sha256
-  - [ ] multi-agent-task-kit.md
-  - [ ] noaos_comprehensive_enhanced.xlsx
-  - [ ] optimization_directive.txt
-  - [ ] optimize.ps1
-  - [ ] performance_optimizer.py
-  - [ ] readme.txt
-  - [ ] readme_20251005-081849.md
+  - [ ] mcp.rs
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
