@@ -37,9 +37,9 @@ This document summarizes the fixes applied to resolve workflow errors in the age
 **Fix**: Added `integrations/agentgateway` to the `workspace.exclude` list because it is a Git submodule and should not be treated as a workspace member. Other integration directories (e.g., `integrations/llama.cpp/`, `integrations/wiki-rs/`) are intended workspace members and therefore are not excluded.
 
 ### 5. Missing integration-tests.yml
-**File**: N/A (workflow file doesn't exist in main branch)  
-**Issue**: GitHub Actions tried to run `integration-tests.yml` workflow which only exists in PR #26  
-**Resolution**: No fix needed - this is expected behavior. The PR branch has its own workflows.
+**File**: N/A (workflow file doesn't exist in the default branch)  
+**Issue**: GitHub Actions logs referenced an `integration-tests.yml` workflow that is defined only on a feature/PR branch, not in the default branch of this repository.  
+**Resolution**: No change needed in this repository's workflows; the referenced workflow is specific to that feature/PR branch and is outside the scope of the fixes summarized here.
 
 ## Changes Made
 
