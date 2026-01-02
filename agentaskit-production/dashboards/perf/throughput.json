@@ -1,5 +1,119 @@
 {
-  "title": "Throughput & Latency (stub)",
-  "panels": [],
-  "tags": ["performance", "throughput", "latency"]
+  "title": "AgentAsKit Throughput & Latency",
+  "description": "Performance metrics for task and message processing",
+  "tags": ["performance", "throughput", "latency"],
+  "timezone": "UTC",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Task Throughput (10K+ target)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(agentaskit_tasks_processed_total[1m]))",
+          "legendFormat": "Tasks/sec"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": "Tasks per second"
+        }
+      ],
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [10000],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": ["A", "5m", "now"]
+            },
+            "reducer": {
+              "params": [],
+              "type": "avg"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "1m",
+        "handler": 1,
+        "name": "Task Throughput Below Target"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Message Throughput (100K+ target)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(agentaskit_inter_agent_messages_total[1m]))",
+          "legendFormat": "Messages/sec"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": "Messages per second"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Agent Startup Time (100ms target)",
+      "type": "heatmap",
+      "targets": [
+        {
+          "expr": "rate(agentaskit_agent_startup_duration_seconds_bucket[5m])",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Response Time Distribution",
+      "type": "heatmap",
+      "targets": [
+        {
+          "expr": "rate(agentaskit_response_duration_seconds_bucket[5m])",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "P95 Response Time (50ms target)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(agentaskit_response_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P95 (ms)"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "green" },
+          { "value": 50, "color": "yellow" },
+          { "value": 100, "color": "red" }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "Active Agents by Tier",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum by (tier) (agentaskit_active_agents)",
+          "legendFormat": "Tier {{tier}}"
+        }
+      ],
+      "stack": true
+    }
+  ]
 }

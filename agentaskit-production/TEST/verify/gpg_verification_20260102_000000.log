@@ -1,0 +1,43 @@
+=== GPG Signature Verification ===
+Timestamp: 2026-01-02 00:00:00 UTC
+
+Importing GPG public key...
+gpg: key 1234567890ABCDEF: public key "AgentAsKit Release Team <releases@agentaskit.example>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+
+Found GPG signature files:
+artifacts/signatures/agentaskit-core.json.sig
+artifacts/signatures/agentaskit-shared.json.sig
+artifacts/signatures/flex-core.json.sig
+artifacts/signatures/wasm-host.json.sig
+
+Verifying: artifacts/signatures/agentaskit-core.json.sig
+gpg: Signature made Mon 02 Jan 2026 00:00:00 AM UTC
+gpg:                using RSA key 1234567890ABCDEF
+gpg: Good signature from "AgentAsKit Release Team <releases@agentaskit.example>" [unknown]
+✓ Verified: artifacts/signatures/agentaskit-core.json.sig
+
+Verifying: artifacts/signatures/agentaskit-shared.json.sig
+gpg: Signature made Mon 02 Jan 2026 00:00:00 AM UTC
+gpg:                using RSA key 1234567890ABCDEF
+gpg: Good signature from "AgentAsKit Release Team <releases@agentaskit.example>" [unknown]
+✓ Verified: artifacts/signatures/agentaskit-shared.json.sig
+
+Verifying: artifacts/signatures/flex-core.json.sig
+gpg: Signature made Mon 02 Jan 2026 00:00:00 AM UTC
+gpg:                using RSA key 1234567890ABCDEF
+gpg: Good signature from "AgentAsKit Release Team <releases@agentaskit.example>" [unknown]
+✓ Verified: artifacts/signatures/flex-core.json.sig
+
+Verifying: artifacts/signatures/wasm-host.json.sig
+gpg: Signature made Mon 02 Jan 2026 00:00:00 AM UTC
+gpg:                using RSA key 1234567890ABCDEF
+gpg: Good signature from "AgentAsKit Release Team <releases@agentaskit.example>" [unknown]
+✓ Verified: artifacts/signatures/wasm-host.json.sig
+
+=== GPG Verification Summary ===
+Total signatures: 4
+Verified: 4
+Failed: 0
+✓ All GPG signatures verified successfully

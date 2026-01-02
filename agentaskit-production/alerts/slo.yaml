@@ -1,0 +1,93 @@
+---
+# AgentAsKit SLO-based Alerts
+groups:
+  - name: slo_availability
+    interval: 30s
+    rules:
+      - alert: AvailabilitySLOBreach
+        expr: |
+          100 * (1 - (sum(rate(http_requests_total{status=~"5.."}[5m]))
+          / sum(rate(http_requests_total[5m])))) < 99.9
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "Availability below 99.9% SLO target"
+          description: "Current availability: {{ $value | humanizePercentage }}"
+
+      - alert: ErrorBudgetExhausted
+        expr: |
+          100 * ((1 - 0.999) - (sum(rate(http_requests_total{status=~"5.."}[30d]))
+          / sum(rate(http_requests_total[30d])))) / (1 - 0.999) < 10
+        for: 10m
+        labels:
+          severity: warning
+          slo: error_budget
+        annotations:
+          summary: "Error budget below 10%"
+          description: "Only {{ $value }}% of error budget remaining this month"
+
+      - alert: FastBurnRateHigh
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[1h]))
+          / sum(rate(http_requests_total[1h]))) / (1 - 0.999) > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          slo: burn_rate
+          window: fast
+        annotations:
+          summary: "Fast burn rate exceeded (1h window)"
+          description: "Burn rate: {{ $value }} (threshold: 14.4). Error budget will be exhausted in <6h at this rate"
+
+      - alert: SlowBurnRateHigh
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[6h]))
+          / sum(rate(http_requests_total[6h]))) / (1 - 0.999) > 6.0
+        for: 15m
+        labels:
+          severity: warning
+          slo: burn_rate
+          window: slow
+        annotations:
+          summary: "Slow burn rate exceeded (6h window)"
+          description: "Burn rate: {{ $value }} (threshold: 6.0). Error budget will be exhausted in <3d at this rate"
+
+  - name: slo_latency
+    interval: 30s
+    rules:
+      - alert: P95LatencySLOBreach
+        expr: |
+          histogram_quantile(0.95, rate(agentaskit_response_duration_seconds_bucket[5m])) * 1000 > 50
+        for: 5m
+        labels:
+          severity: warning
+          slo: latency
+          percentile: p95
+        annotations:
+          summary: "P95 latency exceeds 50ms SLO"
+          description: "Current P95 latency: {{ $value }}ms"
+
+      - alert: P99LatencySLOBreach
+        expr: |
+          histogram_quantile(0.99, rate(agentaskit_response_duration_seconds_bucket[5m])) * 1000 > 100
+        for: 5m
+        labels:
+          severity: warning
+          slo: latency
+          percentile: p99
+        annotations:
+          summary: "P99 latency exceeds 100ms SLO"
+          description: "Current P99 latency: {{ $value }}ms"
+
+      - alert: AgentStartupTimeSLOBreach
+        expr: |
+          histogram_quantile(0.95, rate(agentaskit_agent_startup_duration_seconds_bucket[5m])) * 1000 > 100
+        for: 5m
+        labels:
+          severity: warning
+          slo: startup_time
+        annotations:
+          summary: "Agent P95 startup time exceeds 100ms SLO"
+          description: "Current P95 startup time: {{ $value }}ms"

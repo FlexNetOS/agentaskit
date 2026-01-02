@@ -476,30 +476,53 @@
   - [ ] .gitattributes
   - [ ] .gitignore
   - [ ] .qoderignore
+  - [ ] agent_directory_template.csv
   - [ ] agent_map_crosswalk.md
+  - [ ] agent_schema_template.json
+  - [ ] agentask.subject.todo
+  - [ ] agentask.todo
   - [ ] agentaskit.todo
+  - [ ] ai_sop_interface.rs
+  - [ ] all_inclusive_agent_directory.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.fixed_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.full_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.healed_20251005-081849.csv
   - [ ] analyze_all_repositories.csv
+  - [ ] anchor-20251005-080803.json
   - [ ] ark-os repository analysis_ comprehensive feature catalog.md
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
-  - [ ] codeowners
+  - [ ] capsule.schema.v2_20251005-081849.json
+  - [ ] capsule.schema_20251005-081849.json
+  - [ ] check_errors.txt
+  - [ ] check_errors_2.txt
   - [ ] comprehensive agenticai os repository analysis.md
-  - [ ] contributing.md
   - [ ] crosscheck_report.md
+  - [ ] csv_schema.md
+  - [ ] csv_schema_v1_20251005-081849.md
+  - [ ] csv_schema_v2_20251005-081849.md
+  - [ ] csv_schema_v3_20251005-081849.md
   - [ ] data.csv
+  - [ ] dispatch_run_todo.ps1
+  - [ ] enhanced_workflow_components_report.md
   - [ ] enhanced_workflow_implementation.md
+  - [ ] enhanced_workflow_tests.rs
   - [ ] final_report.md
+  - [ ] final_summary.md
+  - [ ] fitness-report.json
   - [ ] healing_report.md
+  - [ ] how-to-use.md
+  - [ ] how-to-use_v3_1_20251005-081849.md
+  - [ ] how-to-use_v3_1_extended_20251005-081849.md
   - [ ] inference.capnp
+  - [ ] manifest.sha256
   - [ ] multi-agent-task-kit.md
   - [ ] noaos_comprehensive_enhanced.xlsx
+  - [ ] optimization_directive.txt
   - [ ] optimize.ps1
+  - [ ] performance_optimizer.py
   - [ ] readme.txt
-  - [ ] reply.bin
-  - [ ] request.bin
-  - [ ] system_unification_success.md
-  - [ ] unification_summary.md
-  - [ ] unified_docs
-  - [ ] update.prompt.md
+  - [ ] readme_20251005-081849.md
+  - [ ] readme_extended_20251005-081849.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---

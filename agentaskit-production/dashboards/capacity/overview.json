@@ -1,4 +1,120 @@
 {
-  "title": "Capacity Overview (stub)",
-  "panels": []
+  "title": "AgentAsKit Capacity Overview",
+  "description": "Resource utilization and capacity planning metrics",
+  "tags": ["capacity", "resources", "planning"],
+  "timezone": "UTC",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Agents Running",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(agentaskit_active_agents)",
+          "legendFormat": "Active Agents"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "blue" },
+          { "value": 700, "color": "green" },
+          { "value": 850, "color": "yellow" },
+          { "value": 928, "color": "red" }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "title": "Agent Capacity Utilization",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "100 * sum(agentaskit_active_agents) / 928",
+          "legendFormat": "Utilization %"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Queue Depth by Priority",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum by (priority) (agentaskit_task_queue_depth)",
+          "legendFormat": "{{priority}}"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Tasks Queued"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Memory Usage per Agent Tier",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum by (tier) (agentaskit_memory_bytes) / 1024 / 1024",
+          "legendFormat": "Tier {{tier}} (MB)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "CPU Utilization",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))",
+          "legendFormat": "CPU %"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Sandbox Pool Availability",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "agentaskit_sandbox_pool_available / agentaskit_sandbox_pool_total * 100",
+          "legendFormat": "Available %"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Tri-Sandbox Execution Distribution",
+      "type": "piechart",
+      "targets": [
+        {
+          "expr": "sum by (sandbox_type) (rate(agentaskit_sandbox_executions_total[5m]))",
+          "legendFormat": "{{sandbox_type}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Network Throughput (Inter-Agent)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(agentaskit_network_bytes_sent[1m])",
+          "legendFormat": "Sent"
+        },
+        {
+          "expr": "rate(agentaskit_network_bytes_received[1m])",
+          "legendFormat": "Received"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "Bps",
+          "label": "Bytes per second"
+        }
+      ]
+    }
+  ]
 }

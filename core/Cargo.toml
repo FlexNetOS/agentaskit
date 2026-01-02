@@ -43,6 +43,8 @@ hex = "0.4"
 agentaskit-shared = { path = "../shared" }
 chrono = { version = "0.4", features = ["serde"] }
 num_cpus = "1.13"
+sysinfo = "0.30"
+walkdir = "2.5"
 
 [dev-dependencies]
 mockall.workspace = true

@@ -51,7 +51,7 @@ tauri-build = { version = "1.0", features = [] }
 clap = { version = "4.0", features = ["derive"] }
 
 # Security and cryptography
-ring = "0.16"
+ring = "0.17"
 sha2 = "0.10"
 
 # WASM runtime
