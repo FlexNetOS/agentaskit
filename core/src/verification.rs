@@ -1,16 +1,16 @@
 //! NOA Triple-Verification System
-//! 
+//!
 //! Implements the autonomous verification protocol with A/B/C validation,
 //! Truth Gate 6-point checklist, and Evidence Ledger for production builds.
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tokio::fs;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
-use sha2::{Sha256, Digest};
 
 /// NOA Triple-Verification system implementation
 pub struct NoaVerificationSystem {
@@ -136,25 +136,33 @@ impl NoaVerificationSystem {
 
     /// Execute complete NOA Triple-Verification protocol
     pub async fn execute_verification(&mut self, workspace_path: &PathBuf) -> Result<bool> {
-        tracing::info!("Starting NOA Triple-Verification for workspace: {:?}", workspace_path);
+        tracing::info!(
+            "Starting NOA Triple-Verification for workspace: {:?}",
+            workspace_path
+        );
 
         // Execute Pass A: Self-check
         let pass_a_result = self.execute_pass_a(workspace_path).await?;
-        self.verification_results.insert(VerificationPass::PassA, pass_a_result);
+        self.verification_results
+            .insert(VerificationPass::PassA, pass_a_result);
 
         // Execute Pass B: Independent re-derivation
         let pass_b_result = self.execute_pass_b(workspace_path).await?;
-        self.verification_results.insert(VerificationPass::PassB, pass_b_result);
+        self.verification_results
+            .insert(VerificationPass::PassB, pass_b_result);
 
         // Execute Pass C: Adversarial check
         let pass_c_result = self.execute_pass_c(workspace_path).await?;
-        self.verification_results.insert(VerificationPass::PassC, pass_c_result);
+        self.verification_results
+            .insert(VerificationPass::PassC, pass_c_result);
 
         // Validate Truth Gate
         let truth_gate_passed = self.validate_truth_gate(workspace_path).await?;
 
         // Generate final verification report
-        let all_passed = self.verification_results.values()
+        let all_passed = self
+            .verification_results
+            .values()
             .all(|result| matches!(result.status, VerificationStatus::Pass))
             && truth_gate_passed;
 
@@ -170,7 +178,7 @@ impl NoaVerificationSystem {
     /// Pass A: Self-check - Internal consistency, spec ↔ artifacts ↔ tests
     async fn execute_pass_a(&mut self, workspace_path: &PathBuf) -> Result<VerificationResult> {
         tracing::info!("Executing Pass A: Self-check");
-        
+
         let mut test_logs = Vec::new();
         let mut discrepancies = Vec::new();
 
@@ -207,7 +215,7 @@ impl NoaVerificationSystem {
     /// Pass B: Independent re-derivation - Recompute numbers, re-run code fresh
     async fn execute_pass_b(&mut self, workspace_path: &PathBuf) -> Result<VerificationResult> {
         tracing::info!("Executing Pass B: Independent re-derivation");
-        
+
         let mut test_logs = Vec::new();
         let mut discrepancies = Vec::new();
 
@@ -243,7 +251,7 @@ impl NoaVerificationSystem {
     /// Pass C: Adversarial check - Negative tests, boundary cases, cross-tool verification
     async fn execute_pass_c(&mut self, workspace_path: &PathBuf) -> Result<VerificationResult> {
         tracing::info!("Executing Pass C: Adversarial check");
-        
+
         let mut test_logs = Vec::new();
         let mut discrepancies = Vec::new();
 
@@ -290,7 +298,8 @@ impl NoaVerificationSystem {
         self.truth_gate.spec_match_verified = self.verify_spec_match(workspace_path).await?;
 
         // 4. Limits documented
-        self.truth_gate.limits_documented = self.verify_limits_documentation(workspace_path).await?;
+        self.truth_gate.limits_documented =
+            self.verify_limits_documentation(workspace_path).await?;
 
         // 5. Hashes provided
         self.truth_gate.hashes_provided = self.verify_hashes_provided(workspace_path).await?;
@@ -365,18 +374,29 @@ impl NoaVerificationSystem {
 
         for spec_path in &spec_paths {
             if spec_path.exists() {
-                let content = tokio::fs::read_to_string(spec_path).await.unwrap_or_default();
-                output_lines.push(format!("✓ Found spec: {:?} ({} bytes)", spec_path.file_name().unwrap(), content.len()));
+                let content = tokio::fs::read_to_string(spec_path)
+                    .await
+                    .unwrap_or_default();
+                output_lines.push(format!(
+                    "✓ Found spec: {:?} ({} bytes)",
+                    spec_path.file_name().unwrap(),
+                    content.len()
+                ));
 
                 // Verify spec contains required sections
                 let required_sections = vec!["Requirements", "Architecture", "Implementation"];
                 for section in &required_sections {
-                    if content.contains(section) || content.to_lowercase().contains(&section.to_lowercase()) {
+                    if content.contains(section)
+                        || content.to_lowercase().contains(&section.to_lowercase())
+                    {
                         output_lines.push(format!("  ✓ Contains section: {}", section));
                     }
                 }
             } else {
-                output_lines.push(format!("⚠ Spec not found: {:?}", spec_path.file_name().unwrap()));
+                output_lines.push(format!(
+                    "⚠ Spec not found: {:?}",
+                    spec_path.file_name().unwrap()
+                ));
             }
         }
 
@@ -385,8 +405,8 @@ impl NoaVerificationSystem {
         if src_path.exists() {
             let mut impl_file_count = 0;
             if let Ok(entries) = tokio::fs::read_dir(&src_path).await {
-                use tokio_stream::wrappers::ReadDirStream;
                 use futures::StreamExt;
+                use tokio_stream::wrappers::ReadDirStream;
                 let mut stream = ReadDirStream::new(entries);
                 while let Some(Ok(_)) = stream.next().await {
                     impl_file_count += 1;
@@ -399,7 +419,10 @@ impl NoaVerificationSystem {
         }
 
         let duration_ms = start.elapsed().as_millis() as u64;
-        output_lines.push(format!("\nSpec mapping verification completed in {}ms", duration_ms));
+        output_lines.push(format!(
+            "\nSpec mapping verification completed in {}ms",
+            duration_ms
+        ));
 
         Ok(TestLog {
             test_name: "spec_mapping".to_string(),
@@ -429,7 +452,8 @@ impl NoaVerificationSystem {
         Ok(TestLog {
             test_name: "clean_build".to_string(),
             command: "cargo clean && cargo build --workspace --release".to_string(),
-            output: format!("{}\n{}", 
+            output: format!(
+                "{}\n{}",
                 String::from_utf8_lossy(&clean_output.stdout),
                 String::from_utf8_lossy(&build_output.stdout)
             ),
@@ -462,7 +486,7 @@ impl EvidenceLedger {
         let hash = format!("{:x}", hasher.finalize());
 
         let metadata = fs::metadata(&path).await?;
-        
+
         let evidence = FileEvidence {
             path: path.clone(),
             sha256_hash: hash,

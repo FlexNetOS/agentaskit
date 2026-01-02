@@ -1,5 +1,5 @@
 //! Phase 2: Agent Selection & Task Assignment (928 agents)
-//! 
+//!
 //! This module handles the selection and assignment of agents from the 928-agent pool:
 //! - Capability matching algorithm across all available agents
 //! - NOA deployment orchestration with health monitoring
@@ -7,12 +7,12 @@
 //! - 6-layer agent hierarchy management (CECCA → Board → Executive → Stack Chiefs → Specialists → Micro)
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
-use crate::agents::AgentId;
 use super::phase_one::Phase1Result;
+use crate::agents::AgentId;
 
 /// Agent Selection Manager for Phase 2
 #[derive(Debug)]
@@ -50,12 +50,12 @@ pub struct TaskAssignment {
 /// 6-layer agent hierarchy structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HierarchyDeployment {
-    pub cecca_agents: Vec<AgentId>,      // 1-3 agents - Strategic Command
-    pub board_agents: Vec<AgentId>,      // 5-15 agents - Governance
-    pub executive_agents: Vec<AgentId>,  // 10-25 agents - Operations
+    pub cecca_agents: Vec<AgentId>,       // 1-3 agents - Strategic Command
+    pub board_agents: Vec<AgentId>,       // 5-15 agents - Governance
+    pub executive_agents: Vec<AgentId>,   // 10-25 agents - Operations
     pub stack_chief_agents: Vec<AgentId>, // 20-50 agents - Domain Leadership
-    pub specialist_agents: Vec<AgentId>, // 50-200 agents - Expertise
-    pub micro_agents: Vec<AgentId>,      // 100-1000+ agents - Task Execution
+    pub specialist_agents: Vec<AgentId>,  // 50-200 agents - Expertise
+    pub micro_agents: Vec<AgentId>,       // 100-1000+ agents - Task Execution
     pub hierarchy_health: HierarchyHealth,
 }
 
@@ -66,19 +66,19 @@ pub enum AgentRole {
     ChiefExecutive,
     ChiefStrategy,
     ChiefArchitect,
-    
+
     // Board Layer (Governance)
     PerformanceDirector,
     SecurityDirector,
     QualityDirector,
     ComplianceDirector,
-    
+
     // Executive Layer (Operations)
     WorkflowManager,
     ResourceManager,
     CommunicationManager,
     MonitoringManager,
-    
+
     // Stack Chief Layer (Domain Leadership)
     CoreSystemChief,
     AgentOrchestrationChief,
@@ -86,7 +86,7 @@ pub enum AgentRole {
     SecurityChief,
     PerformanceChief,
     IntegrationChief,
-    
+
     // Specialist Layer (Expertise)
     RustDeveloper,
     PythonDeveloper,
@@ -96,7 +96,7 @@ pub enum AgentRole {
     PerformanceSpecialist,
     TestingSpecialist,
     DevOpsSpecialist,
-    
+
     // Micro Layer (Task Execution)
     CodeAnalyzer,
     FileProcessor,
@@ -166,10 +166,10 @@ pub enum GapSeverity {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RedundancyLevel {
-    None,     // Single point of failure
-    Low,      // 2x redundancy
-    Medium,   // 3x redundancy
-    High,     // 4+ redundancy
+    None,   // Single point of failure
+    Low,    // 2x redundancy
+    Medium, // 3x redundancy
+    High,   // 4+ redundancy
 }
 
 /// Overall health status of selected agents
@@ -298,7 +298,7 @@ impl AgentSelectionManager {
     pub async fn new() -> Result<Self> {
         let capability_matcher = CapabilityMatcher::new().await?;
         let agent_registry = AgentRegistry::new().await?;
-        
+
         Ok(Self {
             capability_matcher,
             agent_registry,
@@ -311,28 +311,41 @@ impl AgentSelectionManager {
     pub async fn select_agents(&self, phase1_result: &Phase1Result) -> Result<Phase2Result> {
         // Step 1: Analyze requirements from Phase 1
         let requirements = self.analyze_requirements(phase1_result)?;
-        
+
         // Step 2: Match capabilities with available agents
-        let capability_matches = self.capability_matcher.find_matching_agents(&requirements).await?;
-        
+        let capability_matches = self
+            .capability_matcher
+            .find_matching_agents(&requirements)
+            .await?;
+
         // Step 3: Select optimal agents considering health and load
         let selected_agents = self.select_optimal_agents(&capability_matches).await?;
-        
+
         // Step 4: Deploy 6-layer hierarchy
-        let hierarchy_deployment = self.deploy_hierarchy(&selected_agents, &requirements).await?;
-        
+        let hierarchy_deployment = self
+            .deploy_hierarchy(&selected_agents, &requirements)
+            .await?;
+
         // Step 5: Assign specific tasks to agents
         let agent_assignments = self.assign_tasks(&selected_agents, &requirements).await?;
-        
+
         // Step 6: Analyze capability coverage
-        let capability_coverage = self.analyze_capability_coverage(&requirements, &selected_agents).await?;
-        
+        let capability_coverage = self
+            .analyze_capability_coverage(&requirements, &selected_agents)
+            .await?;
+
         // Step 7: Monitor health status
-        let health_status = self.health_monitor.check_overall_health(&selected_agents).await?;
-        
+        let health_status = self
+            .health_monitor
+            .check_overall_health(&selected_agents)
+            .await?;
+
         // Step 8: Calculate load distribution
-        let load_distribution = self.load_balancer.calculate_load_distribution(&agent_assignments).await?;
-        
+        let load_distribution = self
+            .load_balancer
+            .calculate_load_distribution(&agent_assignments)
+            .await?;
+
         Ok(Phase2Result {
             selected_agents,
             agent_assignments,
@@ -346,7 +359,7 @@ impl AgentSelectionManager {
     /// Analyze requirements from Phase 1 results
     fn analyze_requirements(&self, phase1_result: &Phase1Result) -> Result<RequirementAnalysis> {
         let mut required_capabilities = Vec::new();
-        
+
         // Analyze based on classification
         match phase1_result.classification.primary_category {
             super::phase_one::RequestCategory::SystemOperation => {
@@ -381,7 +394,7 @@ impl AgentSelectionManager {
                 required_capabilities.push("general_purpose".to_string());
             }
         }
-        
+
         // Add capabilities based on extracted entities
         for entity in &phase1_result.validated_request.extracted_entities {
             match entity.as_str() {
@@ -392,7 +405,7 @@ impl AgentSelectionManager {
                 _ => {}
             }
         }
-        
+
         Ok(RequirementAnalysis {
             required_capabilities,
             complexity_level: phase1_result.classification.complexity_estimate.clone(),
@@ -404,11 +417,14 @@ impl AgentSelectionManager {
     /// Select optimal agents considering health and load
     async fn select_optimal_agents(&self, capability_matches: &[AgentId]) -> Result<Vec<AgentId>> {
         let mut selected_agents = Vec::new();
-        
+
         for agent_id in capability_matches {
             if let Some(agent_profile) = self.agent_registry.get_agent(agent_id).await {
                 // Check health status
-                if matches!(agent_profile.health_status, AgentHealthStatus::Healthy | AgentHealthStatus::Degraded) {
+                if matches!(
+                    agent_profile.health_status,
+                    AgentHealthStatus::Healthy | AgentHealthStatus::Degraded
+                ) {
                     // Check load capacity
                     if agent_profile.current_load < agent_profile.max_capacity * 0.8 {
                         selected_agents.push(agent_id.clone());
@@ -416,54 +432,76 @@ impl AgentSelectionManager {
                 }
             }
         }
-        
+
         Ok(selected_agents)
     }
 
     /// Deploy 6-layer agent hierarchy
-    async fn deploy_hierarchy(&self, selected_agents: &[AgentId], requirements: &RequirementAnalysis) -> Result<HierarchyDeployment> {
+    async fn deploy_hierarchy(
+        &self,
+        selected_agents: &[AgentId],
+        requirements: &RequirementAnalysis,
+    ) -> Result<HierarchyDeployment> {
         let mut cecca_agents = Vec::new();
         let mut board_agents = Vec::new();
         let mut executive_agents = Vec::new();
         let mut stack_chief_agents = Vec::new();
         let mut specialist_agents = Vec::new();
         let mut micro_agents = Vec::new();
-        
+
         // Distribute agents across hierarchy based on their roles
         for agent_id in selected_agents {
             if let Some(agent_profile) = self.agent_registry.get_agent(agent_id).await {
                 match agent_profile.agent_type {
-                    AgentRole::ChiefExecutive | AgentRole::ChiefStrategy | AgentRole::ChiefArchitect => {
+                    AgentRole::ChiefExecutive
+                    | AgentRole::ChiefStrategy
+                    | AgentRole::ChiefArchitect => {
                         cecca_agents.push(agent_id.clone());
                     }
-                    AgentRole::PerformanceDirector | AgentRole::SecurityDirector | 
-                    AgentRole::QualityDirector | AgentRole::ComplianceDirector => {
+                    AgentRole::PerformanceDirector
+                    | AgentRole::SecurityDirector
+                    | AgentRole::QualityDirector
+                    | AgentRole::ComplianceDirector => {
                         board_agents.push(agent_id.clone());
                     }
-                    AgentRole::WorkflowManager | AgentRole::ResourceManager | 
-                    AgentRole::CommunicationManager | AgentRole::MonitoringManager => {
+                    AgentRole::WorkflowManager
+                    | AgentRole::ResourceManager
+                    | AgentRole::CommunicationManager
+                    | AgentRole::MonitoringManager => {
                         executive_agents.push(agent_id.clone());
                     }
-                    AgentRole::CoreSystemChief | AgentRole::AgentOrchestrationChief | 
-                    AgentRole::DataManagementChief | AgentRole::SecurityChief |
-                    AgentRole::PerformanceChief | AgentRole::IntegrationChief => {
+                    AgentRole::CoreSystemChief
+                    | AgentRole::AgentOrchestrationChief
+                    | AgentRole::DataManagementChief
+                    | AgentRole::SecurityChief
+                    | AgentRole::PerformanceChief
+                    | AgentRole::IntegrationChief => {
                         stack_chief_agents.push(agent_id.clone());
                     }
-                    AgentRole::RustDeveloper | AgentRole::PythonDeveloper | AgentRole::SystemsArchitect |
-                    AgentRole::DatabaseSpecialist | AgentRole::SecuritySpecialist | 
-                    AgentRole::PerformanceSpecialist | AgentRole::TestingSpecialist | 
-                    AgentRole::DevOpsSpecialist => {
+                    AgentRole::RustDeveloper
+                    | AgentRole::PythonDeveloper
+                    | AgentRole::SystemsArchitect
+                    | AgentRole::DatabaseSpecialist
+                    | AgentRole::SecuritySpecialist
+                    | AgentRole::PerformanceSpecialist
+                    | AgentRole::TestingSpecialist
+                    | AgentRole::DevOpsSpecialist => {
                         specialist_agents.push(agent_id.clone());
                     }
-                    AgentRole::CodeAnalyzer | AgentRole::FileProcessor | AgentRole::DataValidator |
-                    AgentRole::TestRunner | AgentRole::MetricsCollector | AgentRole::LogAnalyzer |
-                    AgentRole::ConfigurationManager | AgentRole::DeploymentAgent => {
+                    AgentRole::CodeAnalyzer
+                    | AgentRole::FileProcessor
+                    | AgentRole::DataValidator
+                    | AgentRole::TestRunner
+                    | AgentRole::MetricsCollector
+                    | AgentRole::LogAnalyzer
+                    | AgentRole::ConfigurationManager
+                    | AgentRole::DeploymentAgent => {
                         micro_agents.push(agent_id.clone());
                     }
                 }
             }
         }
-        
+
         // Calculate hierarchy health
         let hierarchy_health = HierarchyHealth {
             cecca_health: LayerHealth {
@@ -515,7 +553,7 @@ impl AgentSelectionManager {
                 throughput_tasks_per_second: 10000.0,
             },
         };
-        
+
         Ok(HierarchyDeployment {
             cecca_agents,
             board_agents,
@@ -528,13 +566,17 @@ impl AgentSelectionManager {
     }
 
     /// Assign specific tasks to selected agents
-    async fn assign_tasks(&self, selected_agents: &[AgentId], requirements: &RequirementAnalysis) -> Result<HashMap<AgentId, TaskAssignment>> {
+    async fn assign_tasks(
+        &self,
+        selected_agents: &[AgentId],
+        requirements: &RequirementAnalysis,
+    ) -> Result<HashMap<AgentId, TaskAssignment>> {
         let mut assignments = HashMap::new();
-        
+
         for agent_id in selected_agents {
             if let Some(agent_profile) = self.agent_registry.get_agent(agent_id).await {
                 let specific_tasks = self.generate_specific_tasks(&agent_profile, requirements)?;
-                
+
                 let assignment = TaskAssignment {
                     agent_id: agent_id.clone(),
                     assigned_role: agent_profile.agent_type.clone(),
@@ -547,7 +589,7 @@ impl AgentSelectionManager {
                         crate::workflows::RequestPriority::Low => TaskPriority::Low,
                     },
                     estimated_duration: chrono::Duration::hours(1), // TODO: Calculate based on tasks
-                    dependencies: Vec::new(), // TODO: Analyze dependencies
+                    dependencies: Vec::new(),                       // TODO: Analyze dependencies
                     resource_allocation: ResourceAllocation {
                         cpu_cores: 2.0,
                         memory_mb: 4096.0,
@@ -556,28 +598,36 @@ impl AgentSelectionManager {
                         gpu_allocation: None,
                     },
                 };
-                
+
                 assignments.insert(agent_id.clone(), assignment);
             }
         }
-        
+
         Ok(assignments)
     }
 
     /// Generate specific tasks for an agent
-    fn generate_specific_tasks(&self, agent_profile: &AgentProfile, requirements: &RequirementAnalysis) -> Result<Vec<SpecificTask>> {
+    fn generate_specific_tasks(
+        &self,
+        agent_profile: &AgentProfile,
+        requirements: &RequirementAnalysis,
+    ) -> Result<Vec<SpecificTask>> {
         let mut tasks = Vec::new();
-        
+
         // Generate tasks based on agent role and capabilities
         match agent_profile.agent_type {
             AgentRole::SystemsArchitect => {
                 tasks.push(SpecificTask {
                     task_id: uuid::Uuid::new_v4(),
                     task_name: "System Architecture Analysis".to_string(),
-                    task_description: "Analyze system architecture and identify optimization opportunities".to_string(),
+                    task_description:
+                        "Analyze system architecture and identify optimization opportunities"
+                            .to_string(),
                     input_requirements: vec!["System specifications".to_string()],
                     output_specifications: vec!["Architecture analysis report".to_string()],
-                    verification_criteria: vec!["Architecture best practices compliance".to_string()],
+                    verification_criteria: vec![
+                        "Architecture best practices compliance".to_string()
+                    ],
                     estimated_effort: 2.0,
                 });
             }
@@ -585,7 +635,8 @@ impl AgentSelectionManager {
                 tasks.push(SpecificTask {
                     task_id: uuid::Uuid::new_v4(),
                     task_name: "Performance Optimization".to_string(),
-                    task_description: "Optimize system performance to meet target metrics".to_string(),
+                    task_description: "Optimize system performance to meet target metrics"
+                        .to_string(),
                     input_requirements: vec!["Performance baseline".to_string()],
                     output_specifications: vec!["Performance optimization plan".to_string()],
                     verification_criteria: vec!["Performance targets achieved".to_string()],
@@ -616,37 +667,45 @@ impl AgentSelectionManager {
                 });
             }
         }
-        
+
         Ok(tasks)
     }
 
     /// Analyze capability coverage
-    async fn analyze_capability_coverage(&self, requirements: &RequirementAnalysis, selected_agents: &[AgentId]) -> Result<CapabilityCoverage> {
+    async fn analyze_capability_coverage(
+        &self,
+        requirements: &RequirementAnalysis,
+        selected_agents: &[AgentId],
+    ) -> Result<CapabilityCoverage> {
         let mut covered_capabilities = Vec::new();
-        
+
         // Collect all capabilities from selected agents
         for agent_id in selected_agents {
             if let Some(agent_profile) = self.agent_registry.get_agent(agent_id).await {
                 covered_capabilities.extend(agent_profile.capabilities.clone());
             }
         }
-        
+
         // Remove duplicates
         covered_capabilities.sort();
         covered_capabilities.dedup();
-        
+
         // Calculate coverage percentage
         let coverage_percentage = if requirements.required_capabilities.is_empty() {
             100.0
         } else {
-            let covered_count = requirements.required_capabilities.iter()
+            let covered_count = requirements
+                .required_capabilities
+                .iter()
                 .filter(|cap| covered_capabilities.contains(cap))
                 .count();
             (covered_count as f64 / requirements.required_capabilities.len() as f64) * 100.0
         };
-        
+
         // Identify capability gaps
-        let capability_gaps = requirements.required_capabilities.iter()
+        let capability_gaps = requirements
+            .required_capabilities
+            .iter()
             .filter(|cap| !covered_capabilities.contains(cap))
             .map(|cap| CapabilityGap {
                 missing_capability: cap.clone(),
@@ -655,7 +714,7 @@ impl AgentSelectionManager {
                 alternative_agents: Vec::new(),
             })
             .collect();
-        
+
         Ok(CapabilityCoverage {
             required_capabilities: requirements.required_capabilities.clone(),
             covered_capabilities,
@@ -679,38 +738,47 @@ impl CapabilityMatcher {
     /// Initialize capability matcher with agent database
     pub async fn new() -> Result<Self> {
         let mut capability_database = HashMap::new();
-        
+
         // TODO: Load from actual agent registry
         // For now, create a mock database
-        capability_database.insert("system_orchestration".to_string(), vec![
-            AgentId::new("orchestrator_001"),
-            AgentId::new("orchestrator_002"),
-        ]);
-        
-        capability_database.insert("performance_analysis".to_string(), vec![
-            AgentId::new("performance_001"),
-            AgentId::new("performance_002"),
-        ]);
-        
+        capability_database.insert(
+            "system_orchestration".to_string(),
+            vec![
+                AgentId::new("orchestrator_001"),
+                AgentId::new("orchestrator_002"),
+            ],
+        );
+
+        capability_database.insert(
+            "performance_analysis".to_string(),
+            vec![
+                AgentId::new("performance_001"),
+                AgentId::new("performance_002"),
+            ],
+        );
+
         Ok(Self {
             capability_database,
         })
     }
 
     /// Find agents matching required capabilities
-    pub async fn find_matching_agents(&self, requirements: &RequirementAnalysis) -> Result<Vec<AgentId>> {
+    pub async fn find_matching_agents(
+        &self,
+        requirements: &RequirementAnalysis,
+    ) -> Result<Vec<AgentId>> {
         let mut matching_agents = Vec::new();
-        
+
         for capability in &requirements.required_capabilities {
             if let Some(agents) = self.capability_database.get(capability) {
                 matching_agents.extend(agents.clone());
             }
         }
-        
+
         // Remove duplicates
         matching_agents.sort();
         matching_agents.dedup();
-        
+
         Ok(matching_agents)
     }
 }
@@ -719,14 +787,17 @@ impl AgentRegistry {
     /// Initialize agent registry
     pub async fn new() -> Result<Self> {
         let mut agents = HashMap::new();
-        
+
         // TODO: Load from actual agent database
         // For now, create mock agents
         let mock_agent = AgentProfile {
             agent_id: AgentId::new("orchestrator_001"),
             agent_name: "System Orchestrator 001".to_string(),
             agent_type: AgentRole::SystemsArchitect,
-            capabilities: vec!["system_orchestration".to_string(), "workflow_management".to_string()],
+            capabilities: vec![
+                "system_orchestration".to_string(),
+                "workflow_management".to_string(),
+            ],
             performance_metrics: AgentPerformanceMetrics {
                 average_response_time_ms: 50.0,
                 success_rate: 0.99,
@@ -739,9 +810,9 @@ impl AgentRegistry {
             max_capacity: 1.0,
             specializations: vec!["Rust".to_string(), "Systems Design".to_string()],
         };
-        
+
         agents.insert(AgentId::new("orchestrator_001"), mock_agent);
-        
+
         Ok(Self { agents })
     }
 
@@ -753,7 +824,10 @@ impl AgentRegistry {
 
 impl HealthMonitor {
     /// Check overall health of selected agents
-    pub async fn check_overall_health(&self, selected_agents: &[AgentId]) -> Result<OverallHealthStatus> {
+    pub async fn check_overall_health(
+        &self,
+        selected_agents: &[AgentId],
+    ) -> Result<OverallHealthStatus> {
         // TODO: Implement actual health monitoring
         Ok(OverallHealthStatus {
             healthy_agents: selected_agents.len(),
@@ -767,10 +841,17 @@ impl HealthMonitor {
 
 impl LoadBalancer {
     /// Calculate load distribution across agents
-    pub async fn calculate_load_distribution(&self, assignments: &HashMap<AgentId, TaskAssignment>) -> Result<LoadDistribution> {
+    pub async fn calculate_load_distribution(
+        &self,
+        assignments: &HashMap<AgentId, TaskAssignment>,
+    ) -> Result<LoadDistribution> {
         let total_load_units = assignments.len() as f64;
-        let average_load_per_agent = if assignments.is_empty() { 0.0 } else { total_load_units / assignments.len() as f64 };
-        
+        let average_load_per_agent = if assignments.is_empty() {
+            0.0
+        } else {
+            total_load_units / assignments.len() as f64
+        };
+
         Ok(LoadDistribution {
             total_load_units,
             average_load_per_agent,

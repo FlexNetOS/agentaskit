@@ -3,14 +3,14 @@
 //! Automated 4D method application with quality gates, scoring, and validation systems
 //! for the EnhancedWorkflowProcessor framework.
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::{
-    ChatRequest, DeconstructPhase, DiagnosePhase, DevelopPhase, DeliverPhase,
-    SpecificityLevel, ComplexityLevel, RequestType, OptimizationTechnique,
-    VerificationProtocol, ExecutionStep, Deliverable, TargetLocation,
+    ChatRequest, ComplexityLevel, DeconstructPhase, DeliverPhase, Deliverable, DevelopPhase,
+    DiagnosePhase, ExecutionStep, OptimizationTechnique, RequestType, SpecificityLevel,
+    TargetLocation, VerificationProtocol,
 };
 
 /// Comprehensive scores for all 4D phases

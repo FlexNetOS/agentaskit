@@ -1,14 +1,14 @@
 //! Phase 5: Quality Assurance & Validation (NOA triple-verification)
-//! 
+//!
 //! This module handles quality assurance with NOA triple-verification system:
 //! - A/B/C validation with Truth Gate 6-point checklist
 //! - Contract testing with Cap'n Proto validation
 //! - File system integrity verification with fs-verity
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 use super::PhaseResult;
 
@@ -75,7 +75,10 @@ impl QualityAssuranceValidator {
         Ok(Self)
     }
 
-    pub async fn validate_quality(&self, phase_results: &HashMap<super::PhaseType, PhaseResult>) -> Result<Phase5Result> {
+    pub async fn validate_quality(
+        &self,
+        phase_results: &HashMap<super::PhaseType, PhaseResult>,
+    ) -> Result<Phase5Result> {
         // NOA Triple-Verification Implementation
         tracing::info!("Starting NOA triple-verification protocol");
 
@@ -85,11 +88,19 @@ impl QualityAssuranceValidator {
 
         // Pass B: Independent re-derivation
         let pass_b_results = self.execute_pass_b(phase_results).await?;
-        tracing::info!("Pass B (independent re-derivation) completed: {:?}", pass_b_results.status);
+        tracing::info!(
+            "Pass B (independent re-derivation) completed: {:?}",
+            pass_b_results.status
+        );
 
         // Pass C: Adversarial validation
-        let pass_c_results = self.execute_pass_c(phase_results, &pass_a_results, &pass_b_results).await?;
-        tracing::info!("Pass C (adversarial validation) completed: {:?}", pass_c_results.status);
+        let pass_c_results = self
+            .execute_pass_c(phase_results, &pass_a_results, &pass_b_results)
+            .await?;
+        tracing::info!(
+            "Pass C (adversarial validation) completed: {:?}",
+            pass_c_results.status
+        );
 
         // Determine overall status
         let overall_status = if matches!(pass_a_results.status, VerificationStatus::Passed)
@@ -136,7 +147,10 @@ impl QualityAssuranceValidator {
     }
 
     /// Pass A: Self-check verification (original implementation validates itself)
-    async fn execute_pass_a(&self, phase_results: &HashMap<super::PhaseType, PhaseResult>) -> Result<ValidationResult> {
+    async fn execute_pass_a(
+        &self,
+        phase_results: &HashMap<super::PhaseType, PhaseResult>,
+    ) -> Result<ValidationResult> {
         let mut evidence = Vec::new();
         let mut sha256_hashes = HashMap::new();
         let mut test_logs = Vec::new();
@@ -176,7 +190,10 @@ impl QualityAssuranceValidator {
             }
         }
 
-        test_logs.push(format!("Pass A checks: {}/{} passed", checks_passed, checks_total));
+        test_logs.push(format!(
+            "Pass A checks: {}/{} passed",
+            checks_passed, checks_total
+        ));
 
         let status = if checks_passed == checks_total {
             VerificationStatus::Passed
@@ -195,7 +212,10 @@ impl QualityAssuranceValidator {
     }
 
     /// Pass B: Independent re-derivation (re-execute critical logic)
-    async fn execute_pass_b(&self, phase_results: &HashMap<super::PhaseType, PhaseResult>) -> Result<ValidationResult> {
+    async fn execute_pass_b(
+        &self,
+        phase_results: &HashMap<super::PhaseType, PhaseResult>,
+    ) -> Result<ValidationResult> {
         let mut evidence = Vec::new();
         let mut sha256_hashes = HashMap::new();
         let mut test_logs = Vec::new();
@@ -226,7 +246,10 @@ impl QualityAssuranceValidator {
             }
         }
 
-        test_logs.push(format!("Pass B derivations: {}/{} matched", derivation_matches, derivation_total));
+        test_logs.push(format!(
+            "Pass B derivations: {}/{} matched",
+            derivation_matches, derivation_total
+        ));
 
         let status = if derivation_matches == derivation_total {
             VerificationStatus::Passed
@@ -298,10 +321,16 @@ impl QualityAssuranceValidator {
             .unwrap_or(0);
         if max_duration < 60000 {
             // Less than 60 seconds
-            evidence.push(format!("✓ Execution times reasonable (max: {}ms)", max_duration));
+            evidence.push(format!(
+                "✓ Execution times reasonable (max: {}ms)",
+                max_duration
+            ));
             adversarial_checks_passed += 1;
         } else {
-            evidence.push(format!("⚠ Long execution detected (max: {}ms)", max_duration));
+            evidence.push(format!(
+                "⚠ Long execution detected (max: {}ms)",
+                max_duration
+            ));
         }
 
         // Generate adversarial validation hash

@@ -3,7 +3,7 @@
 //! Target location determination and file organization automation
 //! following production structure preferences.
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -20,13 +20,25 @@ pub struct LocationManager {
 impl LocationManager {
     pub fn new(workspace_root: PathBuf) -> Self {
         let production_dir = workspace_root.join("agentaskit-production");
-        
+
         let mut location_mappings = HashMap::new();
-        location_mappings.insert(DeliverableType::SourceCode, LocationType::ProductionDirectory);
-        location_mappings.insert(DeliverableType::Documentation, LocationType::DocsSubdirectory);
-        location_mappings.insert(DeliverableType::Configuration, LocationType::ConfigDirectory);
+        location_mappings.insert(
+            DeliverableType::SourceCode,
+            LocationType::ProductionDirectory,
+        );
+        location_mappings.insert(
+            DeliverableType::Documentation,
+            LocationType::DocsSubdirectory,
+        );
+        location_mappings.insert(
+            DeliverableType::Configuration,
+            LocationType::ConfigDirectory,
+        );
         location_mappings.insert(DeliverableType::TestSuite, LocationType::TestDirectory);
-        location_mappings.insert(DeliverableType::BuildArtifact, LocationType::ProductionDirectory);
+        location_mappings.insert(
+            DeliverableType::BuildArtifact,
+            LocationType::ProductionDirectory,
+        );
         location_mappings.insert(DeliverableType::Deployment, LocationType::ScriptsDirectory);
         location_mappings.insert(DeliverableType::Report, LocationType::DocsSubdirectory);
         location_mappings.insert(DeliverableType::Analysis, LocationType::DocsSubdirectory);
@@ -40,7 +52,8 @@ impl LocationManager {
 
     /// Resolve target location for a deliverable type
     pub fn resolve_location(&self, deliverable_type: &DeliverableType) -> Result<TargetLocation> {
-        let location_type = self.location_mappings
+        let location_type = self
+            .location_mappings
             .get(deliverable_type)
             .cloned()
             .unwrap_or(LocationType::ProductionDirectory);
@@ -76,7 +89,8 @@ impl LocationManager {
     fn get_organization_rules(&self, location_type: &LocationType) -> Vec<String> {
         match location_type {
             LocationType::ProductionDirectory => vec![
-                "Primary production codebase must reside in agentaskit-production directory".to_string(),
+                "Primary production codebase must reside in agentaskit-production directory"
+                    .to_string(),
                 "Follow Rust workspace structure conventions".to_string(),
                 "No loose files at production root".to_string(),
             ],
@@ -116,24 +130,16 @@ impl LocationManager {
     /// Get backup locations for location type
     fn get_backup_locations(&self, location_type: &LocationType) -> Vec<PathBuf> {
         let archive_base = self.workspace_root.join("archive");
-        
+
         match location_type {
-            LocationType::ProductionDirectory => vec![
-                archive_base.join("production_backups"),
-            ],
-            LocationType::DocsSubdirectory => vec![
-                archive_base.join("docs_backups"),
-            ],
-            LocationType::TestDirectory => vec![
-                archive_base.join("test_backups"),
-            ],
+            LocationType::ProductionDirectory => vec![archive_base.join("production_backups")],
+            LocationType::DocsSubdirectory => vec![archive_base.join("docs_backups")],
+            LocationType::TestDirectory => vec![archive_base.join("test_backups")],
             LocationType::ConfigDirectory => vec![
                 archive_base.join("config_backups"),
                 self.production_dir.join("configs").join("backup"),
             ],
-            LocationType::ScriptsDirectory => vec![
-                archive_base.join("script_backups"),
-            ],
+            LocationType::ScriptsDirectory => vec![archive_base.join("script_backups")],
             _ => vec![archive_base.join("misc_backups")],
         }
     }
@@ -147,21 +153,25 @@ impl LocationManager {
     ) -> Result<PathBuf> {
         let location = self.resolve_location(deliverable_type)?;
         let mut full_path = location.base_path;
-        
+
         if !relative_path.is_empty() {
             full_path = full_path.join(relative_path);
         }
-        
+
         full_path = full_path.join(filename);
-        
+
         Ok(full_path)
     }
 
     /// Validate path against organization rules
-    pub fn validate_path(&self, path: &Path, location_type: &LocationType) -> Result<ValidationReport> {
+    pub fn validate_path(
+        &self,
+        path: &Path,
+        location_type: &LocationType,
+    ) -> Result<ValidationReport> {
         let mut issues = Vec::new();
         let rules = self.get_organization_rules(location_type);
-        
+
         // Check if path is within expected base
         let base_path = self.get_base_path(location_type);
         if !path.starts_with(&base_path) {
@@ -171,16 +181,18 @@ impl LocationManager {
                 base_path.display()
             ));
         }
-        
+
         // Check for root-level violations (DocsSubdirectory)
         if matches!(location_type, LocationType::DocsSubdirectory) {
             if let Some(parent) = path.parent() {
-                if parent == self.workspace_root && path.file_name().unwrap_or_default() != "single-source-of-truth.md" {
+                if parent == self.workspace_root
+                    && path.file_name().unwrap_or_default() != "single-source-of-truth.md"
+                {
                     issues.push("Only single-source-of-truth.md allowed at root level".to_string());
                 }
             }
         }
-        
+
         Ok(ValidationReport {
             is_valid: issues.is_empty(),
             issues,
@@ -253,7 +265,10 @@ mod tests {
     #[test]
     fn test_resolve() {
         assert_eq!(resolve("source code"), "agentaskit-production/core/src/");
-        assert_eq!(resolve("workflow code"), "agentaskit-production/core/src/workflows/");
+        assert_eq!(
+            resolve("workflow code"),
+            "agentaskit-production/core/src/workflows/"
+        );
         assert_eq!(resolve("documentation"), "docs/");
         assert_eq!(resolve("test suite"), "agentaskit-production/tests/");
     }
@@ -261,21 +276,25 @@ mod tests {
     #[test]
     fn test_location_manager() {
         let manager = LocationManager::new(PathBuf::from("d:/test/workspace"));
-        
-        let location = manager.resolve_location(&DeliverableType::SourceCode).unwrap();
+
+        let location = manager
+            .resolve_location(&DeliverableType::SourceCode)
+            .unwrap();
         assert_eq!(location.location_type, LocationType::ProductionDirectory);
-        
-        let location = manager.resolve_location(&DeliverableType::Documentation).unwrap();
+
+        let location = manager
+            .resolve_location(&DeliverableType::Documentation)
+            .unwrap();
         assert_eq!(location.location_type, LocationType::DocsSubdirectory);
     }
 
     #[test]
     fn test_get_category_structure() {
         let manager = LocationManager::new(PathBuf::from("d:/test/workspace"));
-        
+
         let path = manager.get_category_structure("workflow");
         assert!(path.to_string_lossy().contains("workflows"));
-        
+
         let path = manager.get_category_structure("agent");
         assert!(path.to_string_lossy().contains("agents"));
     }
