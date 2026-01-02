@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AgentAskit Services
+# REF: DEP-K8S - K8s manifests & Helm charts
+# ─────────────────────────────────────────────────────────────────────────────
+
+---
+# Main API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentaskit
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: core
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: core
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9000
+      targetPort: grpc
+      protocol: TCP
+
+---
+# Headless Service for StatefulSet/direct pod access
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentaskit-headless
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: core
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: core
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: grpc
+      port: 9000
+      targetPort: grpc
+
+---
+# Metrics Service for Prometheus
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentaskit-metrics
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: core
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
