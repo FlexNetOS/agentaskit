@@ -7,9 +7,6 @@ use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
-use anyhow::Result;
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
