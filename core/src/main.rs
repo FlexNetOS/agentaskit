@@ -345,7 +345,7 @@ async fn start_self_improvement() -> Result<()> {
     info!("Autonomous improvements: {}", config.autonomous_improvement);
 
     // Initialize self-improving orchestrator
-    let orchestrator = SelfImprovingOrchestrator::new(config);
+    let _orchestrator = SelfImprovingOrchestrator::new(config);
     info!("Self-improving orchestrator initialized");
 
     // Start the orchestrator (non-blocking simulation)
