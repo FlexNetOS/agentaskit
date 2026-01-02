@@ -630,7 +630,7 @@ docker --version && docker compose version
 docker system df && docker image ls
 
 # Container health checks
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+docker ps --format "table {% raw %}{{.Names}}{% endraw %}\t{% raw %}{{.Status}}{% endraw %}\t{% raw %}{{.Ports}}{% endraw %}"
 docker compose ps --services --filter status=running
 
 # Git repository health

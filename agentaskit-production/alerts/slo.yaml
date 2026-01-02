@@ -14,7 +14,7 @@ groups:
           slo: availability
         annotations:
           summary: "Availability below 99.9% SLO target"
-          description: "Current availability: {{ $value | humanizePercentage }}"
+          description: "Current availability: {% raw %}{{ $value | humanizePercentage }}{% endraw %}"
 
       - alert: ErrorBudgetExhausted
         expr: |
@@ -26,7 +26,7 @@ groups:
           slo: error_budget
         annotations:
           summary: "Error budget below 10%"
-          description: "Only {{ $value }}% of error budget remaining this month"
+          description: "Only {% raw %}{{ $value }}{% endraw %}% of error budget remaining this month"
 
       - alert: FastBurnRateHigh
         expr: |
@@ -39,7 +39,7 @@ groups:
           window: fast
         annotations:
           summary: "Fast burn rate exceeded (1h window)"
-          description: "Burn rate: {{ $value }} (threshold: 14.4). Error budget will be exhausted in <6h at this rate"
+          description: "Burn rate: {% raw %}{{ $value }}{% endraw %} (threshold: 14.4). Error budget will be exhausted in <6h at this rate"
 
       - alert: SlowBurnRateHigh
         expr: |
@@ -52,7 +52,7 @@ groups:
           window: slow
         annotations:
           summary: "Slow burn rate exceeded (6h window)"
-          description: "Burn rate: {{ $value }} (threshold: 6.0). Error budget will be exhausted in <3d at this rate"
+          description: "Burn rate: {% raw %}{{ $value }}{% endraw %} (threshold: 6.0). Error budget will be exhausted in <3d at this rate"
 
   - name: slo_latency
     interval: 30s
@@ -67,7 +67,7 @@ groups:
           percentile: p95
         annotations:
           summary: "P95 latency exceeds 50ms SLO"
-          description: "Current P95 latency: {{ $value }}ms"
+          description: "Current P95 latency: {% raw %}{{ $value }}{% endraw %}ms"
 
       - alert: P99LatencySLOBreach
         expr: |
@@ -79,7 +79,7 @@ groups:
           percentile: p99
         annotations:
           summary: "P99 latency exceeds 100ms SLO"
-          description: "Current P99 latency: {{ $value }}ms"
+          description: "Current P99 latency: {% raw %}{{ $value }}{% endraw %}ms"
 
       - alert: AgentStartupTimeSLOBreach
         expr: |
@@ -90,4 +90,4 @@ groups:
           slo: startup_time
         annotations:
           summary: "Agent P95 startup time exceeds 100ms SLO"
-          description: "Current P95 startup time: {{ $value }}ms"
+          description: "Current P95 startup time: {% raw %}{{ $value }}{% endraw %}ms"

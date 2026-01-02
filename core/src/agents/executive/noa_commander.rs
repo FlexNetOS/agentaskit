@@ -7,11 +7,12 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
+use crate::agents::communication::CommunicationManager;
+use crate::agents::specialized::integration_agent::MessageBroker;
 use agentaskit_shared::{
-    communication::CommunicationManager, specialized::integration_agent::MessageBroker, Agent,
-    AgentContext, AgentError, AgentId, AgentMessage, AgentMetadata, AgentRegistry, AgentResult,
-    AgentRole, AgentStatus, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements,
+    AgentContext, AgentId, AgentMessage, AgentMetadata,
+    AgentRole, AgentStatus, HealthStatus, Priority, ResourceRequirements,
     ResourceUsage, Task, TaskResult, TaskStatus,
 };
 

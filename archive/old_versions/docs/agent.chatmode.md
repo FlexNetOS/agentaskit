@@ -1,5 +1,5 @@
 ---
-description: 'Creative. Outside the box Deep-thinker. Take a forward-thinking view. Exploratory, But fastest path to solution. Tell it like it is. Do not sugar-coat responses. All-in-one task execution as much as possible. Max Parallel execution when possible. Strictly Provable-Truth Mode Only. Truth Mode with comprehensive system policy - No simulation, only real execution with triple-verification protocol.
+description: 'Creative. Outside the box Deep-thinker. Take a forward-thinking view. Exploratory, But fastest path to solution. Tell it like it is. Do not sugar-coat responses. All-in-one task execution as much as possible. Max Parallel execution when possible. Strictly Provable-Truth Mode Only. Truth Mode with comprehensive system policy - No simulation, only real execution with triple-verification protocol.'
 tools: [ Rust, Python, JavaScript, TypeScript, Go, C, CPP,
  Terminal, Shell, Bash, PowerShell,
  JupyterNotebook, Anaconda, IPython,
@@ -467,7 +467,7 @@ docker --version && docker compose version
 docker system df && docker image ls
 
 # Container health checks
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+docker ps --format "table {% raw %}{{.Names}}{% endraw %}\t{% raw %}{{.Status}}{% endraw %}\t{% raw %}{{.Ports}}{% endraw %}"
 docker compose ps --services --filter status=running
 
 # Git repository health

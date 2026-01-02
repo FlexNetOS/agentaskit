@@ -3,11 +3,6 @@
 
 use super::*;
 use crate::agents::Agent;
-use agentaskit_shared::{
-    board::{BoardLayer, BoardLayerConfig},
-    executive::{ExecutiveLayer, ExecutiveLayerConfig},
-    specialized::SpecializedLayer,
-};
 use std::time::Duration;
 use tokio::time::timeout;
 use tracing::{error, info};
@@ -171,14 +166,22 @@ impl Phase4IntegrationTest {
             id: Uuid::new_v4(),
             name: "test_code_generation".to_string(),
             description: "Generate a simple function for testing".to_string(),
-            parameters: serde_json::json!({
+            task_type: "code_generation".to_string(),
+            priority: Priority::Normal,
+            status: TaskStatus::Pending,
+            assigned_agent: None,
+            dependencies: vec![],
+            input_data: serde_json::json!({
                 "language": "rust",
                 "function_name": "test_function",
                 "description": "A simple test function"
             }),
-            required_capabilities: vec!["code_generation".to_string()],
-            deadline: None,
-            dependencies: vec![],
+            output_data: None,
+            created_at: chrono::Utc::now(),
+            started_at: None,
+            completed_at: None,
+            timeout: None,
+            retry_count: 0,
         };
 
         match timeout(
@@ -205,13 +208,21 @@ impl Phase4IntegrationTest {
             id: Uuid::new_v4(),
             name: "test_analytics".to_string(),
             description: "Analyze test data".to_string(),
-            parameters: serde_json::json!({
+            task_type: "data_analytics".to_string(),
+            priority: Priority::Normal,
+            status: TaskStatus::Pending,
+            assigned_agent: None,
+            dependencies: vec![],
+            input_data: serde_json::json!({
                 "data_source": "test_dataset",
                 "analysis_type": "summary_statistics"
             }),
-            required_capabilities: vec!["data_analytics".to_string()],
-            deadline: None,
-            dependencies: vec![],
+            output_data: None,
+            created_at: chrono::Utc::now(),
+            started_at: None,
+            completed_at: None,
+            timeout: None,
+            retry_count: 0,
         };
 
         match timeout(
@@ -359,10 +370,18 @@ impl Phase4IntegrationTest {
                 id: Uuid::new_v4(),
                 name: task_name.to_string(),
                 description: format!("Workflow step: {}", task_name),
-                parameters: params,
-                required_capabilities: vec![agent_name.replace("_", "")],
-                deadline: Some(std::time::Instant::now() + Duration::from_secs(30)),
+                task_type: agent_name.to_string(),
+                priority: Priority::Normal,
+                status: TaskStatus::Pending,
+                assigned_agent: None,
                 dependencies: vec![],
+                input_data: params,
+                output_data: None,
+                created_at: chrono::Utc::now(),
+                started_at: None,
+                completed_at: None,
+                timeout: Some(chrono::Utc::now() + chrono::Duration::seconds(30)),
+                retry_count: 0,
             };
 
             match timeout(
@@ -408,10 +427,18 @@ impl Phase4IntegrationTest {
                 id: Uuid::new_v4(),
                 name: format!("performance_test_{}", i),
                 description: "Performance testing task".to_string(),
-                parameters: serde_json::json!({ "test_id": i }),
-                required_capabilities: vec!["general".to_string()],
-                deadline: None,
+                task_type: "general".to_string(),
+                priority: Priority::Normal,
+                status: TaskStatus::Pending,
+                assigned_agent: None,
                 dependencies: vec![],
+                input_data: serde_json::json!({ "test_id": i }),
+                output_data: None,
+                created_at: chrono::Utc::now(),
+                started_at: None,
+                completed_at: None,
+                timeout: None,
+                retry_count: 0,
             };
 
             // Distribute tasks across different agents
@@ -582,10 +609,18 @@ mod tests {
             id: Uuid::new_v4(),
             name: "test_task".to_string(),
             description: "Test task execution".to_string(),
-            parameters: serde_json::json!({"test": true}),
-            required_capabilities: vec!["testing".to_string()],
-            deadline: None,
+            task_type: "testing".to_string(),
+            priority: Priority::Normal,
+            status: TaskStatus::Pending,
+            assigned_agent: None,
             dependencies: vec![],
+            input_data: serde_json::json!({"test": true}),
+            output_data: None,
+            created_at: chrono::Utc::now(),
+            started_at: None,
+            completed_at: None,
+            timeout: None,
+            retry_count: 0,
         };
 
         let result = specialized

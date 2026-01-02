@@ -261,8 +261,25 @@ impl AutonomousOrchestrator {
     
     /// Run a single verification check
     async fn run_verification_check(&self) -> Result<bool> {
-        // TODO: Implement actual verification logic
-        Ok(true)
+        tracing::debug!("Running verification check for orchestrator {}", self.id);
+
+        let mut all_checks_passed = true;
+
+        // Verify workspace exists
+        if !self.workspace_path.exists() {
+            tracing::error!("Verification failed: Workspace does not exist");
+            all_checks_passed = false;
+        }
+
+        // Verify state consistency
+        let state = self.state.read().await;
+        if state.total_tasks > 0 && state.completed_tasks > state.total_tasks {
+            tracing::warn!("Verification failed: Invalid task counts");
+            all_checks_passed = false;
+        }
+
+        tracing::debug!("Verification check complete: passed={}", all_checks_passed);
+        Ok(all_checks_passed)
     }
     
     /// Calculate checksum for output
