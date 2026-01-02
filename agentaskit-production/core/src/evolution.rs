@@ -53,7 +53,7 @@ impl AutonomousComponent for EvolutionEngine {
             improvements.push("Improve task success rate through better error handling");
         }
 
-        if failed_tasks > total_tasks / 10 {
+        if total_tasks > 0 && failed_tasks * 10 > total_tasks {
             improvements.push("Implement task retry mechanism");
         }
 
