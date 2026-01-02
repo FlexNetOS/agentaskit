@@ -7,6 +7,8 @@ use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -1215,10 +1217,9 @@ impl Agent for SecuritySpecialistAgent {
         let result = TaskResult {
             task_id: task.id,
             status: task_status,
-            result: serde_json::json!({"message": "Task completed"}),
-            error: None,
-            execution_time: std::time::Duration::from_secs(1), // Placeholder
-            resource_usage: ResourceUsage::default(),
+            output_data: Some(serde_json::json!({"message": "Task completed"})),
+            error_message: None,
+            completed_at: chrono::Utc::now(),
         };
 
         Ok(result)

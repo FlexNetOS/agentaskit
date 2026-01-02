@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1133,7 +1133,7 @@ impl Agent for OperationsBoardAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_processes": status.total_processes,
                         "active_processes": status.active_processes,
                         "automation_rate": status.automation_rate,
@@ -1141,10 +1141,9 @@ impl Agent for OperationsBoardAgent {
                         "active_incidents": status.active_incidents,
                         "pending_changes": status.pending_changes,
                         "performance_score": status.performance_score,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "optimize-process" => {
@@ -1159,22 +1158,20 @@ impl Agent for OperationsBoardAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "process_id": process_id,
                         "optimization_started": true,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Operations planning failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

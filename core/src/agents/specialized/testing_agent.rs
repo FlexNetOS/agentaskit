@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1096,15 +1096,14 @@ impl Agent for TestingAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "execution_id": execution.execution_id,
                         "status": format!("{:?}", execution.status),
                         "progress": execution.progress,
                         "results_count": execution.results.len(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
@@ -1113,26 +1112,24 @@ impl Agent for TestingAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_executions": status.active_executions,
                         "total_executions": status.total_executions,
                         "success_rate": status.success_rate,
                         "current_coverage": status.current_coverage,
                         "tests_run": status.tests_run,
                         "queue_size": status.queue_size,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Testing failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

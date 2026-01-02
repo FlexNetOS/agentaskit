@@ -669,17 +669,17 @@ impl EnhancedWorkflowProcessor {
         }
     }
 
-    /// Convert RequestPriority to deliverable_manager::Priority
+    /// Convert RequestPriority to agentaskit_shared::Priority
     async fn convert_to_deliverable_priority(
         &self,
         priority: &RequestPriority,
-    ) -> Result<deliverable_manager::Priority> {
-        use deliverable_manager::Priority as DP;
+    ) -> Result<agentaskit_shared::Priority> {
+        use agentaskit_shared::Priority as P;
         Ok(match priority {
-            RequestPriority::Low => DP::Low,
-            RequestPriority::Medium => DP::Medium,
-            RequestPriority::High => DP::High,
-            RequestPriority::Critical => DP::Critical,
+            RequestPriority::Low => P::Low,
+            RequestPriority::Medium => P::Medium,
+            RequestPriority::High => P::High,
+            RequestPriority::Critical => P::Critical,
         })
     }
 
@@ -785,29 +785,30 @@ impl EnhancedWorkflowProcessor {
                 description: step.description.clone(),
                 task_type: self.determine_task_type(&step.name).await?,
                 priority: self.convert_priority(&task_subject.priority).await?,
-                required_capabilities: self
-                    .extract_required_capabilities(&step.description)
-                    .await?,
-                parameters: self.generate_task_parameters(step).await?,
-                deadline: Some(Utc::now() + step.estimated_duration),
-                created_at: Utc::now(),
                 status: TaskStatus::Pending,
                 assigned_agent: None,
-                result: None,
-                metadata: HashMap::new(),
+                dependencies: Vec::new(),
+                input_data: self.generate_task_parameters(step).await?,
+                output_data: None,
+                created_at: Utc::now(),
+                started_at: None,
+                completed_at: None,
+                timeout: Some(Utc::now() + step.estimated_duration),
+                retry_count: 0,
             };
 
             // Submit task for orchestration
-            let task_id = self.task_protocol.submit_task(task).await?;
+            let task_id = self.task_protocol.submit_task(task.clone()).await?;
 
             // Send notification to communication protocol
-            let message = AgentMessage::TaskAssignment {
+            let priority = task.priority.clone();
+            let message = AgentMessage::Request {
                 id: uuid::Uuid::new_v4(),
-                task_id,
                 from: AgentId::new(), // System agent
                 to: AgentId::new(),   // Will be assigned by orchestrator
                 task: task,
-                deadline: Some(Utc::now() + step.estimated_duration),
+                priority: priority,
+                timeout: Some(step.estimated_duration),
             };
 
             self.communication_protocol.send_message(message).await?;
