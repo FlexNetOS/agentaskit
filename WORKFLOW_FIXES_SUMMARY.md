@@ -34,7 +34,7 @@ This document summarizes the fixes applied to resolve workflow errors in the age
 **File**: `Cargo.toml`  
 **Issue**: `integrations/agentgateway` module was incorrectly detected as part of workspace  
 **Error Message**: `current package believes it's in a workspace when it's not`  
-**Fix**: Added `integrations/agentgateway` to `workspace.exclude` list
+**Fix**: Added `integrations/agentgateway` to the `workspace.exclude` list because it is a Git submodule and should not be treated as a workspace member. Other integration directories (e.g., `integrations/llama.cpp/`, `integrations/wiki-rs/`) are intended workspace members and therefore are not excluded.
 
 ### 5. Missing integration-tests.yml
 **File**: N/A (workflow file doesn't exist in main branch)  
