@@ -801,12 +801,13 @@ impl EnhancedWorkflowProcessor {
             let task_id = self.task_protocol.submit_task(task.clone()).await?;
 
             // Send notification to communication protocol
+            let priority = task.priority.clone();
             let message = AgentMessage::Request {
                 id: uuid::Uuid::new_v4(),
                 from: AgentId::new(), // System agent
                 to: AgentId::new(),   // Will be assigned by orchestrator
                 task: task,
-                priority: task.priority.clone(),
+                priority: priority,
                 timeout: Some(step.estimated_duration),
             };
 
