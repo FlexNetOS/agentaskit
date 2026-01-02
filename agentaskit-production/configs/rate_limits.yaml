@@ -1,1 +1,92 @@
-# rate limits (placeholder)
+# Rate Limiting Configuration
+# REF: PERF-RATE
+# Owner: @perf-oncall
+# Last Updated: 2025-10-05
+
+# Global rate limits apply to all requests
+global:
+  requests_per_second: 10000
+  burst_size: 15000
+  backoff_headers:
+    enabled: true
+    retry_after_header: "Retry-After"
+    rate_limit_header: "X-RateLimit-Limit"
+    remaining_header: "X-RateLimit-Remaining"
+    reset_header: "X-RateLimit-Reset"
+
+# Per-tenant rate limits
+tenants:
+  default:
+    requests_per_second: 1000
+    burst_size: 1500
+    concurrent_connections: 100
+
+  premium:
+    requests_per_second: 5000
+    burst_size: 7500
+    concurrent_connections: 500
+
+  enterprise:
+    requests_per_second: 10000
+    burst_size: 15000
+    concurrent_connections: 1000
+
+# Per-endpoint rate limits
+endpoints:
+  # Critical APIs with stricter limits
+  /api/v1/agents/execute:
+    requests_per_second: 500
+    burst_size: 750
+    priority: high
+
+  /api/v1/workflows/trigger:
+    requests_per_second: 200
+    burst_size: 300
+    priority: high
+
+  # Standard APIs
+  /api/v1/tasks:
+    requests_per_second: 2000
+    burst_size: 3000
+    priority: normal
+
+  /api/v1/health:
+    requests_per_second: 10000
+    burst_size: 15000
+    priority: low
+    exempt_from_tenant_limits: true
+
+# Rate limit responses
+responses:
+  exceeded:
+    status_code: 429
+    body:
+      error: "rate_limit_exceeded"
+      message: "Too many requests. Please retry after the specified time."
+    headers:
+      Retry-After: "${calculated_retry_seconds}"
+
+# Circuit breaker integration
+circuit_breaker:
+  enabled: true
+  failure_threshold: 50
+  recovery_timeout_seconds: 30
+  half_open_requests: 10
+
+# Metrics and monitoring
+metrics:
+  enabled: true
+  namespace: "agentaskit"
+  labels:
+    - tenant_id
+    - endpoint
+    - status
+  histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+# Load shedding
+load_shedding:
+  enabled: true
+  cpu_threshold_percent: 80
+  memory_threshold_percent: 85
+  queue_depth_threshold: 10000
+  shed_percentage: 20
