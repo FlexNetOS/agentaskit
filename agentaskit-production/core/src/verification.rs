@@ -316,18 +316,22 @@ impl NoaVerificationSystem {
 
     // Helper methods for test execution
     async fn run_cargo_check(&self, workspace_path: &PathBuf) -> Result<TestLog> {
+        let start = std::time::Instant::now();
+
         let output = tokio::process::Command::new("cargo")
             .args(&["check", "--workspace", "--all-features"])
             .current_dir(workspace_path)
             .output()
             .await?;
 
+        let duration_ms = start.elapsed().as_millis() as u64;
+
         Ok(TestLog {
             test_name: "cargo_check".to_string(),
             command: "cargo check --workspace --all-features".to_string(),
             output: String::from_utf8_lossy(&output.stdout).to_string(),
             exit_code: output.status.code().unwrap_or(-1),
-            duration_ms: 0, // TODO: Measure duration
+            duration_ms,
             timestamp: Utc::now(),
         })
     }
@@ -349,14 +353,39 @@ impl NoaVerificationSystem {
         })
     }
 
-    async fn verify_spec_mapping(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
-        // TODO: Implement spec mapping verification
+    async fn verify_spec_mapping(&self, workspace_path: &PathBuf) -> Result<TestLog> {
+        let start = std::time::Instant::now();
+        let mut output_lines = Vec::new();
+
+        // Implement spec mapping verification
+        let spec_paths = vec![
+            workspace_path.join("spec").join("requirements.md"),
+            workspace_path.join("docs").join("specifications.md"),
+            workspace_path.join("README.md"),
+        ];
+
+        for spec_path in &spec_paths {
+            if spec_path.exists() {
+                output_lines.push(format!("Found spec file: {}", spec_path.display()));
+                if let Ok(content) = tokio::fs::read_to_string(spec_path).await {
+                    let sections = vec!["Requirements", "Architecture", "Implementation"];
+                    for section in sections {
+                        if content.contains(section) {
+                            output_lines.push(format!("  ✓ Section '{}' found", section));
+                        }
+                    }
+                }
+            }
+        }
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
         Ok(TestLog {
             test_name: "spec_mapping".to_string(),
             command: "verify_spec_mapping".to_string(),
-            output: "Spec mapping verification completed".to_string(),
+            output: output_lines.join("\n"),
             exit_code: 0,
-            duration_ms: 0,
+            duration_ms,
             timestamp: Utc::now(),
         })
     }
@@ -412,12 +441,22 @@ impl EvidenceLedger {
         let hash = format!("{:x}", hasher.finalize());
 
         let metadata = fs::metadata(&path).await?;
-        
+
+        // Get actual file modification time
+        let last_modified = metadata
+            .modified()
+            .ok()
+            .and_then(|t| chrono::DateTime::from_timestamp(
+                t.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs() as i64,
+                0
+            ))
+            .unwrap_or_else(Utc::now);
+
         let evidence = FileEvidence {
             path: path.clone(),
             sha256_hash: hash,
             size_bytes: metadata.len(),
-            last_modified: Utc::now(), // TODO: Use actual file modification time
+            last_modified,
             content_type: Self::detect_content_type(&path),
         };
 
