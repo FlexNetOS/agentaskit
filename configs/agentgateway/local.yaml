@@ -1,0 +1,85 @@
+# AgentasKit Agentgateway Local Development Configuration
+# This configuration is for local development and testing
+
+version: v1
+
+# Static configuration
+static:
+  # Admin interface
+  admin:
+    address: "127.0.0.1:15000"
+
+  # Logging
+  logging:
+    level: debug
+    format: json
+
+# Listeners - entry points for agent communication
+listeners:
+  # MCP listener for Model Context Protocol
+  - name: mcp-listener
+    protocol: mcp
+    address: "127.0.0.1:8080"
+
+  # A2A listener for Agent-to-Agent communication
+  - name: a2a-listener
+    protocol: a2a
+    address: "127.0.0.1:8081"
+
+  # SSE listener for streaming
+  - name: sse-listener
+    protocol: sse
+    address: "127.0.0.1:8082"
+
+# Targets - backend services (MCP servers, agents)
+targets:
+  # Example: MCP server via stdio
+  - name: example-mcp-server
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-everything"
+
+  # Example: Local HTTP backend
+  - name: local-http-backend
+    type: http
+    host: "http://localhost:3000"
+
+# Routes - mapping requests to targets
+routes:
+  - name: default-mcp-route
+    listener: mcp-listener
+    target: example-mcp-server
+
+  - name: default-a2a-route
+    listener: a2a-listener
+    target: local-http-backend
+
+# Policies
+policies:
+  # Rate limiting
+  - name: global-rate-limit
+    type: ratelimit
+    config:
+      requests_per_second: 100
+      burst: 150
+
+  # Authorization (permissive for local dev)
+  - name: local-auth
+    type: authorization
+    config:
+      rules:
+        - name: allow-all
+          expression: "true"
+          action: allow
+
+# Telemetry (disabled for local dev by default)
+telemetry:
+  enabled: false
+  # Uncomment to enable:
+  # otlp:
+  #   endpoint: "http://localhost:4317"
+  # metrics:
+  #   enabled: true
+  #   path: /metrics
