@@ -345,8 +345,9 @@ async fn start_self_improvement() -> Result<()> {
     info!("Autonomous improvements: {}", config.autonomous_improvement);
 
     // Initialize self-improving orchestrator
-    // Create agent manager for orchestrator
-    let agent_manager = AgentManager::new();
+    // Create required components for orchestrator
+    let security_manager = SecurityManager::new().await?;
+    let agent_manager = AgentManager::new(4, &security_manager).await?;
     let _orchestrator = SelfImprovingOrchestrator::new(config, agent_manager).await?;
     info!("Self-improving orchestrator initialized");
 
