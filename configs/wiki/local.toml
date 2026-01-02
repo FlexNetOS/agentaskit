@@ -1,0 +1,86 @@
+# Wiki-rs (Litho) Local Development Configuration
+# Generate AI-powered architecture documentation from source code
+
+[project]
+# Path to the project to analyze
+path = "."
+
+# Output directory for generated documentation
+output_dir = "./litho.docs"
+
+# Target language for documentation (en, zh, ja, etc.)
+target_language = "en"
+
+[llm]
+# LLM API configuration
+# For local development, use environment variables:
+# export OPENAI_API_KEY="your-key"
+
+# API base URL (leave empty for OpenAI default)
+# api_base_url = "https://api.openai.com/v1"
+
+# Efficient model for quick operations
+model_efficient = "gpt-4o-mini"
+
+# Powerful model for complex analysis
+model_powerful = "gpt-4o"
+
+# Enable ReAct mode with preset tools
+enable_preset_tools = true
+
+# Maximum tokens for responses
+max_tokens = 4096
+
+# Temperature for generation
+temperature = 0.7
+
+[processing]
+# Skip preprocessing stage (use cached results)
+skip_preprocessing = false
+
+# Skip research stage (use cached results)
+skip_research = false
+
+# Enable caching for LLM responses
+enable_cache = true
+
+# Cache directory
+cache_dir = "./.litho_cache"
+
+# File patterns to exclude
+exclude_patterns = [
+    "node_modules/**",
+    "target/**",
+    ".git/**",
+    "*.lock",
+    "dist/**",
+    "build/**",
+    "__pycache__/**",
+    "*.pyc",
+    ".venv/**",
+]
+
+# Maximum file size to process (1MB)
+max_file_size = 1048576
+
+[output]
+# Generate project overview
+generate_overview = true
+
+# Generate architecture documentation
+generate_architecture = true
+
+# Generate workflow documentation
+generate_workflow = true
+
+# Generate module deep dive documentation
+generate_deep_dive = true
+
+# Generate Mermaid diagrams
+generate_diagrams = true
+
+# Fix Mermaid syntax errors automatically
+fix_mermaid_errors = true
+
+# Output format: markdown, html, pdf
+format = "markdown"
