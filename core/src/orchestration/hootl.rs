@@ -499,7 +499,7 @@ impl HootlEngine {
         observations_collected += 3;
 
         tracing::debug!(
-            "Observations: CPU={:.1}%, Mem={}MB, Disk={}MB, Success={:.2}%, AvgCycle={:.2}s, Errors={}",
+            "Observations: CPU={:.1}%, Mem={}MB, Disk={}GB, Success={:.2}%, AvgCycle={:.2}s, Errors={}",
             cpu_usage, memory_usage / 1_000_000, disk_usage / 1_000_000_000,
             success_rate * 100.0, avg_cycle_time, recent_errors
         );
