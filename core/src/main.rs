@@ -313,7 +313,7 @@ async fn start_autonomous_mode() -> Result<()> {
     info!("Verification required: {}", config.verification_required);
 
     // Initialize autonomous pipeline
-    let pipeline = AutonomousPipeline::new(config).await?;
+    let _pipeline = AutonomousPipeline::new(config).await?;
     info!("Autonomous pipeline initialized");
 
     // Start the pipeline (non-blocking simulation)
@@ -335,7 +335,7 @@ async fn start_self_improvement() -> Result<()> {
         max_concurrent_tasks: 4,
         learning_rate: 0.01,
         improvement_threshold: 0.05,
-        verification_frequency: std::time::Duration::from_secs(3600),
+        verification_frequency: 3600,  // seconds
         healing_retry_limit: 3,
     };
 
@@ -345,7 +345,9 @@ async fn start_self_improvement() -> Result<()> {
     info!("Autonomous improvements: {}", config.autonomous_improvement);
 
     // Initialize self-improving orchestrator
-    let _orchestrator = SelfImprovingOrchestrator::new(config);
+    // Create agent manager for orchestrator
+    let agent_manager = AgentManager::new();
+    let _orchestrator = SelfImprovingOrchestrator::new(config, agent_manager).await?;
     info!("Self-improving orchestrator initialized");
 
     // Start the orchestrator (non-blocking simulation)

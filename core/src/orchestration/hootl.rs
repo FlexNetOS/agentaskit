@@ -11,6 +11,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 use std::sync::Arc;
 use std::time::Duration;
 use parking_lot::Mutex;
@@ -28,9 +29,9 @@ pub struct HootlEngine {
     /// System monitor for resource usage tracking
     system_monitor: Arc<Mutex<System>>,
     /// Recent operation results for metrics calculation
-    recent_operations: Arc<Mutex<Vec<OperationResult>>>,
+    recent_operations: Arc<Mutex<VecDeque<OperationResult>>>,
     /// Cycle timing history
-    cycle_times: Arc<Mutex<Vec<f64>>>,
+    cycle_times: Arc<Mutex<VecDeque<f64>>>,
     /// Error history
     error_history: Arc<Mutex<Vec<ErrorRecord>>>,
 }
@@ -116,8 +117,8 @@ impl HootlEngine {
             running: false,
             cycle_count: 0,
             system_monitor: Arc::new(Mutex::new(System::new_all())),
-            recent_operations: Arc::new(Mutex::new(Vec::new())),
-            cycle_times: Arc::new(Mutex::new(Vec::new())),
+            recent_operations: Arc::new(Mutex::new(VecDeque::new())),
+            cycle_times: Arc::new(Mutex::new(VecDeque::new())),
             error_history: Arc::new(Mutex::new(Vec::new())),
         }
     }
@@ -793,6 +794,10 @@ impl HootlEngine {
     }
     
     /// Get current CPU usage
+    /// 
+    /// NOTE: This method includes a 200ms sleep to allow accurate CPU measurement.
+    /// This could impact performance if called frequently. Consider using a cached
+    /// value that's periodically updated in the background for high-frequency monitoring.
     async fn get_cpu_usage(&self) -> f64 {
         let mut sys = self.system_monitor.lock();
         sys.refresh_cpu();
@@ -810,6 +815,11 @@ impl HootlEngine {
     }
 
     /// Get current disk usage
+    /// 
+    /// NOTE: This calculation sums (total - available) across all disks, which doesn't
+    /// account for reserved space or filesystem overhead. The actual used space reported
+    /// by filesystem tools may differ slightly. This is sufficient for general monitoring
+    /// but should not be used for precise capacity planning.
     async fn get_disk_usage(&self) -> u64 {
         let sys = self.system_monitor.lock();
         // Sum up used space across all disks
@@ -855,25 +865,25 @@ impl HootlEngine {
     /// Record an operation result for metrics tracking
     fn record_operation(&self, success: bool) {
         let mut operations = self.recent_operations.lock();
-        operations.push(OperationResult {
+        operations.push_back(OperationResult {
             timestamp: Utc::now(),
             success,
         });
 
-        // Keep only last 1000 operations
-        if operations.len() > 1000 {
-            operations.drain(0..operations.len() - 1000);
+        // Keep only last 1000 operations using VecDeque's efficient pop_front
+        while operations.len() > 1000 {
+            operations.pop_front();
         }
     }
 
     /// Record cycle time for metrics tracking
     fn record_cycle_time(&self, duration: f64) {
         let mut times = self.cycle_times.lock();
-        times.push(duration);
+        times.push_back(duration);
 
-        // Keep only last 200 cycles
-        if times.len() > 200 {
-            times.drain(0..times.len() - 200);
+        // Keep only last 200 cycles using VecDeque's efficient pop_front
+        while times.len() > 200 {
+            times.pop_front();
         }
     }
 
