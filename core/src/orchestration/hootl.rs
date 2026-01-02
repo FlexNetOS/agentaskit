@@ -467,8 +467,10 @@ impl HootlEngine {
 
     /// Execute a single operation (helper for run_phase)
     async fn execute_operation(&self, _operation_id: usize, _state: &AutonomousState) -> Result<()> {
-        // Placeholder for actual operation execution
-        // In production, this would delegate to specific agents or subsystems
+        // INTENTIONAL ASYNC PLACEHOLDER:
+        // This function is async by design because real implementations will perform
+        // asynchronous work (e.g., delegating to agents, IO-bound tasks, RPC calls).
+        // For now it is a synchronous no-op used for HOOTL simulations.
         Ok(())
     }
     
