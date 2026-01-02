@@ -299,6 +299,8 @@ impl OrchestratorEngine {
         info!("Initializing approval workflow channels");
 
         // Define decision categories requiring approval
+        // TODO: Store these categories in OrchestrationEngine state for actual approval
+        //       workflow validation (e.g., check if a decision's category requires approval).
         let approval_categories = vec![
             "resource_allocation",
             "system_configuration",
@@ -336,6 +338,8 @@ impl OrchestratorEngine {
         info!("Enabling real-time command processing");
 
         // Setup command categories
+        // TODO: Store these commands in OrchestrationEngine state for command validation
+        //       and help system (e.g., validate user input against this list, generate help text).
         let available_commands = vec![
             "task submit", "task status", "task cancel",
             "agent list", "agent status", "agent deploy",
