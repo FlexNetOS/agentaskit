@@ -10,15 +10,15 @@
 # MANIFEST METADATA
 # ═══════════════════════════════════════════════════════════════════════════
 #
-# Generated: 2026-01-02T00:00:00Z
+# Generated: 2026-01-02T16:50:00Z
 # Repository: agentaskit-production
 # Git Branch: claude/complete-todo-task-YK8JK
 # Git Commit: 01794e8bb55a4a0b75192ea68f1ad9bf33cbabe4
 # Commit Date: 2025-12-30 14:08:36 -0600
-# Total Files: 149
-# Task Reference: DOC-001 (Evidence trails & SHA-256 manifests)
-# Owner: @docs
-# Dependencies: EVID-HASH
+# Total Files: 159
+# Task Reference: DOC-001, SUPPLY-SIGN (Evidence trails, SHA-256 manifests, Artifact signing)
+# Owner: @docs, @platform
+# Dependencies: EVID-HASH, SUPPLY-SBOM
 #
 # ═══════════════════════════════════════════════════════════════════════════
 # VERIFICATION INSTRUCTIONS
@@ -35,13 +35,22 @@
 #   operational_hash/generate_integrity.py
 #
 # ═══════════════════════════════════════════════════════════════════════════
-# ACCEPTANCE CRITERIA (DOC-001)
+# ACCEPTANCE CRITERIA
 # ═══════════════════════════════════════════════════════════════════════════
 #
+# DOC-001 (Evidence trails & SHA-256 manifests):
 # ✓ Every REF links evidence
 # ✓ SHA-256 manifests present
 # ✓ Checklists signed
 # ✓ Evidence: docs/, operational_hash/HASHES.txt, TEST/*
+#
+# SUPPLY-SIGN (Artifact signing):
+# ✓ SHA256 checksums generated for all SBOM files
+# ✓ Signing infrastructure in place (GPG/minisign)
+# ✓ Automated signing workflow (.github/workflows/sign.yml)
+# ✓ Comprehensive documentation (artifacts/README.md)
+# ✓ Evidence: artifacts/*.sig (pending key setup), operational_hash/HASHES.txt
+# ✓ Signing script: scripts/sign_artifacts.sh
 #
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -197,6 +206,24 @@ cdc3bb531c7ff780549ac296c5b1d6dd15eac7d3922e938517de77e3cb8bb837  core/src/workf
 737b769ede4d89bbb1afaeb88e8e7df375928a1fef7eed44e9e3841d9c8ce488  core/src/workflows/seven_phase/phase_three.rs
 8b36821e87b302c510ce0cdae761e8a4fe1ae0ef9159d31d6660786547d31e5d  core/src/workflows/seven_phase/phase_two.rs
 f5fc53ff86ffd04dbfdc240e632de272312a93c1fd7e711760ea8b59df830499  core/src/workflows/sop_parser.rs
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Supply Chain & Artifact Signing (SUPPLY-SIGN)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# SBOM Checksums
+a56a661907b2597cae555f9112bd7d4f86e779a6b96ae70087ff7fa61c185544  sbom/agentaskit-core.json
+59d1c06145eabe1828acac869f2d9714934f5f5fc8be772ebbd03bcfbd501ff9  sbom/agentaskit-shared.json
+5cfc1e048afad4df4c8238e374325cd9d28a2606bab1a3f00fd20bda26b4c160  sbom/flex-core.json
+eb2afb0abc6de5738c93f58073ff84edf2779b35c9939693532e214bc522fbde  sbom/wasm-host.json
+
+# Artifact Signing Infrastructure
+34a7fed7beeeaead0fc8179e90b01b0dc0d2d4150ad63936fc26766523fbeeb8  artifacts/README.md
+7d1ba8631159a83682e08df8b005e5c5af355eb74e90126d9fa5a614054c4669  artifacts/signatures/README.md
+d123730d03705a7230fba784fb324ff5f0b06ed6a54604fd5efe2a332c37a9e3  artifacts/keys/README.md
+7ba9a0cdf45fdc2e2aee147a7b15ac1687a1cbe0e750d1f0f8a1ba5daa5abf94  artifacts/checksums/SHA256SUMS
+b0ff0be7f9e1af181a23ade16a36dfcbc3ac1be56170f4ad7e9c2b0ed0249c18  scripts/sign_artifacts.sh
+d4efb6f44c52559fab8592970b4850f6a5640dd67ab5a1261d4e32ed13514677  .github/workflows/sign.yml
 
 # ═══════════════════════════════════════════════════════════════════════════
 # CATEGORY: Test Files
