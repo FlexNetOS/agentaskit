@@ -1,0 +1,95 @@
+---
+# AgentAsKit Performance Alerts
+groups:
+  - name: performance_throughput
+    interval: 30s
+    rules:
+      - alert: TaskThroughputBelowTarget
+        expr: sum(rate(agentaskit_tasks_processed_total[1m])) < 10000
+        for: 5m
+        labels:
+          severity: warning
+          component: orchestrator
+        annotations:
+          summary: "Task throughput below 10K/sec target"
+          description: "Current throughput: {{ $value | humanize }} tasks/sec"
+
+      - alert: MessageThroughputBelowTarget
+        expr: sum(rate(agentaskit_inter_agent_messages_total[1m])) < 100000
+        for: 5m
+        labels:
+          severity: warning
+          component: messaging
+        annotations:
+          summary: "Message throughput below 100K/sec target"
+          description: "Current throughput: {{ $value | humanize }} messages/sec"
+
+      - alert: HighTaskProcessingTime
+        expr: |
+          histogram_quantile(0.95, rate(agentaskit_task_duration_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          component: tasks
+        annotations:
+          summary: "High P95 task processing time"
+          description: "P95 task processing time: {{ $value }}s"
+
+  - name: performance_agents
+    interval: 30s
+    rules:
+      - alert: AgentStartupSlow
+        expr: |
+          histogram_quantile(0.95, rate(agentaskit_agent_startup_duration_seconds_bucket[5m])) * 1000 > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: agents
+        annotations:
+          summary: "Agent startup time exceeds target"
+          description: "P95 startup time: {{ $value }}ms (target: <100ms)"
+
+      - alert: HighAgentChurnRate
+        expr: rate(agentaskit_agents_started_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: agents
+        annotations:
+          summary: "High agent churn rate detected"
+          description: "{{ $value }} agents starting per second"
+
+      - alert: AgentCapacityNearLimit
+        expr: sum(agentaskit_active_agents) / 928 > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          component: orchestrator
+        annotations:
+          summary: "Agent capacity utilization above 90%"
+          description: "{{ $value | humanizePercentage }} of 928-agent capacity in use"
+
+  - name: performance_resources
+    interval: 30s
+    rules:
+      - alert: HighMemoryUsage
+        expr: |
+          sum(agentaskit_memory_bytes) / 1024 / 1024 / 1024 > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High memory usage detected"
+          description: "Total memory usage: {{ $value }}GB"
+
+      - alert: HighCPUUtilization
+        expr: |
+          100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High CPU utilization"
+          description: "CPU utilization: {{ $value }}%"

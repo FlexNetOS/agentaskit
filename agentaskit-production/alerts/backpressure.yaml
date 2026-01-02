@@ -1,1 +1,45 @@
-# alert rule (placeholder)
+---
+# AgentAsKit Backpressure and Queue Alerts
+groups:
+  - name: backpressure
+    interval: 30s
+    rules:
+      - alert: HighTaskQueueDepth
+        expr: agentaskit_task_queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: orchestrator
+        annotations:
+          summary: "High task queue depth detected"
+          description: "Task queue depth is {{ $value }} (threshold: 1000) for 5 minutes"
+
+      - alert: CriticalTaskQueueDepth
+        expr: agentaskit_task_queue_depth > 5000
+        for: 2m
+        labels:
+          severity: critical
+          component: orchestrator
+        annotations:
+          summary: "Critical task queue depth"
+          description: "Task queue depth is {{ $value }} (threshold: 5000)"
+
+      - alert: MessageQueueBackpressure
+        expr: rate(agentaskit_inter_agent_messages_dropped_total[1m]) > 100
+        for: 3m
+        labels:
+          severity: warning
+          component: messaging
+        annotations:
+          summary: "Inter-agent message backpressure detected"
+          description: "Dropping {{ $value }} messages/sec due to backpressure"
+
+      - alert: SandboxPoolExhaustion
+        expr: agentaskit_sandbox_pool_available / agentaskit_sandbox_pool_total < 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: sandbox
+        annotations:
+          summary: "Sandbox pool nearly exhausted"
+          description: "Only {{ $value | humanizePercentage }} of sandbox pool available"

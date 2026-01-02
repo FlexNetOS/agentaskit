@@ -1,0 +1,129 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  AgentAskit Production CODEOWNERS
+#  Purpose: Route code reviews to appropriate teams based on file paths
+#  Reference: GOV-CODEOWNERS (REF: GOV-CODEOWNERS)
+#  Last Updated: 2026-01-02
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Default ownership - Program team reviews all changes unless specified below
+*                                   @program
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Performance & Scalability
+# ─────────────────────────────────────────────────────────────────────────────
+/tests/performance/                 @perf-oncall
+/tests/performance/rate_limit/      @perf-oncall
+/tests/performance/workflow_benchmarks/ @perf-oncall
+/docs/perf/                         @perf-oncall
+/configs/rate_limits.yaml           @perf-oncall
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security & AuthZ
+# ─────────────────────────────────────────────────────────────────────────────
+/security/                          @sec-oncall
+/docs/security/                     @sec-oncall
+/docs/runbooks/security/            @sec-oncall
+/tests/security/                    @sec-oncall
+/core/src/security/                 @sec-oncall
+/core/src/agents/specialized/security_specialist_agent.rs @sec-oncall
+/configs/secrets/                   @sec-oncall
+/.github/workflows/codeql.yml       @sec-oncall
+/operational_audit/                 @sec-oncall
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SRE & Operations
+# ─────────────────────────────────────────────────────────────────────────────
+/slo/                               @sre
+/dashboards/                        @sre @observability
+/alerts/                            @sre @observability
+/docs/ops/                          @sre
+/.github/workflows/slo-check.yml    @sre
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Observability & Monitoring
+# ─────────────────────────────────────────────────────────────────────────────
+/docs/observability/                @observability
+/configs/logging.yaml               @observability
+/configs/tracing.yaml               @observability
+/tests/observability/               @observability
+/core/src/monitoring/               @observability
+/core/src/agents/specialized/monitoring_agent.rs @observability
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Workflow & Orchestration
+# ─────────────────────────────────────────────────────────────────────────────
+/core/src/orchestration/            @orchestration
+/core/src/workflows/                @orchestration
+/tests/workflows/                   @orchestration
+/tests/seven_phase_workflow/        @orchestration
+/docs/runbooks/                     @orchestration
+/unified_orchestration/             @orchestration
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Platform & CI/CD
+# ─────────────────────────────────────────────────────────────────────────────
+/.github/workflows/                 @platform
+/deploy/                            @platform
+/deploy/k8s/                        @platform
+/deploy/canary/                     @platform
+/scripts/                           @platform
+/hooks/                             @platform
+/operational_scripts/               @platform
+/containers/                        @platform
+/sbom/                              @platform
+/artifacts/                         @platform
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Verification & QA
+# ─────────────────────────────────────────────────────────────────────────────
+/sandbox/                           @verification-lead
+/tests/integration/                 @qa
+/tests/verification/                @verification-lead
+/core/src/verification.rs           @verification-lead
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Documentation
+# ─────────────────────────────────────────────────────────────────────────────
+/docs/                              @docs
+/docs/api/                          @docs @platform
+/docs/architecture/                 @docs @program
+/docs/decisions/                    @docs @program
+/docs/compliance/                   @docs @program
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Governance & Standards
+# ─────────────────────────────────────────────────────────────────────────────
+/.todo                              @program
+/core/src/orchestration/sot.md      @program
+/CODEOWNERS                         @program
+/CONTRIBUTING.md                    @program
+/operational_hash/                  @program
+/docs/decisions/adr/                @program
+/docs/risks/                        @program
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI & ML Components
+# ─────────────────────────────────────────────────────────────────────────────
+/core/src/ai/                       @ml
+/core/src/agents/specialized/learning_agent.rs @ml
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DevOps & Tooling
+# ─────────────────────────────────────────────────────────────────────────────
+/tools/                             @devops
+/unified_tools/                     @devops
+/core/src/agents/specialized/deployment_agent.rs @devops @platform
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Process & Methodology
+# ─────────────────────────────────────────────────────────────────────────────
+/core/src/workflows/methodology_engine.rs @process
+/docs/4D_METHOD_ENHANCEMENT.md      @process
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Critical Files - Multiple Reviewers Required
+# ─────────────────────────────────────────────────────────────────────────────
+/core/src/lib.rs                    @program @platform
+/core/src/main.rs                   @program @platform
+/Cargo.toml                         @platform @program
+/Cargo.lock                         @platform

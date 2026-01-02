@@ -1,2 +1,252 @@
-# SHA-256 hash manifest
-# Append new entries as: <sha256>  <relative/path>
+# ═══════════════════════════════════════════════════════════════════════════
+# AgentAsKit Production - SHA-256 Integrity Manifest
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Cryptographic evidence trail for all production artifacts
+# Standard: SHA-256 (FIPS 180-4)
+# Scope: Documentation, configuration, source code, tests, and build artifacts
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# MANIFEST METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Generated: 2026-01-02T00:00:00Z
+# Repository: agentaskit-production
+# Git Branch: claude/complete-todo-task-YK8JK
+# Git Commit: 01794e8bb55a4a0b75192ea68f1ad9bf33cbabe4
+# Commit Date: 2025-12-30 14:08:36 -0600
+# Total Files: 149
+# Task Reference: DOC-001 (Evidence trails & SHA-256 manifests)
+# Owner: @docs
+# Dependencies: EVID-HASH
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# VERIFICATION INSTRUCTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Verify all hashes:
+#   cd /home/user/agentaskit/agentaskit-production
+#   sha256sum -c operational_hash/HASHES.txt
+#
+# Verify specific category:
+#   grep "^# CATEGORY: " operational_hash/HASHES.txt -A 100 | grep -v "^#" | sha256sum -c
+#
+# Generate new manifest:
+#   operational_hash/generate_integrity.py
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# ACCEPTANCE CRITERIA (DOC-001)
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# ✓ Every REF links evidence
+# ✓ SHA-256 manifests present
+# ✓ Checklists signed
+# ✓ Evidence: docs/, operational_hash/HASHES.txt, TEST/*
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Root-Level Key Files
+# ═══════════════════════════════════════════════════════════════════════════
+
+34052c6b6deb562c1ea376fa413d7c01336f87b92ae3dfc213c13c1ed77e7a96  Makefile
+9f5b757f588cdd564836f7ba7e73036507565f1ef4aa9206a19cd2f1c4425601  README.md
+82cc8590d41ac9b1d1ed8c1ed35fc12a9f28dfa5a2d13b2f6b9c12765bac7dbc  CODEOWNERS
+1f3aab7d9d647b5d5cdefb7fc509ddf8a826f57b0323afe30c7d5af7ae5a6e15  CONTRIBUTING.md
+681e130114c7d3a244f3d5133ee426e1b81ba4a8fd3fff80046d6db1caae1e6b  .todo
+447c20328d741b110048714a0ff1ec7a9ba74f71b1e168099b79b2c0a1cb39d6  .sop
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Configuration Files (YAML/TOML)
+# ═══════════════════════════════════════════════════════════════════════════
+
+62a7b36b780cd3c83abd15928703e5a3189a191491bf4511289efc5dd1351860  ./Cargo.toml
+69784f3f4e31d2f3df991dd9fbc0d4e80e3e55eb89906afa424be6864713e5be  ./alerts/backpressure.yaml
+7014b657c3713a73d38317afd76eaa42d370dba3841479cd15d8df6cfa1ae941  ./alerts/performance.yaml
+abc7d7b20ee4b4adb9064ec4fa6a21d832f6ca822421cb432099dc064ec35c0a  ./alerts/slo.yaml
+879947b8d0572411f0ef0400e7e05201b2a3b92765abf4c43368a677f9b26f54  ./configs/rate_limits.yaml
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./configs/tracing.yaml
+187b7e7d467e0f7d63dcc890b722c1a953a2383047c2735022953ff748b7f85c  ./core/Cargo.toml
+60cd9cff8d61669d000bf04b461a690f525d1c85f87fbaf7a078d30292370a99  ./deploy/k8s/limits.yaml
+60c0cede66826a53e47b4ecc48672eafb3fa47ae1824b3ebb3bd8cd160534880  ./shared/Cargo.toml
+d6de6d726e862996f94760b61000daa2e72006fc21a4f56a86f72929d34bc45e  ./slo/policies.yaml
+dda467b4bfd25338fbcb975f54495a28224409cfcfdf1b8316fbf9922a592978  ./unified_execution/core/Cargo.toml
+29ad86cddcb41fafe7aa25a9b066bfab2790cd169c2a4862ddb0df0c5551768e  ./unified_execution/wasm_host/Cargo.toml
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Documentation Files
+# ═══════════════════════════════════════════════════════════════════════════
+
+97fcb6e8775ed526c609382e8f014f77a1f9f5f2ac7d8567ff1699697f87ac77  docs/4D_METHOD_ENHANCEMENT.md
+c1fdd06a8e43ec1e583dcd2b61ae1055e7c055ebb36246112d29485ef8580a5b  docs/COMPREHENSIVE_7PHASE_SYSTEM.md
+6706422231fca5bdd79d3e8f096d4029beee94fa32d764d2e96a0aa8575183fd  docs/DELIVERABLE_MANAGEMENT.md
+1d8f1cae235b0eb6b7cf16e97c2967da215dbe184b5e1b179b8a5aa228e88329  docs/INTEGRATION_TEST_REPORT.md
+1009e41ff09eab81f764077e700b5a7a5173938370ccca0d2e3775c61be80a1a  docs/PRODUCTION_READINESS_CERTIFICATION.md
+8ccf622a5dd2f1acabd1d53487fbcaef4218b0d3c3f7f06cd711d39a9918ff9a  docs/SEVEN_PHASE_VERIFICATION_REPORT.md
+a630d81429207fd9ba481ddcde330c2ea2cfe8d570b011b4bc62ef73048dd9df  docs/SEVEN_PHASE_WORKFLOW_IMPLEMENTATION.md
+a55da7213c29b96f597273910f8ae865130116081006184eb33f71d251951ad7  docs/SOP_INTEGRATION_GUIDE.md
+e4b99c0efdf264cd97b1f00800886cc144e89cdc56fc00914a1e851b6af0aece  docs/WORKFLOW_007_OBSERVABILITY_SLO_COMPLETION.md
+cae461ac670558eb8fca6a94fb8cc58f768bf1db91169e265fbde035015012db  docs/agent.chatmode.md
+2a5794fe77fcdda70038b3c457c7e1e0eced393129ec1ec2988c2f0a7a7606e6  docs/agent_hierarchical_map.md
+cfe0d798895568ab8511f237172c277458bee57b7537df98cd28bf8711a38825  docs/decisions/ops-dedup-todo.md
+b40d54d5670ac0a4cbb814b77da3c0b2b98a34264a1b9850b59bfea5f921f5eb  docs/mode1-noa-dynamic-ui-cross-platform.md
+367413f300fed064547e45f380e0d3b56a2cdfa68168d09816d81c61eb649f20  docs/observability/logging.md
+e107e2948d0ae67bb97df522ebc936f2a17e5d07f06ad25ac3a9ec0c89849655  docs/ops/capacity_plan.md
+a10d09f353eb13134e907d2828ed654e58944e8b7a828c7354ccf2892771f399  docs/perf/backpressure.md
+bf71e8edeb0ee29215a475e2083d2643e5a5932d5dd23ac0e15fd763a81425b1  docs/reports/cross_reference/README.md
+16b86ee89be0df47a807eca215ff97d782637ad840939ed6afd642adcbd75c26  docs/reports/cross_reference/artifacts/manifest.json
+ec83aa85f159086b36e3ff3b93fd0f6f3b2ac5a2be47842589b97d94c9be5201  docs/reports/cross_reference/artifacts/report.json
+d6bcc776a449aa3767a6bd9a5cc23b72addb579520194895c38813c529618653  docs/reports/cross_reference/artifacts/report.md
+6e54bc57440ebdc537d49591e1ad1ad8269ec18288e760fefee9b5b6d536da34  docs/runbooks/security/rotation.md
+5ffee579f0b1d97082cc64faa01a048141a80e61b6820cf7f69823ae53ee151c  docs/security/secrets.md
+e7ca699fd9473bf3076604398025712a064c75b21c8fa23f694543fb8325ecb5  docs/tools.md
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Core Source Code (Rust)
+# ═══════════════════════════════════════════════════════════════════════════
+
+c954808f09b58a712e39d2c9d2653f8d2e60ce2c32a2469d3abafb258ca9135e  core/src/agent.rs
+6a687d00a0e2dc4d32abdfcd518a345dbd747389a89d3b80db9b97a38b90d12b  core/src/agents/board/digest_agent.rs
+4b48a2b81d23f389a8b2553cdfff403422883c094b68a6ebb7f76073e0f6a578  core/src/agents/board/finance_board_agent.rs
+cccf6f1a4a3182cc925347dd0900376dad8fab26597045cca5ef8408d737deea  core/src/agents/board/legal_compliance_board_agent.rs
+e9c19ebab521dc5a48eac9d4c7ce67dac28679e9d57199ddd381c2de5db2a3dc  core/src/agents/board/mod.rs
+4ea0c9f95ff563166f6238044042ebbf25ce0899318a2578e78b8822c81831ed  core/src/agents/board/operations_board_agent.rs
+d2deea1dc7ea94e262bad6d8fef58ec9fbc9cc4c0a8ad70ac8d4acd4a4b621de  core/src/agents/board/strategy_board_agent.rs
+71566067c1b05eabb72b7eab786976580bbea85b5bf7b60b7d03aa7ac80ed4f7  core/src/agents/communication/mod.rs
+c6c74b4733b5a91eb032a3e2f1dd747af20b91c951547c1c04c847df4782c41e  core/src/agents/executive/emergency_responder.rs
+c703916b449e5eef0c5126289eddc945ea57eb421e50777d7127c6c9085b026d  core/src/agents/executive/mod.rs
+6c83e87f0310588b1e16f4d364f72433347479dfcbffb0641f614fc54e883157  core/src/agents/executive/noa_commander.rs
+310675d90ec2200cfc13010b7649e22b4708f3143eb6b28f9d4a433cada7af1d  core/src/agents/executive/priority_manager.rs
+2bfa03bce97a932127abff066ec7e509bd4874043dbe2c1cf55f3fe10ae1f7ec  core/src/agents/executive/resource_allocator.rs
+7e4ec3e325fb7e776987bbd22996fa4f8173df6b373f7b6ae7bede21b391f02b  core/src/agents/executive/system_orchestrator.rs
+e2e13ec3e29791021d818039083259999c98e813fa61573a1e703234cd417ea0  core/src/agents/integration_tests.rs
+f911500ca5359e0b913fce715771ea8d7f8b3134ec51923ea40f401b30fb531d  core/src/agents/mod.rs
+c8e01087d0f1f9598544033aeab5f449d0223bb6a56da49734a87ce871c97a56  core/src/agents/specialized/code_generation_agent.rs
+2c810487f5a9f248809f57a99d6d3c61c944d762421bc737119a46ba54d5e386  core/src/agents/specialized/data_analytics_agent.rs
+e7a586710dad5a15cbc46ee8fa77fe1f225853ea93e09aa23a18e76ba6011b03  core/src/agents/specialized/deployment_agent.rs
+f52cab9e28872b1b9891f0b742d92c3bfc09426c4470a27d9c1fec96b530d554  core/src/agents/specialized/integration_agent.rs
+2c63235d2abc8cf810a812525c66591479ea992c459295ee5971be98c7348ca0  core/src/agents/specialized/learning_agent.rs
+c719794b4e7d184e91eb4ee146a4f928a74a7ed0d1e2ab256c507bb9acaafdb4  core/src/agents/specialized/mod.rs
+84e643e10fd1786b7d868a704c51f9c24e80563d07ae9665f1e530d91c1fcc46  core/src/agents/specialized/monitoring_agent.rs
+0f66cc1fd613f1f06c35b0a0e39fdde79356307817110c970c06804d5c808638  core/src/agents/specialized/security_specialist_agent.rs
+7bfd4efbab651d53f7081696111709f0cc46fe07f1c8ec5bbe8b0223fb97ee1d  core/src/agents/specialized/testing_agent.rs
+25d2d1fe22625c0285f3a18f0cfbbe3bf25a2eeed072a0730e5a0e4bc1b0aa1b  core/src/ai/model_selector_bridge.rs
+1e1694b0f542b7d3c1d11dddd441274a652133737ee6c9f257f407d1f3043837  core/src/ai/sop_analyzer.rs
+6513c24a636f78dfce90f595e982e43f3f68cd9f7df552bf153219bbbdd42dab  core/src/autonomous.rs
+a510f91ff5c12a69853d8dff90801bbafdecb6155fc12de0454765828913e6b1  core/src/broker.rs
+487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f  core/src/build.rs
+710186d1d2fd258c2d29cc9aec1f5dec23b514763d5e5c0b94214ab3fbba98a1  core/src/communication/mod.rs
+f68302615a150f4d6bee79b178d6d9a027e636d8ba502933572082e13cc6b0f9  core/src/config/mod.rs
+fe957ffc41eb3ad944541c33a65bb94cd198d707c2dfb43824594271837a28af  core/src/effect.rs
+d7959a417ec4257130194c9308de96c70812a56c6eac4434b2ce34f54282abd7  core/src/engine.rs
+5ac06c18e03d8f2180b63ea21ce7f157151fb759cfab6e64593b25883fd9a74c  core/src/evolution.rs
+a2f3324431367064316785db4a2b238c6b3a57632a8b700d92e9fadc5464f1c9  core/src/execution/mod.rs
+05c443b8f8d4b417b0e9f6cb9afc335882c1f8f371e90cc817b099f112734925  core/src/executor.rs
+d3838932cab91bb621b384926357c1e5d72257f908a0b6a04c1d41e191916157  core/src/expansion.rs
+ed7c7ee881f218fc0ed01e6de2452aa74a0b902ab86f1cfff5b57b69fe53619c  core/src/governance_integration.rs
+1ef176e7e0a0ca6084d95679cd69471eb5a0438b228393f70356fbbdb5923b5f  core/src/governance_integration_simple.rs
+7701b6317e74b3b1f1a92e6197c4ebcbd356bbc88c809519dae1f25f8240def0  core/src/governance_stubs.rs
+2c62bf15e7f1380b456ed7b4e8e9c5261bc9e18ab1d09c45ffdfe5dc994efedc  core/src/hootl.rs
+4486c0064888cf82e64d90ef9ce264bc52b9dbffd49cb2d5f9d84d2b0751680c  core/src/lib.rs
+55e3e21b7b23a99704481f7e1f66cc106297eb59bc33412537420d2439ddbadc  core/src/main.rs
+bd069d79e805dcbdd0753d6ba331723a92d0e07f658b47393aa63f9862633be9  core/src/monitoring/mod.rs
+058f01468fba2119b59c1497c44e58605f7265d752f9591500cd7e93bb1faec3  core/src/noop.rs
+c954808f09b58a712e39d2c9d2653f8d2e60ce2c32a2469d3abafb258ca9135e  core/src/orchestration/agent.rs
+a510f91ff5c12a69853d8dff90801bbafdecb6155fc12de0454765828913e6b1  core/src/orchestration/broker.rs
+487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f  core/src/orchestration/build.rs
+fe957ffc41eb3ad944541c33a65bb94cd198d707c2dfb43824594271837a28af  core/src/orchestration/effect.rs
+d7959a417ec4257130194c9308de96c70812a56c6eac4434b2ce34f54282abd7  core/src/orchestration/engine.rs
+5ac06c18e03d8f2180b63ea21ce7f157151fb759cfab6e64593b25883fd9a74c  core/src/orchestration/evolution.rs
+05c443b8f8d4b417b0e9f6cb9afc335882c1f8f371e90cc817b099f112734925  core/src/orchestration/executor.rs
+d3838932cab91bb621b384926357c1e5d72257f908a0b6a04c1d41e191916157  core/src/orchestration/expansion.rs
+ed7c7ee881f218fc0ed01e6de2452aa74a0b902ab86f1cfff5b57b69fe53619c  core/src/orchestration/governance_integration.rs
+1ef176e7e0a0ca6084d95679cd69471eb5a0438b228393f70356fbbdb5923b5f  core/src/orchestration/governance_integration_simple.rs
+7701b6317e74b3b1f1a92e6197c4ebcbd356bbc88c809519dae1f25f8240def0  core/src/orchestration/governance_stubs.rs
+2c62bf15e7f1380b456ed7b4e8e9c5261bc9e18ab1d09c45ffdfe5dc994efedc  core/src/orchestration/hootl.rs
+a0a74546459f20b6998e3bdebf9d32c50d05902d4ba2397a8f47ad5398961b85  core/src/orchestration/lib.rs
+8a94b3202f41a91591262bbe28c81f5015169818b1e4ff74e1055fa406b45746  core/src/orchestration/main.rs
+81a4b469b47d820dd14c3430e249ce3475dd2aa45c829eff20c24f032265f450  core/src/orchestration/mod.rs
+058f01468fba2119b59c1497c44e58605f7265d752f9591500cd7e93bb1faec3  core/src/orchestration/noop.rs
+91962fc2081c87e7c3031a10f78cfe8ad605d81f41dbfeb832042b1c8286c65d  core/src/orchestration/orchestrator.rs
+375cd66fc332e48aa38ddfe42381f2c8a291f2ebe6b2d255a0b1f61b32434a42  core/src/orchestration/production_config.rs
+f48a2fc27e50a3be4cbd2fdcd680627eb35afbbbce334e0e8c69d69204521c75  core/src/orchestration/rust_workers.rs
+3ef9c0dbc56b353a868471d8c5fd32feab943e380686424f8a07c3fa1dd354a2  core/src/orchestration/shell.rs
+3cef1fab35c92ea58b95b2cfb88ad4f43560a84618d243d531d9904c45a20311  core/src/orchestration/task.rs
+91962fc2081c87e7c3031a10f78cfe8ad605d81f41dbfeb832042b1c8286c65d  core/src/orchestrator.rs
+375cd66fc332e48aa38ddfe42381f2c8a291f2ebe6b2d255a0b1f61b32434a42  core/src/production_config.rs
+f48a2fc27e50a3be4cbd2fdcd680627eb35afbbbce334e0e8c69d69204521c75  core/src/rust_workers.rs
+13d96c5fc2735552cb3c65b3ad92d906abd844e782d99829ef3891c0c9798bf6  core/src/security/mod.rs
+1fe380e1dd605cd4454f6a2bf3f7f4835984d96d2744b8c980b02469e8a73997  core/src/self_improving.rs
+3ef9c0dbc56b353a868471d8c5fd32feab943e380686424f8a07c3fa1dd354a2  core/src/shell.rs
+3cef1fab35c92ea58b95b2cfb88ad4f43560a84618d243d531d9904c45a20311  core/src/task.rs
+487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f  core/src/ui/build.rs
+247aeb28997b69a4c09b8e173d64a4b16eea1ffbbd5f5bfc77748453bfd6203c  core/src/ui/lib.rs
+62bb3bac7dbffbf7a19267351965047179d0041ac53ee19edeb6615720878a39  core/src/ui/main.rs
+fa910f9235b7c108a1703d1103457268a39760bdc0d87f2b060f34364d54b2f5  core/src/ui/mod.rs
+99bbf8a2f3eb48a27029c459a9f23ff118e993b0aa67e5401b85b11c153a3f20  core/src/verification.rs
+ff46341688e1f908933e495d2ac106dcfd3f5da8224a4ceefecf8a0045407855  core/src/workflows/deliverable_manager.rs
+0113bbb177f70c919b016134265e89c30756e6325376547b2cc843ba76440bb7  core/src/workflows/location_manager.rs
+14ec037cc4adff701d49b37057f0b33c6504cf65355c46a7aa5d8f96cf87becf  core/src/workflows/methodology_engine.rs
+2774f9f2be1f68ded50a1e776b04b151fa2f74279b96697ab6a63abfd6aa34bc  core/src/workflows/mod.rs
+b16d04f44d8b99f8a5ddbc1c731e64b45fde6ceca7149dd2c8bf1658da30b85d  core/src/workflows/seven_phase/mod.rs
+c4d9b3a4fd3d9ba5eabfa374eb35d86b210bd6d42f5ac2bf517a0d6ec2dc835d  core/src/workflows/seven_phase/phase_five.rs
+ae51402fb2152c719f8dcdc67a694baaacd7f2eb99ad7fef82052c0404231448  core/src/workflows/seven_phase/phase_four.rs
+cdc3bb531c7ff780549ac296c5b1d6dd15eac7d3922e938517de77e3cb8bb837  core/src/workflows/seven_phase/phase_one.rs
+343d27f634e82b5c0026fda2a021aaae23ac7487f636ba44b676a7cd421634ab  core/src/workflows/seven_phase/phase_seven.rs
+35b1a00e1b82cdbcf9712ae9e6ce9f10097cb051caa7302ae0b06da95b1c82e0  core/src/workflows/seven_phase/phase_six.rs
+737b769ede4d89bbb1afaeb88e8e7df375928a1fef7eed44e9e3841d9c8ce488  core/src/workflows/seven_phase/phase_three.rs
+8b36821e87b302c510ce0cdae761e8a4fe1ae0ef9159d31d6660786547d31e5d  core/src/workflows/seven_phase/phase_two.rs
+f5fc53ff86ffd04dbfdc240e632de272312a93c1fd7e711760ea8b59df830499  core/src/workflows/sop_parser.rs
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CATEGORY: Test Files
+# ═══════════════════════════════════════════════════════════════════════════
+
+268a2adb129d18d6794cfa7d8f8911aa91c3d4fed06994621133aaac87f0b1c4  tests/integration/benches/agent_performance.rs
+d9514c8caa2d80109aa336af03f9b98eaef56bb9579a098f4ed1cf7dc6c55fe1  tests/integration/benches/messaging_throughput.rs
+062fed68cbc10ef6859d1c7f61a9eb65dbc84d5776a05b35f6bdcafeeab9df30  tests/integration/enhanced_workflow/README.md
+2be0baa3d9a6d9dd130b633149ab1c54a3bce07ed075d77a8de62adb5d8eac18  tests/integration/src/lib.rs
+1884225d88a689f355126c87a1ef3d7513104b47ab40cb3bfefdadb7f87481e7  tests/performance/README.md
+a7a0f9217c911880d27c4475be8d468abb76e1e546f2e2fb1eab30927c690639  tests/performance/rate_limit/README.md
+ad9ab01686bddf42ad797f2bdd923f9e3533a4bfcea24fe1606cff7509b4a273  tests/performance/workflow_benchmarks/README.md
+2c1058b0d6fc8abdfe960b924a8ed9f787d82b5d9b02a462be1e9399f80c2590  tests/security/workflow_validation/README.md
+d9527fd63666f0bb0afd9ec4ea9ededad257b701a5e64bc4987e8fa058cd6c82  tests/seven_phase_workflow/integration_tests.rs
+3267717a05f9838572e69c7dd20628eb4e8a458e745231b0a90b25ea50e5fa71  tests/seven_phase_workflow/performance_tests.rs
+92fa24709e3d410d5054f0378e2bb914bb4555757a0c26f90e885c922f46ea14  tests/seven_phase_workflow/security_tests.rs
+3e98d1d6d0654cafd53a93c3e555693343a1daf294e66dbe29127be85fd8a216  tests/seven_phase_workflow/verification_tests.rs
+2382e913114e228bbe7a7175470c3101475cc926cca69efa3d41793e823f38b6  tests/workflows/integration_test.rs
+3f5a84043169aa89e4be3874e389c536239c14fbede5610efbf47de9c72a5518  tests/workflows/methodology/README.md
+4c9c579e52b988a10ac996ffce88bacc8b0bf63ab6abf188e2f9969f66629d81  tests/workflows/mod.rs
+d39a6acf1e377bae6f173aed31a2691d1986bd77093282dc2d23446553f06e07  tests/workflows/sop_integration/README.md
+
+# ═══════════════════════════════════════════════════════════════════════════
+# MANIFEST SIGNATURE
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This manifest contains 149 SHA-256 hashes of production artifacts.
+# Each hash provides cryptographic proof of file integrity at the time
+# of manifest generation.
+#
+# For supply chain security, this manifest should be:
+#   1. Version controlled (committed to git)
+#   2. Signed with GPG/minisign (see SUPPLY-SIGN task)
+#   3. Verified before deployment (see SUPPLY-VERIFY task)
+#   4. Referenced in all evidence trails (see DOC-001 acceptance criteria)
+#
+# Checklist:
+#   [x] Documentation files hashed
+#   [x] Configuration files hashed
+#   [x] Core source code hashed
+#   [x] Test files hashed
+#   [x] Root-level key files hashed
+#   [x] Metadata included (timestamp, git commit, branch)
+#   [x] Verification instructions provided
+#   [x] Linked to DOC-001 task
+#
+# Signed: @docs
+# Date: 2026-01-02
+# Task: DOC-001 (Evidence trails & SHA-256 manifests)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# END OF MANIFEST
+# ═══════════════════════════════════════════════════════════════════════════
