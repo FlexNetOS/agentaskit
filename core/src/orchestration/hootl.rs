@@ -372,7 +372,9 @@ impl HootlEngine {
         }
 
         // Allocate additional memory if usage is moderate but workload is high
-        if memory_usage < self.config.safety_limits.max_memory_mb * 70 / 100 && pending_work > 20 {
+        let memory_threshold =
+            (self.config.safety_limits.max_memory_mb as f64 * 0.7) as u64;
+        if memory_usage < memory_threshold && pending_work > 20 {
             tracing::debug!("Amplifying: memory allocation recommended");
             resources_allocated += 1;
         }
