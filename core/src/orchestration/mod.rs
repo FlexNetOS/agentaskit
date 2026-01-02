@@ -309,6 +309,8 @@ impl OrchestratorEngine {
         info!("Enabling approval request notifications");
 
         // Setup approval timeout handling
+        // TODO: Store `approval_timeout` in orchestration state and enforce it for
+        //       pending approval requests (e.g., auto-escalate or expire after timeout).
         let approval_timeout = std::time::Duration::from_secs(300); // 5 minutes
         info!("Approval timeout: {:?}", approval_timeout);
 
