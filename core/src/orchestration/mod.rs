@@ -262,6 +262,8 @@ impl OrchestratorEngine {
         info!("Enabling autonomous decision making");
 
         // Set decision thresholds for autonomous operation
+        // TODO: Integrate this threshold into OrchestrationConfig and use it to gate
+        //       autonomous decisions (e.g., only auto-execute actions above this confidence).
         let decision_threshold = 0.85; // 85% confidence threshold
         info!("Autonomous decision threshold: {}", decision_threshold);
 
