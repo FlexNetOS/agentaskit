@@ -329,18 +329,20 @@ async fn start_self_improvement() -> Result<()> {
 
     // Create orchestrator configuration
     let config = OrchestratorConfig {
+        learning_enabled: true,
+        self_healing_enabled: true,
+        autonomous_improvement: true,
+        max_concurrent_tasks: 4,
         learning_rate: 0.01,
         improvement_threshold: 0.05,
-        evaluation_window: std::time::Duration::from_secs(3600),
-        enable_autonomous_improvements: true,
-        backup_before_changes: true,
-        rollback_on_degradation: true,
+        verification_frequency: std::time::Duration::from_secs(3600),
+        healing_retry_limit: 3,
     };
 
     info!("Orchestrator configuration created");
     info!("Learning rate: {}", config.learning_rate);
     info!("Improvement threshold: {}", config.improvement_threshold);
-    info!("Autonomous improvements: {}", config.enable_autonomous_improvements);
+    info!("Autonomous improvements: {}", config.autonomous_improvement);
 
     // Initialize self-improving orchestrator
     let orchestrator = SelfImprovingOrchestrator::new(config);
