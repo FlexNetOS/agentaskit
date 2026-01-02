@@ -1,5 +1,5 @@
 //! Autonomous Rust-First Development Pipeline
-//! 
+//!
 //! Integrates Candle for inference, Burn for training, Qdrant + FastEmbed for vector intelligence,
 //! and Tauri for cross-platform UI within a self-improving development workflow.
 
@@ -7,12 +7,12 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::{mpsc, RwLock};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use tracing::{info, warn, error, debug};
 
-use crate::verification::NoaVerificationSystem;
 use crate::agents::AgentManager;
+use crate::verification::NoaVerificationSystem;
 
 /// Autonomous development pipeline orchestrator
 pub struct AutonomousPipeline {
@@ -199,8 +199,11 @@ impl AutonomousPipeline {
 
     /// Start autonomous development pipeline
     pub async fn start(&mut self) -> Result<()> {
-        info!("Starting autonomous development pipeline: {}", self.pipeline_id);
-        
+        info!(
+            "Starting autonomous development pipeline: {}",
+            self.pipeline_id
+        );
+
         *self.running.write().await = true;
 
         // Initialize ML components
@@ -227,7 +230,7 @@ impl AutonomousPipeline {
 
         tokio::spawn(async move {
             info!("Development loop started");
-            
+
             while *running.read().await {
                 // Watch for file changes (simplified monitoring)
                 debug!("Watching workspace for changes...");
@@ -270,7 +273,7 @@ impl AutonomousPipeline {
 
         tokio::spawn(async move {
             info!("Monitoring loop started");
-            
+
             while *running.read().await {
                 // Monitor system resources
                 // Monitor build performance
@@ -290,7 +293,7 @@ impl AutonomousPipeline {
 
         tokio::spawn(async move {
             info!("Healing loop started");
-            
+
             while *running.read().await {
                 // Check for problems
                 // Apply healing rules
@@ -309,7 +312,7 @@ impl AutonomousPipeline {
 
         tokio::spawn(async move {
             info!("Autonomous improvement loop started");
-            
+
             while *running.read().await {
                 // Analyze development patterns
                 // Suggest improvements
@@ -364,7 +367,7 @@ impl AutonomousPipeline {
     /// Shutdown pipeline gracefully
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down autonomous pipeline");
-        
+
         *self.running.write().await = false;
 
         // Shutdown ML components
@@ -437,7 +440,11 @@ impl CandleInference {
     }
 
     /// Perform inference with loaded model
-    pub async fn infer(&mut self, model_name: &str, input: serde_json::Value) -> Result<serde_json::Value> {
+    pub async fn infer(
+        &mut self,
+        model_name: &str,
+        input: serde_json::Value,
+    ) -> Result<serde_json::Value> {
         debug!("Running inference with model: {}", model_name);
 
         if let Some(handle) = self.active_models.get_mut(model_name) {
@@ -472,9 +479,14 @@ impl BurnTraining {
     }
 
     /// Start training job
-    pub async fn start_training(&mut self, model_name: String, dataset_id: String, config: serde_json::Value) -> Result<Uuid> {
+    pub async fn start_training(
+        &mut self,
+        model_name: String,
+        dataset_id: String,
+        config: serde_json::Value,
+    ) -> Result<Uuid> {
         let job_id = Uuid::new_v4();
-        
+
         let job = TrainingJob {
             job_id,
             model_name,
@@ -486,10 +498,10 @@ impl BurnTraining {
         };
 
         self.training_jobs.insert(job_id, job);
-        
+
         // TODO: Actually start training with Burn
         info!("Started training job: {}", job_id);
-        
+
         Ok(job_id)
     }
 }
@@ -518,20 +530,30 @@ impl VectorIntelligence {
 
         // TODO: Use actual FastEmbed to generate embedding
         let embedding = vec![0.1, 0.2, 0.3]; // Placeholder
-        
-        self.embedding_cache.insert(text.to_string(), embedding.clone());
+
+        self.embedding_cache
+            .insert(text.to_string(), embedding.clone());
         Ok(embedding)
     }
 
     /// Store vector in Qdrant
-    pub async fn store_vector(&self, id: &str, vector: Vec<f32>, metadata: serde_json::Value) -> Result<()> {
+    pub async fn store_vector(
+        &self,
+        id: &str,
+        vector: Vec<f32>,
+        metadata: serde_json::Value,
+    ) -> Result<()> {
         debug!("Storing vector in Qdrant: {}", id);
         // TODO: Store in actual Qdrant instance
         Ok(())
     }
 
     /// Search similar vectors
-    pub async fn search_similar(&self, query_vector: Vec<f32>, limit: usize) -> Result<Vec<(String, f32)>> {
+    pub async fn search_similar(
+        &self,
+        query_vector: Vec<f32>,
+        limit: usize,
+    ) -> Result<Vec<(String, f32)>> {
         debug!("Searching for similar vectors (limit: {})", limit);
         // TODO: Implement actual Qdrant search
         Ok(vec![])
@@ -581,15 +603,18 @@ impl Default for PipelineConfig {
         }
     }
 }
-    /// Trigger healing for system failures
-    async fn trigger_healing(failure_type: &str, error_msg: &str) {
-        error!("HEALING TRIGGERED - Type: {}, Error: {}", failure_type, error_msg);
-        // In production: would trigger automated remediation
-    }
+/// Trigger healing for system failures
+async fn trigger_healing(failure_type: &str, error_msg: &str) {
+    error!(
+        "HEALING TRIGGERED - Type: {}, Error: {}",
+        failure_type, error_msg
+    );
+    // In production: would trigger automated remediation
+}
 
-    /// Run NOA verification on workspace
-    async fn run_noa_verification(workspace_path: &PathBuf) -> Result<()> {
-        debug!("Running NOA verification on {:?}", workspace_path);
-        // Simplified verification check
-        Ok(())
-    }
+/// Run NOA verification on workspace
+async fn run_noa_verification(workspace_path: &PathBuf) -> Result<()> {
+    debug!("Running NOA verification on {:?}", workspace_path);
+    // Simplified verification check
+    Ok(())
+}

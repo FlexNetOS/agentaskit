@@ -1,5 +1,5 @@
 //! Seven-Phase Workflow System Implementation
-//! 
+//!
 //! This module implements the complete 7-phase workflow system with:
 //! Phase 1: User Request Ingestion & Initial Processing
 //! Phase 2: Agent Selection & Task Assignment (928 agents)
@@ -13,23 +13,23 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
 use crate::workflows::{ChatRequest, TaskSubject, VerificationProtocol, VerificationStatus};
 
-pub mod phase_one;
-pub mod phase_two;
-pub mod phase_three;
-pub mod phase_four;
 pub mod phase_five;
-pub mod phase_six;
+pub mod phase_four;
+pub mod phase_one;
 pub mod phase_seven;
+pub mod phase_six;
+pub mod phase_three;
+pub mod phase_two;
 
 /// Seven-Phase Workflow Orchestrator
 #[derive(Debug)]
@@ -201,7 +201,7 @@ impl SevenPhaseOrchestrator {
         // Update final workflow state
         workflow_state.status = WorkflowStatus::Completed;
         workflow_state.updated_at = Utc::now();
-        workflow_state.performance_metrics.total_processing_time = 
+        workflow_state.performance_metrics.total_processing_time =
             workflow_state.updated_at - workflow_state.created_at;
 
         // Update active workflows
@@ -219,13 +219,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::UserRequestIngestion;
 
         // Execute phase with triple verification
-        let result = self.phase_one.process_request(&workflow_state.chat_request).await?;
-        
+        let result = self
+            .phase_one
+            .process_request(&workflow_state.chat_request)
+            .await?;
+
         let phase_result = PhaseResult {
             phase: PhaseType::UserRequestIngestion,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::UserRequestIngestion).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::UserRequestIngestion)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0, // TODO: Implement actual monitoring
@@ -236,7 +241,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(), // TODO: Generate SHA-256 hashes
         };
 
-        workflow_state.phase_results.insert(PhaseType::UserRequestIngestion, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::UserRequestIngestion, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -248,7 +255,8 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::AgentSelection;
 
         // Get previous phase result
-        let phase1_result = workflow_state.phase_results
+        let phase1_result = workflow_state
+            .phase_results
             .get(&PhaseType::UserRequestIngestion)
             .ok_or_else(|| anyhow::anyhow!("Phase 1 result not found"))?;
 
@@ -260,7 +268,9 @@ impl SevenPhaseOrchestrator {
             phase: PhaseType::AgentSelection,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::AgentSelection).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::AgentSelection)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -271,7 +281,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::AgentSelection, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::AgentSelection, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -283,13 +295,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::TaskExecution;
 
         // Execute task orchestration with Progress Token (PT) & Proof of Progress (POP)
-        let result = self.phase_three.execute_tasks(&workflow_state.assigned_agents).await?;
+        let result = self
+            .phase_three
+            .execute_tasks(&workflow_state.assigned_agents)
+            .await?;
 
         let phase_result = PhaseResult {
             phase: PhaseType::TaskExecution,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::TaskExecution).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::TaskExecution)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -300,7 +317,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::TaskExecution, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::TaskExecution, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -312,13 +331,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::Communication;
 
         // Execute inter-agent communication protocols
-        let result = self.phase_four.coordinate_communication(&workflow_state.assigned_agents).await?;
+        let result = self
+            .phase_four
+            .coordinate_communication(&workflow_state.assigned_agents)
+            .await?;
 
         let phase_result = PhaseResult {
             phase: PhaseType::Communication,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::Communication).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::Communication)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -329,7 +353,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::Communication, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::Communication, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -341,13 +367,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::QualityAssurance;
 
         // Execute NOA triple-verification system (A/B/C validation)
-        let result = self.phase_five.validate_quality(&workflow_state.phase_results).await?;
+        let result = self
+            .phase_five
+            .validate_quality(&workflow_state.phase_results)
+            .await?;
 
         let phase_result = PhaseResult {
             phase: PhaseType::QualityAssurance,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::QualityAssurance).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::QualityAssurance)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -358,7 +389,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::QualityAssurance, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::QualityAssurance, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -370,13 +403,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::OutputProcessing;
 
         // Execute Model D generation through evolutionary merge
-        let result = self.phase_six.process_output(&workflow_state.phase_results).await?;
+        let result = self
+            .phase_six
+            .process_output(&workflow_state.phase_results)
+            .await?;
 
         let phase_result = PhaseResult {
             phase: PhaseType::OutputProcessing,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::OutputProcessing).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::OutputProcessing)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -387,7 +425,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::OutputProcessing, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::OutputProcessing, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -399,13 +439,18 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::PostDelivery;
 
         // Execute post-delivery operations
-        let result = self.phase_seven.handle_post_delivery(&workflow_state.phase_results).await?;
+        let result = self
+            .phase_seven
+            .handle_post_delivery(&workflow_state.phase_results)
+            .await?;
 
         let phase_result = PhaseResult {
             phase: PhaseType::PostDelivery,
             status: PhaseStatus::Completed,
             output: serde_json::to_value(&result)?,
-            verification: self.create_verification_protocol(PhaseType::PostDelivery).await?,
+            verification: self
+                .create_verification_protocol(PhaseType::PostDelivery)
+                .await?,
             performance: PhasePerformanceMetrics {
                 phase_duration: Utc::now() - phase_start,
                 cpu_usage: 0.0,
@@ -416,7 +461,9 @@ impl SevenPhaseOrchestrator {
             evidence_hashes: HashMap::new(),
         };
 
-        workflow_state.phase_results.insert(PhaseType::PostDelivery, phase_result.clone());
+        workflow_state
+            .phase_results
+            .insert(PhaseType::PostDelivery, phase_result.clone());
         workflow_state.updated_at = Utc::now();
 
         Ok(phase_result)
@@ -428,7 +475,10 @@ impl SevenPhaseOrchestrator {
         Ok(VerificationProtocol {
             pass_a_self_check: crate::workflows::VerificationPass {
                 name: format!("Phase {:?} Self-Check", phase),
-                criteria: vec!["Output format valid".to_string(), "No errors detected".to_string()],
+                criteria: vec![
+                    "Output format valid".to_string(),
+                    "No errors detected".to_string(),
+                ],
                 tests: vec!["Unit tests".to_string(), "Integration tests".to_string()],
                 status: VerificationStatus::Passed,
                 timestamp: Some(Utc::now()),
@@ -472,7 +522,10 @@ impl SevenPhaseOrchestrator {
     async fn verify_phase_completion(&self, phase_result: &PhaseResult) -> Result<()> {
         // Implement triple verification check
         if phase_result.verification.pass_a_self_check.status != VerificationStatus::Passed {
-            return Err(anyhow::anyhow!("Phase {:?} failed Pass A verification", phase_result.phase));
+            return Err(anyhow::anyhow!(
+                "Phase {:?} failed Pass A verification",
+                phase_result.phase
+            ));
         }
 
         // TODO: Implement Pass B and Pass C verification
@@ -505,7 +558,9 @@ impl SevenPhaseOrchestrator {
             },
             develop: crate::workflows::DevelopPhase {
                 request_type: crate::workflows::RequestType::Complex,
-                selected_techniques: vec![crate::workflows::OptimizationTechnique::SystematicFrameworks],
+                selected_techniques: vec![
+                    crate::workflows::OptimizationTechnique::SystematicFrameworks,
+                ],
                 ai_role_assignment: "7-Phase Orchestrator".to_string(),
                 context_enhancement: "Enhanced through 7-phase processing".to_string(),
                 logical_structure: "Sequential 7-phase execution".to_string(),
@@ -540,7 +595,8 @@ impl SevenPhaseOrchestrator {
     /// Get performance metrics for all active workflows
     pub async fn get_performance_metrics(&self) -> HashMap<Uuid, PerformanceMetrics> {
         let workflows = self.active_workflows.read().await;
-        workflows.iter()
+        workflows
+            .iter()
             .map(|(id, state)| (*id, state.performance_metrics.clone()))
             .collect()
     }

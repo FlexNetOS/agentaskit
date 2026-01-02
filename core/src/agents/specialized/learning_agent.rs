@@ -14,7 +14,7 @@ use agentaskit_shared::{
 };
 
 /// Learning Agent - Machine Learning and AI capabilities
-/// 
+///
 /// The Learning Agent is responsible for:
 /// - Model training and fine-tuning
 /// - Knowledge extraction and learning
@@ -26,19 +26,19 @@ pub struct LearningAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Model manager
     model_manager: Arc<RwLock<ModelManager>>,
-    
+
     /// Training orchestrator
     training_orchestrator: Arc<RwLock<TrainingOrchestrator>>,
-    
+
     /// Knowledge extractor
     knowledge_extractor: Arc<RwLock<KnowledgeExtractor>>,
-    
+
     /// Feature engineer
     feature_engineer: Arc<RwLock<FeatureEngineer>>,
-    
+
     /// Configuration
     config: LearningConfig,
 }
@@ -48,19 +48,19 @@ pub struct LearningAgent {
 pub struct LearningConfig {
     /// Model configurations
     pub model_configs: Vec<ModelConfig>,
-    
+
     /// Training settings
     pub training_config: TrainingConfig,
-    
+
     /// Knowledge extraction settings
     pub knowledge_config: KnowledgeConfig,
-    
+
     /// Feature engineering settings
     pub feature_config: FeatureConfig,
-    
+
     /// Deployment settings
     pub deployment_config: DeploymentConfig,
-    
+
     /// Resource limits
     pub resource_limits: LearningResourceLimits,
 }
@@ -420,7 +420,10 @@ impl Default for LearningConfig {
                 },
             },
             knowledge_config: KnowledgeConfig {
-                extraction_methods: vec![ExtractionMethod::TextMining, ExtractionMethod::PatternRecognition],
+                extraction_methods: vec![
+                    ExtractionMethod::TextMining,
+                    ExtractionMethod::PatternRecognition,
+                ],
                 knowledge_types: vec![KnowledgeType::Factual, KnowledgeType::Procedural],
                 storage_backend: KnowledgeStorage::VectorDatabase,
                 indexing_enabled: true,
@@ -470,8 +473,8 @@ impl Default for LearningConfig {
                 max_gpu_memory_per_model: 8 * 1024 * 1024 * 1024, // 8GB
                 max_cpu_cores_per_training: 8,
                 max_training_time: Duration::from_secs(24 * 60 * 60), // 24 hours
-                max_model_size: 1024 * 1024 * 1024, // 1GB
-                max_dataset_size: 100 * 1024 * 1024 * 1024, // 100GB
+                max_model_size: 1024 * 1024 * 1024,                   // 1GB
+                max_dataset_size: 100 * 1024 * 1024 * 1024,           // 100GB
             },
         }
     }
@@ -482,16 +485,16 @@ impl Default for LearningConfig {
 struct ModelManager {
     /// Registered models
     models: HashMap<String, ModelInstance>,
-    
+
     /// Model registry
     model_registry: ModelRegistry,
-    
+
     /// Active training sessions
     active_trainings: HashMap<String, TrainingSession>,
-    
+
     /// Model performance metrics
     performance_metrics: HashMap<String, ModelPerformance>,
-    
+
     /// Model management statistics
     management_stats: ModelManagementStats,
 }
@@ -645,16 +648,16 @@ struct ModelManagementStats {
 struct TrainingOrchestrator {
     /// Training queue
     training_queue: VecDeque<QueuedTraining>,
-    
+
     /// Training workflows
     workflows: HashMap<String, TrainingWorkflow>,
-    
+
     /// Resource scheduler
     resource_scheduler: ResourceScheduler,
-    
+
     /// Training history
     training_history: VecDeque<TrainingRecord>,
-    
+
     /// Orchestration metrics
     orchestration_metrics: OrchestrationMetrics,
 }
@@ -841,13 +844,13 @@ struct OrchestrationMetrics {
 struct KnowledgeExtractor {
     /// Extraction pipelines
     extraction_pipelines: HashMap<String, ExtractionPipeline>,
-    
+
     /// Knowledge base
     knowledge_base: KnowledgeBase,
-    
+
     /// Extracted knowledge
     extracted_knowledge: VecDeque<ExtractedKnowledge>,
-    
+
     /// Extraction metrics
     extraction_metrics: ExtractionMetrics,
 }
@@ -993,13 +996,13 @@ struct ExtractionMetrics {
 struct FeatureEngineer {
     /// Feature transformers
     transformers: HashMap<String, FeatureTransformer>,
-    
+
     /// Feature sets
     feature_sets: HashMap<String, FeatureSet>,
-    
+
     /// Transformation pipelines
     transformation_pipelines: HashMap<String, TransformationPipeline>,
-    
+
     /// Engineering metrics
     engineering_metrics: EngineeringMetrics,
 }
@@ -1123,7 +1126,7 @@ impl LearningAgent {
             cluster_assignment: Some("specialized".to_string()),
             resource_requirements: ResourceRequirements {
                 min_cpu: 4.0,
-                min_memory: 8 * 1024 * 1024 * 1024, // 8GB
+                min_memory: 8 * 1024 * 1024 * 1024,    // 8GB
                 min_storage: 100 * 1024 * 1024 * 1024, // 100GB
                 max_cpu: 32.0,
                 max_memory: 128 * 1024 * 1024 * 1024, // 128GB
@@ -1151,11 +1154,11 @@ impl LearningAgent {
         training_config: TrainingConfig,
     ) -> Result<TrainingSession> {
         tracing::info!("Starting model training: {}", model_config.model_name);
-        
+
         let mut training_orchestrator = self.training_orchestrator.write().await;
-        
+
         let session_id = format!("train-{}", Uuid::new_v4());
-        
+
         let session = TrainingSession {
             session_id: session_id.clone(),
             model_name: model_config.model_name.clone(),
@@ -1168,12 +1171,14 @@ impl LearningAgent {
             best_metrics: HashMap::new(),
             checkpoints: Vec::new(),
         };
-        
-        training_orchestrator.orchestration_metrics.total_trainings_scheduled += 1;
-        
+
+        training_orchestrator
+            .orchestration_metrics
+            .total_trainings_scheduled += 1;
+
         // TODO: Implement actual model training
         tokio::time::sleep(Duration::from_secs(2)).await;
-        
+
         tracing::info!("Model training completed successfully");
         Ok(session)
     }
@@ -1183,16 +1188,25 @@ impl LearningAgent {
         let model_manager = self.model_manager.read().await;
         let training_orchestrator = self.training_orchestrator.read().await;
         let knowledge_extractor = self.knowledge_extractor.read().await;
-        
+
         Ok(LearningStatus {
             total_models: model_manager.management_stats.total_models,
             active_models: model_manager.management_stats.active_models,
             active_trainings: model_manager.active_trainings.len(),
-            total_trainings: training_orchestrator.orchestration_metrics.total_trainings_scheduled,
-            successful_trainings: training_orchestrator.orchestration_metrics.successful_trainings,
+            total_trainings: training_orchestrator
+                .orchestration_metrics
+                .total_trainings_scheduled,
+            successful_trainings: training_orchestrator
+                .orchestration_metrics
+                .successful_trainings,
             knowledge_extractions: knowledge_extractor.extraction_metrics.total_extractions,
-            average_training_time: training_orchestrator.orchestration_metrics.average_training_time,
-            resource_utilization: training_orchestrator.resource_scheduler.resource_utilization.cpu_utilization,
+            average_training_time: training_orchestrator
+                .orchestration_metrics
+                .average_training_time,
+            resource_utilization: training_orchestrator
+                .resource_scheduler
+                .resource_utilization
+                .cpu_utilization,
         })
     }
 }
@@ -1222,35 +1236,38 @@ impl Agent for LearningAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Learning Agent");
-        
+
         // Initialize model management
         let mut model_manager = self.model_manager.write().await;
         self.initialize_model_management(&mut model_manager).await?;
-        
+
         // Initialize training orchestration
         let mut training_orchestrator = self.training_orchestrator.write().await;
-        self.initialize_training_orchestration(&mut training_orchestrator).await?;
-        
+        self.initialize_training_orchestration(&mut training_orchestrator)
+            .await?;
+
         // Initialize knowledge extraction
         let mut knowledge_extractor = self.knowledge_extractor.write().await;
-        self.initialize_knowledge_extraction(&mut knowledge_extractor).await?;
-        
+        self.initialize_knowledge_extraction(&mut knowledge_extractor)
+            .await?;
+
         // Initialize feature engineering
         let mut feature_engineer = self.feature_engineer.write().await;
-        self.initialize_feature_engineering(&mut feature_engineer).await?;
-        
+        self.initialize_feature_engineering(&mut feature_engineer)
+            .await?;
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Learning Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Learning Agent");
-        
+
         // Start continuous learning
         let knowledge_extractor = self.knowledge_extractor.clone();
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(3600)); // 1 hour
             loop {
@@ -1260,16 +1277,16 @@ impl Agent for LearningAgent {
                 }
             }
         });
-        
+
         tracing::info!("Learning Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Learning Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Learning Agent stopped successfully");
         Ok(())
     }
@@ -1278,7 +1295,7 @@ impl Agent for LearningAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -1293,14 +1310,16 @@ impl Agent for LearningAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "train-model" => {
-                let model_name = task.parameters.get("model_name")
+                let model_name = task
+                    .parameters
+                    .get("model_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-model")
                     .to_string();
-                
+
                 // Create basic model and training configs
                 let model_config = ModelConfig {
                     model_name: model_name.clone(),
@@ -1337,10 +1356,10 @@ impl Agent for LearningAgent {
                     training_enabled: true,
                     inference_enabled: true,
                 };
-                
+
                 let training_config = self.config.training_config.clone();
                 let session = self.train_model(model_config, training_config).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1357,7 +1376,7 @@ impl Agent for LearningAgent {
             }
             "get-status" => {
                 let status = self.get_learning_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1374,32 +1393,30 @@ impl Agent for LearningAgent {
                     resource_usage: ResourceUsage::default(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Learning task failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed("Learning task failed".to_string()),
+                result: serde_json::Value::Null,
+                error: Some(format!("Unknown task type: {}", task.name)),
+                execution_time: start_time.elapsed(),
+                resource_usage: ResourceUsage::default(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
         let model_manager = self.model_manager.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 40.0, // Placeholder
+            cpu_usage: 40.0,                      // Placeholder
             memory_usage: 8 * 1024 * 1024 * 1024, // 8GB placeholder
             task_queue_size: model_manager.active_trainings.len() as usize,
             completed_tasks: model_manager.management_stats.successful_trainings,
-            failed_tasks: model_manager.management_stats.total_trainings 
+            failed_tasks: model_manager.management_stats.total_trainings
                 - model_manager.management_stats.successful_trainings,
             average_response_time: Duration::from_millis(5000),
         })
@@ -1428,13 +1445,16 @@ impl LearningAgent {
             total_inferences: 0,
             average_inference_time: Duration::from_millis(10),
         };
-        
+
         tracing::info!("Initialized model management");
         Ok(())
     }
-    
+
     /// Initialize training orchestration
-    async fn initialize_training_orchestration(&self, training_orchestrator: &mut TrainingOrchestrator) -> Result<()> {
+    async fn initialize_training_orchestration(
+        &self,
+        training_orchestrator: &mut TrainingOrchestrator,
+    ) -> Result<()> {
         // Initialize orchestration metrics
         training_orchestrator.orchestration_metrics = OrchestrationMetrics {
             total_trainings_scheduled: 0,
@@ -1445,7 +1465,7 @@ impl LearningAgent {
             resource_efficiency: 0.85,
             scheduling_overhead: Duration::from_secs(10),
         };
-        
+
         // Initialize resource scheduler
         training_orchestrator.resource_scheduler.available_resources = AvailableResources {
             cpu_cores: 16,
@@ -1454,13 +1474,16 @@ impl LearningAgent {
             storage_gb: 1000,
             network_bandwidth: 10 * 1024 * 1024 * 1024, // 10 Gbps
         };
-        
+
         tracing::info!("Initialized training orchestration");
         Ok(())
     }
-    
+
     /// Initialize knowledge extraction
-    async fn initialize_knowledge_extraction(&self, knowledge_extractor: &mut KnowledgeExtractor) -> Result<()> {
+    async fn initialize_knowledge_extraction(
+        &self,
+        knowledge_extractor: &mut KnowledgeExtractor,
+    ) -> Result<()> {
         // Initialize extraction metrics
         knowledge_extractor.extraction_metrics = ExtractionMetrics {
             total_extractions: 0,
@@ -1469,13 +1492,16 @@ impl LearningAgent {
             knowledge_quality_score: 0.8,
             extraction_rate: 0.0,
         };
-        
+
         tracing::info!("Initialized knowledge extraction");
         Ok(())
     }
-    
+
     /// Initialize feature engineering
-    async fn initialize_feature_engineering(&self, feature_engineer: &mut FeatureEngineer) -> Result<()> {
+    async fn initialize_feature_engineering(
+        &self,
+        feature_engineer: &mut FeatureEngineer,
+    ) -> Result<()> {
         // Initialize engineering metrics
         feature_engineer.engineering_metrics = EngineeringMetrics {
             total_transformations: 0,
@@ -1484,18 +1510,20 @@ impl LearningAgent {
             feature_quality_improvement: 0.15,
             dimensionality_reduction: 0.3,
         };
-        
+
         tracing::info!("Initialized feature engineering");
         Ok(())
     }
-    
+
     /// Run continuous learning (background task)
-    async fn run_continuous_learning(knowledge_extractor: Arc<RwLock<KnowledgeExtractor>>) -> Result<()> {
+    async fn run_continuous_learning(
+        knowledge_extractor: Arc<RwLock<KnowledgeExtractor>>,
+    ) -> Result<()> {
         let mut extractor = knowledge_extractor.write().await;
-        
+
         // TODO: Implement continuous learning logic
         extractor.extraction_metrics.total_extractions += 1;
-        
+
         tracing::debug!("Continuous learning cycle completed");
         Ok(())
     }

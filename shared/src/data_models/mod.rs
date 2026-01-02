@@ -1,7 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
 
 /// Common agent identifier type used across all AgentAsKit systems
 pub type AgentId = Uuid;
@@ -255,11 +255,11 @@ pub struct AgentContext {
 /// Agent role in the system hierarchy
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum AgentRole {
-    Executive,     // High-level coordination and decision-making
-    Board,         // Strategic and governance functions
-    Specialized,   // Domain-specific expertise
-    Worker,        // Task execution
-    Monitor,       // Observation and reporting
+    Executive,   // High-level coordination and decision-making
+    Board,       // Strategic and governance functions
+    Specialized, // Domain-specific expertise
+    Worker,      // Task execution
+    Monitor,     // Observation and reporting
 }
 
 impl Default for AgentRole {

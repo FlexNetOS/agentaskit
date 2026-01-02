@@ -1,14 +1,14 @@
 //! Phase 4: Communication & Coordination
-//! 
+//!
 //! This module handles inter-agent communication protocols:
 //! - Capability token management
 //! - Secure message routing and encryption
 //! - Communication performance optimization
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 use crate::agents::AgentId;
 
@@ -49,7 +49,10 @@ impl CommunicationCoordinator {
         Ok(Self)
     }
 
-    pub async fn coordinate_communication(&self, assigned_agents: &[AgentId]) -> Result<Phase4Result> {
+    pub async fn coordinate_communication(
+        &self,
+        assigned_agents: &[AgentId],
+    ) -> Result<Phase4Result> {
         // TODO: Implement communication coordination
         Ok(Phase4Result {
             communication_metrics: CommunicationMetrics {

@@ -14,7 +14,7 @@ use agentaskit_shared::{
 };
 
 /// Emergency Responder Agent - Crisis management and system recovery
-/// 
+///
 /// The Emergency Responder is responsible for:
 /// - Detecting and responding to system emergencies
 /// - Implementing crisis management protocols
@@ -26,19 +26,19 @@ pub struct EmergencyResponder {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Emergency detection system
     emergency_detector: Arc<RwLock<EmergencyDetector>>,
-    
+
     /// Crisis management engine
     crisis_manager: Arc<RwLock<CrisisManager>>,
-    
+
     /// Recovery coordinator
     recovery_coordinator: Arc<RwLock<RecoveryCoordinator>>,
-    
+
     /// Escalation manager
     escalation_manager: Arc<RwLock<EscalationManager>>,
-    
+
     /// Configuration
     config: EmergencyResponderConfig,
 }
@@ -48,31 +48,31 @@ pub struct EmergencyResponder {
 pub struct EmergencyResponderConfig {
     /// Emergency detection interval
     pub detection_interval: Duration,
-    
+
     /// Maximum response time for emergencies
     pub max_response_time: Duration,
-    
+
     /// Auto-escalation timeout
     pub auto_escalation_timeout: Duration,
-    
+
     /// Recovery attempt timeout
     pub recovery_timeout: Duration,
-    
+
     /// Maximum concurrent emergencies
     pub max_concurrent_emergencies: usize,
-    
+
     /// Enable automated recovery
     pub auto_recovery_enabled: bool,
-    
+
     /// Enable human escalation
     pub human_escalation_enabled: bool,
-    
+
     /// Emergency severity thresholds
     pub severity_thresholds: SeverityThresholds,
-    
+
     /// Recovery strategy preferences
     pub recovery_preferences: RecoveryPreferences,
-    
+
     /// Notification settings
     pub notification_settings: NotificationSettings,
 }
@@ -159,16 +159,16 @@ impl Default for NotificationSettings {
 struct EmergencyDetector {
     /// Active monitors
     monitors: HashMap<String, EmergencyMonitor>,
-    
+
     /// Detection rules
     detection_rules: Vec<EmergencyRule>,
-    
+
     /// Alert thresholds
     thresholds: HashMap<String, AlertThreshold>,
-    
+
     /// Detection history
     detection_history: VecDeque<EmergencyDetection>,
-    
+
     /// Current system state
     system_state: SystemHealthState,
 }
@@ -285,13 +285,13 @@ struct SystemHealthState {
 struct CrisisManager {
     /// Active emergencies
     active_emergencies: HashMap<Uuid, Emergency>,
-    
+
     /// Emergency response plans
     response_plans: HashMap<EmergencyType, ResponsePlan>,
-    
+
     /// Crisis coordination
     coordination_state: CrisisCoordination,
-    
+
     /// Emergency metrics
     metrics: EmergencyMetrics,
 }
@@ -330,10 +330,10 @@ enum EmergencyType {
 /// Emergency severity levels
 #[derive(Debug, Clone)]
 enum EmergencySeverity {
-    Low,      // Minor impact, can wait
-    Medium,   // Moderate impact, needs attention
-    High,     // Significant impact, urgent
-    Critical, // Severe impact, immediate action required
+    Low,          // Minor impact, can wait
+    Medium,       // Moderate impact, needs attention
+    High,         // Significant impact, urgent
+    Critical,     // Severe impact, immediate action required
     Catastrophic, // System-wide failure, all hands on deck
 }
 
@@ -506,13 +506,13 @@ struct EmergencyMetrics {
 struct RecoveryCoordinator {
     /// Active recovery processes
     active_recoveries: HashMap<Uuid, RecoveryProcess>,
-    
+
     /// Recovery strategies
     recovery_strategies: HashMap<String, RecoveryStrategy>,
-    
+
     /// Recovery history
     recovery_history: VecDeque<RecoveryRecord>,
-    
+
     /// Recovery metrics
     metrics: RecoveryMetrics,
 }
@@ -628,13 +628,13 @@ struct RecoveryMetrics {
 struct EscalationManager {
     /// Escalation policies
     escalation_policies: Vec<EscalationPolicy>,
-    
+
     /// Active escalations
     active_escalations: HashMap<Uuid, EscalationProcess>,
-    
+
     /// Human responder contacts
     human_contacts: Vec<HumanContact>,
-    
+
     /// Escalation history
     escalation_history: VecDeque<EscalationRecord>,
 }
@@ -786,10 +786,10 @@ impl EmergencyResponder {
             resource_requirements: ResourceRequirements {
                 min_cpu: 0.4,
                 min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 20 * 1024 * 1024,  // 20MB
+                min_storage: 20 * 1024 * 1024, // 20MB
                 max_cpu: 2.0,
                 max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 1024 * 1024 * 1024,     // 1GB
+                max_storage: 1024 * 1024 * 1024,    // 1GB
             },
             health_check_interval: Duration::from_secs(15), // More frequent for emergency responder
         };
@@ -812,7 +812,8 @@ impl EmergencyResponder {
         let mut detections = Vec::new();
 
         // Update system health state
-        self.update_system_health(&mut emergency_detector.system_state).await?;
+        self.update_system_health(&mut emergency_detector.system_state)
+            .await?;
 
         // Check all detection rules
         for rule in &emergency_detector.detection_rules {
@@ -828,7 +829,10 @@ impl EmergencyResponder {
             }
 
             // Evaluate rule conditions
-            if self.evaluate_emergency_conditions(&rule.conditions, &emergency_detector).await? {
+            if self
+                .evaluate_emergency_conditions(&rule.conditions, &emergency_detector)
+                .await?
+            {
                 let detection = EmergencyDetection {
                     detection_id: Uuid::new_v4(),
                     rule_id: rule.rule_id.clone(),
@@ -876,12 +880,17 @@ impl EmergencyResponder {
             estimated_resolution: None,
         };
 
-        crisis_manager.active_emergencies.insert(emergency_id, emergency);
+        crisis_manager
+            .active_emergencies
+            .insert(emergency_id, emergency);
 
         // Start crisis response
         self.initiate_crisis_response(emergency_id).await?;
 
-        tracing::error!("Emergency response initiated for emergency {}", emergency_id);
+        tracing::error!(
+            "Emergency response initiated for emergency {}",
+            emergency_id
+        );
         Ok(emergency_id)
     }
 
@@ -893,7 +902,8 @@ impl EmergencyResponder {
             emergency.current_status = EmergencyStatus::InProgress;
 
             // Assign response team
-            emergency.assigned_responders = self.assign_response_team(&emergency.emergency_type).await?;
+            emergency.assigned_responders =
+                self.assign_response_team(&emergency.emergency_type).await?;
 
             // Start automated recovery if enabled
             if self.config.auto_recovery_enabled {
@@ -919,7 +929,9 @@ impl EmergencyResponder {
 
         if let Some(emergency) = crisis_manager.active_emergencies.get(&emergency_id) {
             // Select recovery strategy
-            let strategy_id = self.select_recovery_strategy(&emergency.emergency_type).await?;
+            let strategy_id = self
+                .select_recovery_strategy(&emergency.emergency_type)
+                .await?;
 
             let recovery_id = Uuid::new_v4();
             let recovery_process = RecoveryProcess {
@@ -934,7 +946,9 @@ impl EmergencyResponder {
                 steps_executed: Vec::new(),
             };
 
-            recovery_coordinator.active_recoveries.insert(recovery_id, recovery_process);
+            recovery_coordinator
+                .active_recoveries
+                .insert(recovery_id, recovery_process);
 
             tracing::info!("Recovery process started for emergency {}", emergency_id);
             return Ok(recovery_id);
@@ -962,7 +976,9 @@ impl EmergencyResponder {
                 notifications_sent: Vec::new(),
             };
 
-            escalation_manager.active_escalations.insert(escalation_id, escalation_process);
+            escalation_manager
+                .active_escalations
+                .insert(escalation_id, escalation_process);
 
             // Send initial notifications after delay
             tokio::spawn(async move {
@@ -1020,8 +1036,8 @@ impl EmergencyResponder {
     async fn update_system_health(&self, system_state: &mut SystemHealthState) -> Result<()> {
         // TODO: Collect real system health metrics
         system_state.overall_health = 85.0; // Placeholder
-        system_state.active_alerts = 2;     // Placeholder
-        system_state.system_errors = 0;     // Placeholder
+        system_state.active_alerts = 2; // Placeholder
+        system_state.system_errors = 0; // Placeholder
         system_state.last_updated = Some(Instant::now());
         Ok(())
     }
@@ -1035,7 +1051,10 @@ impl EmergencyResponder {
         Ok(false) // Placeholder
     }
 
-    async fn classify_emergency_type(&self, _detection: &EmergencyDetection) -> Result<EmergencyType> {
+    async fn classify_emergency_type(
+        &self,
+        _detection: &EmergencyDetection,
+    ) -> Result<EmergencyType> {
         // TODO: Implement emergency type classification
         Ok(EmergencyType::SystemFailure)
     }
@@ -1082,7 +1101,8 @@ impl Agent for EmergencyResponder {
 
         // Initialize emergency detection rules
         let mut emergency_detector = self.emergency_detector.write().await;
-        self.initialize_detection_rules(&mut emergency_detector).await?;
+        self.initialize_detection_rules(&mut emergency_detector)
+            .await?;
 
         // Initialize response plans
         let mut crisis_manager = self.crisis_manager.write().await;
@@ -1090,11 +1110,13 @@ impl Agent for EmergencyResponder {
 
         // Initialize recovery strategies
         let mut recovery_coordinator = self.recovery_coordinator.write().await;
-        self.initialize_recovery_strategies(&mut recovery_coordinator).await?;
+        self.initialize_recovery_strategies(&mut recovery_coordinator)
+            .await?;
 
         // Initialize escalation policies
         let mut escalation_manager = self.escalation_manager.write().await;
-        self.initialize_escalation_policies(&mut escalation_manager).await?;
+        self.initialize_escalation_policies(&mut escalation_manager)
+            .await?;
 
         *self.state.write().await = AgentStatus::Active;
 
@@ -1127,7 +1149,8 @@ impl Agent for EmergencyResponder {
             let mut interval = tokio::time::interval(monitoring_interval);
             loop {
                 interval.tick().await;
-                if let Err(e) = Self::monitor_recovery_processes(recovery_coordinator.clone()).await {
+                if let Err(e) = Self::monitor_recovery_processes(recovery_coordinator.clone()).await
+                {
                     tracing::error!("Recovery monitoring failed: {}", e);
                 }
             }
@@ -1246,7 +1269,7 @@ impl Agent for EmergencyResponder {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 12.0, // Placeholder
+            cpu_usage: 12.0,                 // Placeholder
             memory_usage: 256 * 1024 * 1024, // 256MB placeholder
             task_queue_size: crisis_manager.active_emergencies.len(),
             completed_tasks: crisis_manager.metrics.resolved_emergencies,
@@ -1270,7 +1293,10 @@ impl Agent for EmergencyResponder {
 
 impl EmergencyResponder {
     /// Initialize emergency detection rules
-    async fn initialize_detection_rules(&self, emergency_detector: &mut EmergencyDetector) -> Result<()> {
+    async fn initialize_detection_rules(
+        &self,
+        emergency_detector: &mut EmergencyDetector,
+    ) -> Result<()> {
         let detection_rules = vec![
             EmergencyRule {
                 rule_id: "high-system-load".to_string(),
@@ -1317,55 +1343,53 @@ impl EmergencyResponder {
 
     /// Initialize response plans
     async fn initialize_response_plans(&self, crisis_manager: &mut CrisisManager) -> Result<()> {
-        let response_plans = vec![
-            (
-                EmergencyType::SystemFailure,
-                ResponsePlan {
-                    plan_id: "system-failure-response".to_string(),
-                    emergency_type: EmergencyType::SystemFailure,
-                    name: "System Failure Response".to_string(),
-                    description: "Standard response for system failures".to_string(),
-                    steps: vec![
-                        ResponseStep {
-                            step_id: "diagnose".to_string(),
-                            name: "Diagnose Issue".to_string(),
-                            description: "Identify root cause of failure".to_string(),
-                            action_type: ResponseActionType::Diagnose,
-                            required_capabilities: vec!["diagnostics".to_string()],
-                            timeout: Duration::from_secs(300),
-                            retry_count: 2,
-                            parallel_execution: false,
-                            dependencies: Vec::new(),
-                        },
-                        ResponseStep {
-                            step_id: "isolate".to_string(),
-                            name: "Isolate Failure".to_string(),
-                            description: "Isolate failed components".to_string(),
-                            action_type: ResponseActionType::Isolate,
-                            required_capabilities: vec!["system-isolation".to_string()],
-                            timeout: Duration::from_secs(180),
-                            retry_count: 1,
-                            parallel_execution: false,
-                            dependencies: vec!["diagnose".to_string()],
-                        },
-                        ResponseStep {
-                            step_id: "recover".to_string(),
-                            name: "Recover System".to_string(),
-                            description: "Attempt system recovery".to_string(),
-                            action_type: ResponseActionType::Recover,
-                            required_capabilities: vec!["system-recovery".to_string()],
-                            timeout: Duration::from_secs(600),
-                            retry_count: 3,
-                            parallel_execution: false,
-                            dependencies: vec!["isolate".to_string()],
-                        },
-                    ],
-                    prerequisites: Vec::new(),
-                    estimated_duration: Duration::from_secs(1200), // 20 minutes
-                    success_criteria: vec!["System health > 80%".to_string()],
-                },
-            ),
-        ];
+        let response_plans = vec![(
+            EmergencyType::SystemFailure,
+            ResponsePlan {
+                plan_id: "system-failure-response".to_string(),
+                emergency_type: EmergencyType::SystemFailure,
+                name: "System Failure Response".to_string(),
+                description: "Standard response for system failures".to_string(),
+                steps: vec![
+                    ResponseStep {
+                        step_id: "diagnose".to_string(),
+                        name: "Diagnose Issue".to_string(),
+                        description: "Identify root cause of failure".to_string(),
+                        action_type: ResponseActionType::Diagnose,
+                        required_capabilities: vec!["diagnostics".to_string()],
+                        timeout: Duration::from_secs(300),
+                        retry_count: 2,
+                        parallel_execution: false,
+                        dependencies: Vec::new(),
+                    },
+                    ResponseStep {
+                        step_id: "isolate".to_string(),
+                        name: "Isolate Failure".to_string(),
+                        description: "Isolate failed components".to_string(),
+                        action_type: ResponseActionType::Isolate,
+                        required_capabilities: vec!["system-isolation".to_string()],
+                        timeout: Duration::from_secs(180),
+                        retry_count: 1,
+                        parallel_execution: false,
+                        dependencies: vec!["diagnose".to_string()],
+                    },
+                    ResponseStep {
+                        step_id: "recover".to_string(),
+                        name: "Recover System".to_string(),
+                        description: "Attempt system recovery".to_string(),
+                        action_type: ResponseActionType::Recover,
+                        required_capabilities: vec!["system-recovery".to_string()],
+                        timeout: Duration::from_secs(600),
+                        retry_count: 3,
+                        parallel_execution: false,
+                        dependencies: vec!["isolate".to_string()],
+                    },
+                ],
+                prerequisites: Vec::new(),
+                estimated_duration: Duration::from_secs(1200), // 20 minutes
+                success_criteria: vec!["System health > 80%".to_string()],
+            },
+        )];
 
         for (emergency_type, plan) in response_plans {
             crisis_manager.response_plans.insert(emergency_type, plan);
@@ -1389,7 +1413,10 @@ impl EmergencyResponder {
                 strategy_id: "restart-recovery".to_string(),
                 name: "Restart Recovery".to_string(),
                 description: "Recovery by restarting components".to_string(),
-                applicable_emergencies: vec![EmergencyType::SystemFailure, EmergencyType::AgentFailure],
+                applicable_emergencies: vec![
+                    EmergencyType::SystemFailure,
+                    EmergencyType::AgentFailure,
+                ],
                 steps: vec![
                     RecoveryStep {
                         step_id: "graceful-shutdown".to_string(),
@@ -1415,7 +1442,9 @@ impl EmergencyResponder {
         )];
 
         for (strategy_id, strategy) in recovery_strategies {
-            recovery_coordinator.recovery_strategies.insert(strategy_id, strategy);
+            recovery_coordinator
+                .recovery_strategies
+                .insert(strategy_id, strategy);
         }
 
         tracing::info!(
@@ -1444,7 +1473,10 @@ impl EmergencyResponder {
                     level: 1,
                     name: "First Level".to_string(),
                     recipients: vec![EscalationRecipient::Role("on-call-engineer".to_string())],
-                    notification_methods: vec![NotificationMethod::Slack, NotificationMethod::Email],
+                    notification_methods: vec![
+                        NotificationMethod::Slack,
+                        NotificationMethod::Email,
+                    ],
                     acknowledgment_required: true,
                     timeout: Duration::from_secs(900), // 15 minutes
                 },
@@ -1474,7 +1506,9 @@ impl EmergencyResponder {
     }
 
     /// Run emergency detection cycle (background task)
-    async fn run_emergency_detection(emergency_detector: Arc<RwLock<EmergencyDetector>>) -> Result<()> {
+    async fn run_emergency_detection(
+        emergency_detector: Arc<RwLock<EmergencyDetector>>,
+    ) -> Result<()> {
         let mut emergency_detector = emergency_detector.write().await;
 
         // Update monitors
@@ -1533,7 +1567,9 @@ impl EmergencyResponder {
 
         // Move completed recoveries to history
         for recovery_id in completed_recoveries {
-            if let Some(recovery_process) = recovery_coordinator.active_recoveries.remove(&recovery_id) {
+            if let Some(recovery_process) =
+                recovery_coordinator.active_recoveries.remove(&recovery_id)
+            {
                 let recovery_record = RecoveryRecord {
                     recovery_id: recovery_process.process_id,
                     emergency_id: recovery_process.emergency_id,
@@ -1546,7 +1582,9 @@ impl EmergencyResponder {
                     lessons_learned: Vec::new(), // TODO: Collect lessons learned
                 };
 
-                recovery_coordinator.recovery_history.push_back(recovery_record);
+                recovery_coordinator
+                    .recovery_history
+                    .push_back(recovery_record);
 
                 // Update metrics
                 recovery_coordinator.metrics.total_recoveries += 1;

@@ -2,28 +2,28 @@
 // Domain expert agents providing operational capabilities with autonomous execution
 
 pub mod code_generation_agent;
-pub mod testing_agent;
-pub mod deployment_agent;
-pub mod monitoring_agent;
-pub mod learning_agent;
-pub mod security_specialist_agent;
 pub mod data_analytics_agent;
+pub mod deployment_agent;
 pub mod integration_agent;
+pub mod learning_agent;
+pub mod monitoring_agent;
+pub mod security_specialist_agent;
+pub mod testing_agent;
 
 // Re-export all specialized agents for easy access
 pub use code_generation_agent::CodeGenerationAgent;
-pub use testing_agent::TestingAgent;
-pub use deployment_agent::DeploymentAgent;
-pub use monitoring_agent::MonitoringAgent;
-pub use learning_agent::LearningAgent;
-pub use security_specialist_agent::SecuritySpecialistAgent;
 pub use data_analytics_agent::DataAnalyticsAgent;
+pub use deployment_agent::DeploymentAgent;
 pub use integration_agent::IntegrationAgent;
+pub use learning_agent::LearningAgent;
+pub use monitoring_agent::MonitoringAgent;
+pub use security_specialist_agent::SecuritySpecialistAgent;
+pub use testing_agent::TestingAgent;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 use uuid::Uuid;
 
@@ -103,7 +103,10 @@ impl SpecializedLayer {
         registry.insert("integration".to_string(), integration_id.0);
         agents.insert(integration_id.0, integration_agent);
 
-        info!("Specialized Layer initialized with {} domain expert agents", agents.len());
+        info!(
+            "Specialized Layer initialized with {} domain expert agents",
+            agents.len()
+        );
         Ok(())
     }
 
@@ -175,8 +178,10 @@ impl SpecializedLayer {
             active_agents: active_count,
             total_tasks,
             agent_statuses,
-            layer_health: if active_count == agents.len() { 100.0 } else { 
-                (active_count as f64 / agents.len() as f64) * 100.0 
+            layer_health: if active_count == agents.len() {
+                100.0
+            } else {
+                (active_count as f64 / agents.len() as f64) * 100.0
             },
         })
     }
@@ -193,7 +198,10 @@ impl SpecializedLayer {
             }
         }
 
-        Err(AgentError::AgentNotFound(format!("No agent found for task: {}", task.name)))
+        Err(AgentError::AgentNotFound(format!(
+            "No agent found for task: {}",
+            task.name
+        )))
     }
 
     /// Broadcast message to all specialized agents
@@ -201,7 +209,12 @@ impl SpecializedLayer {
         let mut agents = self.agents.write().await;
         for (id, agent) in agents.iter_mut() {
             if let Err(e) = agent.handle_message(message.clone()).await {
-                error!("Failed to handle message for agent: {} ({}): {}", agent.metadata().name, id, e);
+                error!(
+                    "Failed to handle message for agent: {} ({}): {}",
+                    agent.metadata().name,
+                    id,
+                    e
+                );
             }
         }
         Ok(())
@@ -209,11 +222,14 @@ impl SpecializedLayer {
 
     /// Get specific agent capabilities
     pub async fn get_agent_capabilities(&self, agent_name: &str) -> AgentResult<Vec<String>> {
-        let agent_id = self.get_agent_by_name(agent_name).await
+        let agent_id = self
+            .get_agent_by_name(agent_name)
+            .await
             .ok_or_else(|| AgentError::AgentNotFound(agent_name.to_string()))?;
 
         let agents = self.agents.read().await;
-        let agent = agents.get(&agent_id)
+        let agent = agents
+            .get(&agent_id)
             .ok_or_else(|| AgentError::AgentNotFound(agent_name.to_string()))?;
 
         Ok(agent.capabilities().to_vec())
@@ -242,14 +258,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_specialized_layer_creation() {
-        let layer = SpecializedLayer::new().await.expect("Failed to create specialized layer");
+        let layer = SpecializedLayer::new()
+            .await
+            .expect("Failed to create specialized layer");
         assert_eq!(layer.agent_count().await, 8);
     }
 
     #[tokio::test]
     async fn test_agent_lookup() {
-        let layer = SpecializedLayer::new().await.expect("Failed to create specialized layer");
-        
+        let layer = SpecializedLayer::new()
+            .await
+            .expect("Failed to create specialized layer");
+
         let code_gen_id = layer.get_agent_by_name("code_generation").await;
         assert!(code_gen_id.is_some());
 
@@ -268,9 +288,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_agent_names_list() {
-        let layer = SpecializedLayer::new().await.expect("Failed to create specialized layer");
+        let layer = SpecializedLayer::new()
+            .await
+            .expect("Failed to create specialized layer");
         let agent_names = layer.list_agent_names().await;
-        
+
         assert_eq!(agent_names.len(), 8);
         assert!(agent_names.contains(&"code_generation".to_string()));
         assert!(agent_names.contains(&"testing".to_string()));
@@ -284,9 +306,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_layer_status() {
-        let layer = SpecializedLayer::new().await.expect("Failed to create specialized layer");
-        let status = layer.get_layer_status().await.expect("Failed to get layer status");
-        
+        let layer = SpecializedLayer::new()
+            .await
+            .expect("Failed to create specialized layer");
+        let status = layer
+            .get_layer_status()
+            .await
+            .expect("Failed to get layer status");
+
         assert_eq!(status.total_agents, 8);
         assert_eq!(status.agent_statuses.len(), 8);
     }
@@ -297,7 +324,9 @@ pub mod utils {
     use super::*;
 
     /// Get recommended agent for specific capability
-    pub fn get_agent_for_capability(capability: crate::agents::AgentCapability) -> Option<&'static str> {
+    pub fn get_agent_for_capability(
+        capability: crate::agents::AgentCapability,
+    ) -> Option<&'static str> {
         match capability {
             crate::agents::AgentCapability::CodeGeneration => Some("code_generation"),
             crate::agents::AgentCapability::Testing => Some("testing"),
@@ -332,7 +361,7 @@ pub mod utils {
 
 // This completes the Specialized Layer implementation with all 8 domain expert agents:
 // 1. Code Generation Agent - Multi-language automated code generation and optimization
-// 2. Testing Agent - Comprehensive test automation and quality assurance  
+// 2. Testing Agent - Comprehensive test automation and quality assurance
 // 3. Deployment Agent - Full CI/CD pipeline and deployment orchestration
 // 4. Monitoring Agent - Complete observability and system monitoring
 // 5. Learning Agent - ML/AI capabilities with model training and knowledge extraction

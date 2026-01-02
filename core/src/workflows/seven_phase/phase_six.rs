@@ -1,14 +1,14 @@
 //! Phase 6: Output Processing & Delivery (Model D generation)
-//! 
+//!
 //! This module handles output processing and Model D generation:
 //! - Model D generation through evolutionary merge
 //! - Deliverable package assembly with attestation
 //! - Secure delivery protocol execution
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 use super::PhaseResult;
 
@@ -59,7 +59,10 @@ impl OutputProcessor {
         Ok(Self)
     }
 
-    pub async fn process_output(&self, phase_results: &HashMap<super::PhaseType, PhaseResult>) -> Result<Phase6Result> {
+    pub async fn process_output(
+        &self,
+        phase_results: &HashMap<super::PhaseType, PhaseResult>,
+    ) -> Result<Phase6Result> {
         // TODO: Implement Model D generation through evolutionary merge
         Ok(Phase6Result {
             model_d_generation: ModelDResult {
