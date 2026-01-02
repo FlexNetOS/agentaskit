@@ -109,6 +109,10 @@ Rules:
 ## 7) Quick Links
 - Repo root: <./>
 - CI workflows: <.github/workflows/>
+- Observability:
+  - Dashboards: <dashboards/>
+  - Alerts: <alerts/>
+  - SLO Policies: <slo/policies.yaml>
 - Services:
   - <services/service-a/>
   - <services/service-b/>

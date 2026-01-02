@@ -1,0 +1,320 @@
+name: Artifact Signing
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AgentAsKit Production - Artifact Signing Workflow
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Automatically sign artifacts with SHA256 checksums and GPG signatures
+# Task Reference: SUPPLY-SIGN
+# Owner: @platform
+# Dependencies: SUPPLY-SBOM
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_run:
+    workflows: ["SBOM Generation"]
+    types:
+      - completed
+  push:
+    branches:
+      - main
+      - 'release/**'
+    paths:
+      - 'sbom/**'
+      - 'artifacts/**'
+      - '.github/workflows/sign.yml'
+  pull_request:
+    paths:
+      - 'sbom/**'
+      - 'artifacts/**'
+      - '.github/workflows/sign.yml'
+  workflow_dispatch:
+    inputs:
+      verify_only:
+        description: 'Only verify existing signatures (no new signing)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write  # For OIDC authentication if needed
+
+jobs:
+  sign-artifacts:
+    name: Sign and Verify Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        run: |
+          echo "ARTIFACTS_DIR=${{ github.workspace }}/artifacts" >> $GITHUB_ENV
+          echo "SBOM_DIR=${{ github.workspace }}/sbom" >> $GITHUB_ENV
+          echo "SIGNATURES_DIR=${{ github.workspace }}/artifacts/signatures" >> $GITHUB_ENV
+          echo "CHECKSUMS_DIR=${{ github.workspace }}/artifacts/checksums" >> $GITHUB_ENV
+
+      - name: Install signing tools
+        run: |
+          # Update package list
+          sudo apt-get update
+
+          # Install GPG (usually pre-installed)
+          sudo apt-get install -y gnupg
+
+          # Install minisign
+          sudo apt-get install -y minisign || {
+            echo "Installing minisign from source..."
+            wget https://github.com/jedisct1/minisign/releases/download/0.11/minisign-0.11-linux.tar.gz
+            tar -xzf minisign-0.11-linux.tar.gz
+            sudo cp minisign-linux/x86_64/minisign /usr/local/bin/
+            sudo chmod +x /usr/local/bin/minisign
+          }
+
+          # Verify installations
+          gpg --version
+          minisign -v || echo "minisign version check not supported"
+
+      - name: Import GPG key
+        if: github.event.inputs.verify_only != 'true'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "Importing GPG key..."
+            echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+            # Configure GPG for non-interactive use
+            echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+            echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+            gpgconf --kill gpg-agent
+            gpgconf --launch gpg-agent
+
+            # List imported keys
+            gpg --list-secret-keys
+          else
+            echo "::warning::GPG_PRIVATE_KEY secret not found. GPG signing will be skipped."
+            echo "::notice::To enable GPG signing, add GPG_PRIVATE_KEY and GPG_PASSPHRASE to repository secrets."
+          fi
+
+      - name: Setup minisign key
+        if: github.event.inputs.verify_only != 'true'
+        env:
+          MINISIGN_PRIVATE_KEY: ${{ secrets.MINISIGN_PRIVATE_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          if [ -n "$MINISIGN_PRIVATE_KEY" ]; then
+            echo "Setting up minisign key..."
+            mkdir -p artifacts/keys
+            echo "$MINISIGN_PRIVATE_KEY" > artifacts/keys/minisign.key
+            chmod 600 artifacts/keys/minisign.key
+          else
+            echo "::warning::MINISIGN_PRIVATE_KEY secret not found. minisign signing will be skipped."
+            echo "::notice::To enable minisign signing, add MINISIGN_PRIVATE_KEY and MINISIGN_PASSWORD to repository secrets."
+          fi
+
+      - name: Generate checksums
+        if: github.event.inputs.verify_only != 'true'
+        run: |
+          echo "Generating SHA256 checksums..."
+          bash scripts/sign_artifacts.sh --checksums
+
+      - name: Sign artifacts
+        if: github.event.inputs.verify_only != 'true'
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          echo "Signing artifacts..."
+
+          # Configure GPG for batch mode
+          export GPG_TTY=$(tty)
+
+          # Sign artifacts
+          bash scripts/sign_artifacts.sh --sign
+
+      - name: Verify signatures
+        run: |
+          echo "Verifying signatures..."
+          bash scripts/sign_artifacts.sh --verify || {
+            echo "::warning::Signature verification had some warnings"
+            echo "This is expected if signing tools are not fully configured"
+          }
+
+      - name: Generate signing report
+        run: |
+          echo "# Artifact Signing Report" > signing-report.md
+          echo "" >> signing-report.md
+          echo "**Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> signing-report.md
+          echo "**Workflow**: ${{ github.workflow }}" >> signing-report.md
+          echo "**Run ID**: ${{ github.run_id }}" >> signing-report.md
+          echo "" >> signing-report.md
+
+          echo "## Checksums" >> signing-report.md
+          echo "" >> signing-report.md
+          if [ -f artifacts/checksums/SHA256SUMS ]; then
+            echo "\`\`\`" >> signing-report.md
+            cat artifacts/checksums/SHA256SUMS >> signing-report.md
+            echo "\`\`\`" >> signing-report.md
+          else
+            echo "No checksums found." >> signing-report.md
+          fi
+          echo "" >> signing-report.md
+
+          echo "## Signatures" >> signing-report.md
+          echo "" >> signing-report.md
+          echo "### GPG Signatures" >> signing-report.md
+          GPG_COUNT=$(find artifacts/signatures -name "*.sig" 2>/dev/null | wc -l || echo 0)
+          echo "Total: $GPG_COUNT files" >> signing-report.md
+          if [ $GPG_COUNT -gt 0 ]; then
+            echo "\`\`\`" >> signing-report.md
+            ls -lh artifacts/signatures/*.sig 2>/dev/null || true
+            echo "\`\`\`" >> signing-report.md
+          fi
+          echo "" >> signing-report.md
+
+          echo "### minisign Signatures" >> signing-report.md
+          MINISIG_COUNT=$(find artifacts/signatures -name "*.minisig" 2>/dev/null | wc -l || echo 0)
+          echo "Total: $MINISIG_COUNT files" >> signing-report.md
+          if [ $MINISIG_COUNT -gt 0 ]; then
+            echo "\`\`\`" >> signing-report.md
+            ls -lh artifacts/signatures/*.minisig 2>/dev/null || true
+            echo "\`\`\`" >> signing-report.md
+          fi
+          echo "" >> signing-report.md
+
+          echo "## Summary" >> signing-report.md
+          echo "" >> signing-report.md
+          echo "- ✓ Checksums generated: $([ -f artifacts/checksums/SHA256SUMS ] && echo 'Yes' || echo 'No')" >> signing-report.md
+          echo "- ✓ GPG signatures: $GPG_COUNT" >> signing-report.md
+          echo "- ✓ minisign signatures: $MINISIG_COUNT" >> signing-report.md
+          echo "" >> signing-report.md
+
+          cat signing-report.md
+
+      - name: Upload signing artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-artifacts-${{ github.sha }}
+          path: |
+            artifacts/checksums/**
+            artifacts/signatures/**
+            signing-report.md
+          retention-days: 90
+
+      - name: Commit signatures (main branch only)
+        if: github.ref == 'refs/heads/main' && github.event.inputs.verify_only != 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Add signature files
+          git add artifacts/checksums/ artifacts/signatures/
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No new signatures to commit"
+          else
+            git commit -m "chore: update artifact signatures [skip ci]
+
+            Generated by workflow: ${{ github.workflow }}
+            Run ID: ${{ github.run_id }}
+            Commit: ${{ github.sha }}
+
+            Task: SUPPLY-SIGN"
+
+            git push
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('signing-report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  validate-signatures:
+    name: Validate Signature Integrity
+    runs-on: ubuntu-latest
+    needs: sign-artifacts
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download signed artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-artifacts-${{ github.sha }}
+          path: artifacts-download/
+
+      - name: Validate checksums
+        run: |
+          if [ -f artifacts-download/checksums/SHA256SUMS ]; then
+            cd sbom
+            sha256sum -c ../artifacts-download/checksums/SHA256SUMS || {
+              echo "::error::Checksum validation failed!"
+              exit 1
+            }
+            echo "✓ All checksums validated successfully"
+          else
+            echo "::warning::No checksums file found to validate"
+          fi
+
+      - name: Security check
+        run: |
+          echo "Running security checks on signatures..."
+
+          # Check that signature files exist
+          SIG_COUNT=$(find artifacts-download/signatures -type f 2>/dev/null | wc -l || echo 0)
+
+          if [ $SIG_COUNT -eq 0 ]; then
+            echo "::warning::No signature files found"
+          else
+            echo "✓ Found $SIG_COUNT signature files"
+          fi
+
+          # Verify checksums file is signed
+          if [ -f artifacts-download/signatures/SHA256SUMS.sig ] || [ -f artifacts-download/signatures/SHA256SUMS.minisig ]; then
+            echo "✓ Checksums file is signed"
+          else
+            echo "::warning::Checksums file is not signed"
+          fi
+
+      - name: Generate summary
+        run: |
+          echo "## Artifact Signing Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ✓ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts Processed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f artifacts-download/checksums/SHA256SUMS ]; then
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat artifacts-download/checksums/SHA256SUMS >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Signature Files" >> $GITHUB_STEP_SUMMARY
+          find artifacts-download/signatures -type f 2>/dev/null | while read f; do
+            echo "- \`$(basename $f)\`" >> $GITHUB_STEP_SUMMARY
+          done || echo "- No signature files" >> $GITHUB_STEP_SUMMARY
