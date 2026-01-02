@@ -1,4 +1,100 @@
 {
-  "title": "SLA (stub)",
-  "panels": []
+  "title": "AgentAsKit SLA Dashboard",
+  "description": "Overview of Service Level Agreements and objectives",
+  "tags": ["sla", "slo", "availability"],
+  "timezone": "UTC",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Availability (99.9% Target)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "100 * (1 - (sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))))",
+          "legendFormat": "Availability %"
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          { "value": 0, "color": "red" },
+          { "value": 99.0, "color": "yellow" },
+          { "value": 99.9, "color": "green" }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "title": "Error Budget Remaining",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "100 * ((1 - 0.999) - (sum(rate(http_requests_total{status=~\"5..\"}[30d])) / sum(rate(http_requests_total[30d])))) / (1 - 0.999)",
+          "legendFormat": "Error Budget %"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "P95 Latency (50ms Target)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P95 Latency (ms)"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": "Latency"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "P99 Latency (100ms Target)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P99 Latency (ms)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Burn Rate - Fast Window (1h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_total{status=~\"5..\"}[1h])) / sum(rate(http_requests_total[1h]))) / (1 - 0.999)",
+          "legendFormat": "Burn Rate"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "green" },
+          { "value": 14.4, "color": "red" }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "Burn Rate - Slow Window (6h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_total{status=~\"5..\"}[6h])) / sum(rate(http_requests_total[6h]))) / (1 - 0.999)",
+          "legendFormat": "Burn Rate"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "green" },
+          { "value": 6.0, "color": "red" }
+        ]
+      }
+    }
+  ]
 }

@@ -1,33 +1,48 @@
-﻿# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# ARCHIVED FILE - 2026-01-02
+# ═════════════════════════════════════════════════════════════════════════════
+# This file has been archived as part of TODO source deduplication (OPS-DEDUP-TODO).
+#
+# The single source of truth for all TODO items is now:
+#   /home/user/agentaskit/agentaskit-production/.todo
+#
+# This file is preserved for historical reference only.
+# For current tasks and priorities, please refer to the main .todo file above.
+#
+# Archival date: 2026-01-02
+# Reference: docs/decisions/ops-dedup-todo.md
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  AgentAskit • Production TODO
 #  Date: 2025-10-05
 #  Legend:
 #    ☐ = open, ☑ = done
-#    Priority: [91m(A)[0m = Critical, [93m(B)[0m = High
-#    Tags: [96m+Tag[0m  Context: [95m@context[0m  Metrics: [1mbold[0m
-#  Note: ANSI color codes included. If your viewer lacks ANSI support, remove [...m codes.
+#    Priority: [91m(A)[0m = Critical, [93m(B)[0m = High
+#    Tags: [96m+Tag[0m  Context: [95m@context[0m  Metrics: [1mbold[0m
+#  Note: ANSI color codes included. If your viewer lacks ANSI support, remove [...m codes.
 # ─────────────────────────────────────────────────────────────────────────────
 
-[1;96m== Performance & SLA ==[0m
-- [ ] [91m(A)[0m 2025-10-05 Implement performance optimization system [1mtput_tasks:10000_per_sec[0m [1mtput_msgs:100000_per_sec[0m [96m+AgentAskit +Performance +Scalability[0m [95m@prod[0m [REF: PERF-001]
-- [ ] [91m(A)[0m 2025-10-05 Achieve SLA targets [1mstartup_lt_ms:100[0m [1mresponse_lt_ms:50[0m [96m+AgentAskit +Performance[0m [95m@prod[0m [REF: SLA-001]
+[1;96m== Performance & SLA ==[0m
+- [ ] [91m(A)[0m 2025-10-05 Implement performance optimization system [1mtput_tasks:10000_per_sec[0m [1mtput_msgs:100000_per_sec[0m [96m+AgentAskit +Performance +Scalability[0m [95m@prod[0m [REF: PERF-001]
+- [ ] [91m(A)[0m 2025-10-05 Achieve SLA targets [1mstartup_lt_ms:100[0m [1mresponse_lt_ms:50[0m [96m+AgentAskit +Performance[0m [95m@prod[0m [REF: SLA-001]
 
-[1;96m== Security ==[0m
-- [ ] [91m(A)[0m 2025-10-05 Complete security enhancement with capability token management [96m+AgentAskit +Security +AuthZ +Tokens[0m [95m@prod[0m [REF: SEC-001]
+[1;96m== Security ==[0m
+- [ ] [91m(A)[0m 2025-10-05 Complete security enhancement with capability token management [96m+AgentAskit +Security +AuthZ +Tokens[0m [95m@prod[0m [REF: SEC-001]
 
-[1;96m== Workflow & Orchestration ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Execute 7-phase workflow with 928-agent orchestration [96m+AgentAskit +Workflow +Orchestration +Agents[0m [95m@prod[0m [REF: WF-001]
+[1;96m== Workflow & Orchestration ==[0m
+- [ ] [93m(B)[0m 2025-10-05 Execute 7-phase workflow with 928-agent orchestration [96m+AgentAskit +Workflow +Orchestration +Agents[0m [95m@prod[0m [REF: WF-001]
 
-[1;96m== Verification ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Deploy triple verification with Model D evolutionary merge [96m+AgentAskit +Verification +ModelD[0m [95m@prod[0m [REF: VER-001]
+[1;96m== Verification ==[0m
+- [ ] [93m(B)[0m 2025-10-05 Deploy triple verification with Model D evolutionary merge [96m+AgentAskit +Verification +ModelD[0m [95m@prod[0m [REF: VER-001]
 
-[1;96m== Observability ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Create real-time health monitoring and agent capability matching [96m+AgentAskit +Observability +Health +Matching[0m [95m@prod[0m [REF: OBS-001]
+[1;96m== Observability ==[0m
+- [ ] [93m(B)[0m 2025-10-05 Create real-time health monitoring and agent capability matching [96m+AgentAskit +Observability +Health +Matching[0m [95m@prod[0m [REF: OBS-001]
 
-[1;96m== Documentation & Compliance ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Generate comprehensive documentation with evidence trails and SHA-256 hashes [96m+AgentAskit +Docs +Compliance +Integrity[0m [95m@prod[0m [REF: DOC-001]
+[1;96m== Documentation & Compliance ==[0m
+- [ ] [93m(B)[0m 2025-10-05 Generate comprehensive documentation with evidence trails and SHA-256 hashes [96m+AgentAskit +Docs +Compliance +Integrity[0m [95m@prod[0m [REF: DOC-001]
 
-- [ ] [91m(A)[0m 2025-10-05 <Title> owner:@alice deps:[PERF-001, OBS-001]  +Tag1 +Tag2 @prod [REF: ABC-123] acc: "<measurable acceptance>" evid: "<link>"
+- [ ] [91m(A)[0m 2025-10-05 <Title> owner:@alice deps:[PERF-001, OBS-001]  +Tag1 +Tag2 @prod [REF: ABC-123] acc: "<measurable acceptance>" evid: "<link>"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # References

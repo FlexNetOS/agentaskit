@@ -1,0 +1,128 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-git-
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
+
+      - name: Install cargo-cyclonedx
+        run: cargo install cargo-cyclonedx
+
+      - name: Create SBOM directory
+        run: mkdir -p sbom
+
+      - name: Generate SBOM for core component
+        working-directory: core
+        run: cargo cyclonedx --format json --spec-version 1.5 --all
+
+      - name: Generate SBOM for shared component
+        working-directory: shared
+        run: cargo cyclonedx --format json --spec-version 1.5 --all
+
+      - name: Generate SBOM for unified_execution/core
+        working-directory: unified_execution/core
+        run: cargo cyclonedx --format json --spec-version 1.5 --all
+
+      - name: Generate SBOM for unified_execution/wasm_host
+        working-directory: unified_execution/wasm_host
+        run: cargo cyclonedx --format json --spec-version 1.5 --all
+
+      - name: Move SBOMs to sbom directory
+        run: |
+          mv core/*.cdx.json sbom/agentaskit-core.json || true
+          mv shared/*.cdx.json sbom/agentaskit-shared.json || true
+          mv unified_execution/core/*.cdx.json sbom/flex-core.json || true
+          mv unified_execution/wasm_host/*.cdx.json sbom/wasm-host.json || true
+
+      - name: Validate SBOM format
+        run: |
+          for sbom in sbom/*.json; do
+            echo "Validating $sbom"
+            if ! jq empty "$sbom" 2>/dev/null; then
+              echo "ERROR: $sbom is not valid JSON"
+              exit 1
+            fi
+            # Check for required CycloneDX fields
+            if ! jq -e '.bomFormat' "$sbom" >/dev/null; then
+              echo "ERROR: $sbom missing bomFormat field"
+              exit 1
+            fi
+            if ! jq -e '.specVersion' "$sbom" >/dev/null; then
+              echo "ERROR: $sbom missing specVersion field"
+              exit 1
+            fi
+            echo "✓ $sbom is valid"
+          done
+
+      - name: Generate SBOM summary
+        run: |
+          echo "# SBOM Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Generated SBOMs for the following components:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for sbom in sbom/*.json; do
+            component=$(basename "$sbom" .json)
+            spec_version=$(jq -r '.specVersion' "$sbom")
+            num_components=$(jq -r '.components | length' "$sbom" 2>/dev/null || echo "N/A")
+            echo "- **$component**: CycloneDX $spec_version ($num_components dependencies)" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Total SBOM files: $(ls -1 sbom/*.json | wc -l)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom/*.json
+          retention-days: 90
+
+      - name: Commit SBOMs (on push to main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add sbom/*.json
+          git diff --staged --quiet || git commit -m "chore: update SBOMs [skip ci]"
+          git push

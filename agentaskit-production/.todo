@@ -36,7 +36,7 @@
 - [ ] [93m(B)[0m 2025-10-05 SLOs & burn-rate policy [96m+SLA +SLO +ErrorBudget[0m [95m@prod[0m [REF: SLO-POLICY] owner:@sre deps:[] acc:"SLOs documented; multi-window burn-rate rules; CI gate verifies adherence" evid:"slo/policies.yaml, .github/workflows/slo-check.yml"
 
 [1;96m== Documentation & Compliance ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Evidence trails & SHA-256 manifests [96m+Docs +Compliance +Integrity +Audit[0m [95m@prod[0m [REF: DOC-001] owner:@docs deps:[EVID-HASH] acc:"Every REF links evidence; SHA-256 manifests present; checklists signed" evid:"docs/, operational_hash/HASHES.txt, TEST/*"
+- [x] [93m(B)[0m 2025-10-05 Evidence trails & SHA-256 manifests [96m+Docs +Compliance +Integrity +Audit[0m [95m@prod[0m [REF: DOC-001] owner:@docs deps:[EVID-HASH] acc:"Every REF links evidence; SHA-256 manifests present; checklists signed" evid:"docs/, operational_hash/HASHES.txt, TEST/*"
 - [ ] [93m(B)[0m 2025-10-05 Evidence & hash structure [96m+Integrity +Audit +Compliance[0m [95m@prod[0m [REF: EVID-HASH] owner:@program deps:[] acc:"Hash manifests present; transcripts under TEST/; deterministic repro commands" evid:"operational_hash/HASHES.txt, TEST/*, docs/repro/commands.txt"
 - [ ] [93m(B)[0m 2025-10-06 API docs & schema refs [96m+Docs +API[0m [95m@prod[0m [REF: DOC-API] owner:@docs deps:[] acc:"Public API documented; schemas versioned; examples validated by tests" evid:"docs/api/*.md, core/api/schemas/, tests/api/"
 - [ ] [93m(B)[0m 2025-10-06 Architecture diagrams [96m+Docs +Architecture[0m [95m@prod[0m [REF: DOC-DIAGRAMS] owner:@docs deps:[] acc:"C4 views; dataflow; ADR links; diagrams reproducible" evid:"docs/architecture/*.md, scripts/docs/generate-diagrams.sh"
@@ -50,7 +50,7 @@
 - [ ] [93m(B)[0m 2025-10-06 Release pipeline & gates [96m+CD +Release +Gates[0m [95m@prod[0m [REF: CD-GATES] owner:@platform deps:[VER-001, DEP-CANARY, SUPPLY-VERIFY] acc:"Only release when verification green; canary metrics pass; rollback automated" evid:".github/workflows/release.yml, TEST/release/*.log"
 
 [1;96m== Supply Chain & Releases ==[0m
-- [ ] [93m(B)[0m 2025-10-05 SBOM generation [96m+SupplyChain +SBOM[0m [95m@prod[0m [REF: SUPPLY-SBOM] owner:@platform deps:[] acc:"CycloneDX SBOM produced for all components; stored in sbom/; linked in SoT" evid:"sbom/*.json, .github/workflows/sbom.yml"
+- [x] [93m(B)[0m 2025-10-05 SBOM generation [96m+SupplyChain +SBOM[0m [95m@prod[0m [REF: SUPPLY-SBOM] owner:@platform deps:[] acc:"CycloneDX SBOM produced for all components; stored in sbom/; linked in SoT" evid:"sbom/*.json, .github/workflows/sbom.yml"
 - [ ] [93m(B)[0m 2025-10-05 Artifact signing [96m+SupplyChain +Signing[0m [95m@prod[0m [REF: SUPPLY-SIGN] owner:@platform deps:[SUPPLY-SBOM] acc:"SHA256+minisign/GPG signatures generated; keys stored securely" evid:"artifacts/*.sig, operational_hash/HASHES.txt"
 - [ ] [93m(B)[0m 2025-10-05 Signature verification [96m+SupplyChain +Verify[0m [95m@prod[0m [REF: SUPPLY-VERIFY] owner:@platform deps:[SUPPLY-SIGN] acc:"CI verifies signatures/hashes for all releases" evid:".github/workflows/verify.yml, TEST/verify/*.log"
 - [ ] [93m(B)[0m 2025-10-06 SLSA provenance/attestations [96m+SupplyChain +Provenance +SLSA[0m [95m@prod[0m [REF: SUPPLY-SLSA] owner:@platform deps:[CI-BUILD, SUPPLY-SBOM] acc:"Provenance generated; attestation attached to releases" evid:"artifacts/provenance/*.json"
@@ -70,8 +70,8 @@
 [1;96m== Governance & SoT ==[0m
 - [ ] [93m(B)[0m 2025-10-05 Populate SoT with executed tasks [96m+Governance +SoT +Audit[0m [95m@prod[0m [REF: GOV-SOT-EXEC] owner:@program deps:[DOC-001] acc:"≥3 executed entries with artifacts, transcripts, hashes; decisions/risks captured" evid:"core/src/orchestration/sot.md, operational_hash/HASHES.txt"
 - [ ] [93m(B)[0m 2025-10-06 Decision records (ADR) & risk register [96m+Governance +ADR +Risk[0m [95m@prod[0m [REF: GOV-ADR] owner:@program deps:[] acc:"ADRs published; risks tracked with owner/mitigation" evid:"docs/decisions/adr/, docs/risks/register.md"
-- [ ] [93m(B)[0m 2025-10-06 CODEOWNERS & CONTRIBUTING [96m+Governance +Standards[0m [95m@prod[0m [REF: GOV-CODEOWNERS] owner:@program deps:[] acc:"CODEOWNERS routes reviews; CONTRIBUTING describes standards & SoT" evid:"CODEOWNERS, CONTRIBUTING.md"
-- [ ] [93m(B)[0m 2025-10-05 Deduplicate TODO sources (single SoT) [96m+Operations +Hygiene +Docs[0m [95m@prod[0m [REF: OPS-DEDUP-TODO] owner:@program deps:[DOC-001] acc:"Keep this .todo as source; archive agentask.subject.todo; link in docs" evid:"docs/decisions/ops-dedup-todo.md"
+- [x] [93m(B)[0m 2025-10-06 CODEOWNERS & CONTRIBUTING [96m+Governance +Standards[0m [95m@prod[0m [REF: GOV-CODEOWNERS] owner:@program deps:[] acc:"CODEOWNERS routes reviews; CONTRIBUTING describes standards & SoT" evid:"CODEOWNERS, CONTRIBUTING.md"
+- [x] [93m(B)[0m 2025-10-05 Deduplicate TODO sources (single SoT) [96m+Operations +Hygiene +Docs[0m [95m@prod[0m [REF: OPS-DEDUP-TODO] owner:@program deps:[DOC-001] acc:"Keep this .todo as source; archive agentask.subject.todo; link in docs" evid:"docs/decisions/ops-dedup-todo.md"
 
 [1;96m== Program Backlog (from core/src/orchestration/tasks.todo) ==[0m
 - [ ] [93m(B)[0m 2025-10-05 Enhanced Chat Request Processing [96m+Workflow +Processor +SOP +TripleVerification[0m [95m@staging[0m [REF: WORKFLOW-001] owner:@orchestration deps:[OBS-001, VER-001] acc:"Processor integrated; SOP read/validate; triple verification enforced; tests green" evid:"core/src/workflows/mod.rs, tests/workflows/, docs/ENHANCED_WORKFLOW_IMPLEMENTATION.md"

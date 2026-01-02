@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "core",
-    "flexnetos/execution/core",
-    "flexnetos/execution/wasm_host",
+    "unified_execution/core",
+    "unified_execution/wasm_host",
     "shared"
 ]
 resolver = "2"
@@ -85,21 +85,5 @@ qdrant-client = "1.5"
 
 # Additional dependencies
 hex = "0.4"
-chrono = { version = "0.4", features = ["serde"] }
 capnp = "0.17"
 capnpc = "0.17"
-
-[package]
-name = "agentaskit-production"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-description.workspace = true
-
-[dependencies]
-# Main workspace just provides common types and utilities
-serde.workspace = true
-serde_json.workspace = true
-uuid.workspace = true
-anyhow.workspace = true
