@@ -798,16 +798,16 @@ impl EnhancedWorkflowProcessor {
             };
 
             // Submit task for orchestration
-            let task_id = self.task_protocol.submit_task(task).await?;
+            let task_id = self.task_protocol.submit_task(task.clone()).await?;
 
             // Send notification to communication protocol
-            let message = AgentMessage::TaskAssignment {
+            let message = AgentMessage::Request {
                 id: uuid::Uuid::new_v4(),
-                task_id,
                 from: AgentId::new(), // System agent
                 to: AgentId::new(),   // Will be assigned by orchestrator
                 task: task,
-                deadline: Some(Utc::now() + step.estimated_duration),
+                priority: task.priority.clone(),
+                timeout: Some(step.estimated_duration),
             };
 
             self.communication_protocol.send_message(message).await?;
