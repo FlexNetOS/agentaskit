@@ -706,7 +706,8 @@ impl HootlEngine {
             DecisionType::ResourceAllocation => {
                 // Check if we can safely allocate more resources
                 if state.health.active_agent_count < self.config.safety_limits.max_concurrent_agents
-                    && state.health.memory_usage < self.config.safety_limits.max_memory_mb * 80 / 100
+                    && state.health.memory_usage
+                        < self.config.safety_limits.max_memory_mb * 1024 * 1024 * 80 / 100
                 {
                     (
                         DecisionOutcome::Approved,
