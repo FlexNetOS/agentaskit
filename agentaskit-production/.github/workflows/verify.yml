@@ -1,0 +1,451 @@
+name: Signature Verification
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AgentAsKit Production - Signature Verification Workflow
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Verify SHA-256 checksums and signatures for all release artifacts
+# Task Reference: SUPPLY-VERIFY
+# Owner: @platform
+# Dependencies: SUPPLY-SIGN
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+on:
+  release:
+    types: [published, created, prereleased]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      strict_mode:
+        description: 'Fail workflow if any signature is missing'
+        required: false
+        default: 'true'
+        type: boolean
+      verify_tag:
+        description: 'Git tag to verify (leave empty for latest)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: read
+
+jobs:
+  verify-checksums:
+    name: Verify SHA-256 Checksums
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      checksum_status: ${{ steps.verify_checksums.outputs.status }}
+      artifacts_count: ${{ steps.verify_checksums.outputs.count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.verify_tag || github.ref }}
+
+      - name: Setup verification environment
+        run: |
+          mkdir -p TEST/verify
+          echo "VERIFY_LOG=TEST/verify/verification_$(date -u +%Y%m%d_%H%M%S).log" >> $GITHUB_ENV
+          echo "VERIFY_TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_ENV
+
+      - name: Verify SHA-256 checksums
+        id: verify_checksums
+        run: |
+          echo "=== SHA-256 Checksum Verification ===" | tee -a $VERIFY_LOG
+          echo "Timestamp: $VERIFY_TIMESTAMP" | tee -a $VERIFY_LOG
+          echo "Commit: ${{ github.sha }}" | tee -a $VERIFY_LOG
+          echo "Ref: ${{ github.ref }}" | tee -a $VERIFY_LOG
+          echo "" | tee -a $VERIFY_LOG
+
+          CHECKSUM_FILE="artifacts/checksums/SHA256SUMS"
+
+          if [ ! -f "$CHECKSUM_FILE" ]; then
+            echo "::error::Checksum file not found: $CHECKSUM_FILE" | tee -a $VERIFY_LOG
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "Found checksum file: $CHECKSUM_FILE" | tee -a $VERIFY_LOG
+          echo "Total checksums: $(wc -l < $CHECKSUM_FILE)" | tee -a $VERIFY_LOG
+          echo "" | tee -a $VERIFY_LOG
+
+          # Verify checksums
+          cd sbom
+          if sha256sum -c ../$CHECKSUM_FILE 2>&1 | tee -a ../$VERIFY_LOG; then
+            echo "" | tee -a ../$VERIFY_LOG
+            echo "✓ All SHA-256 checksums verified successfully" | tee -a ../$VERIFY_LOG
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "count=$(wc -l < ../$CHECKSUM_FILE)" >> $GITHUB_OUTPUT
+          else
+            echo "" | tee -a ../$VERIFY_LOG
+            echo "::error::SHA-256 checksum verification failed!" | tee -a ../$VERIFY_LOG
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Upload checksum verification log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksum-verification-${{ github.sha }}
+          path: TEST/verify/*.log
+          retention-days: 90
+
+  verify-gpg-signatures:
+    name: Verify GPG Signatures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: verify-checksums
+    if: always()
+    outputs:
+      gpg_status: ${{ steps.verify_gpg.outputs.status }}
+      gpg_count: ${{ steps.verify_gpg.outputs.count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.verify_tag || github.ref }}
+
+      - name: Setup GPG verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg
+          mkdir -p TEST/verify
+          echo "GPG_VERIFY_LOG=TEST/verify/gpg_verification_$(date -u +%Y%m%d_%H%M%S).log" >> $GITHUB_ENV
+
+      - name: Import GPG public key
+        env:
+          GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+        run: |
+          echo "=== GPG Signature Verification ===" | tee $GPG_VERIFY_LOG
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" | tee -a $GPG_VERIFY_LOG
+          echo "" | tee -a $GPG_VERIFY_LOG
+
+          if [ -n "$GPG_PUBLIC_KEY" ]; then
+            echo "Importing GPG public key..." | tee -a $GPG_VERIFY_LOG
+            echo "$GPG_PUBLIC_KEY" | gpg --batch --import 2>&1 | tee -a $GPG_VERIFY_LOG
+            gpg --list-keys 2>&1 | tee -a $GPG_VERIFY_LOG
+          else
+            echo "::warning::GPG_PUBLIC_KEY not configured in secrets" | tee -a $GPG_VERIFY_LOG
+            echo "GPG signature verification will be skipped" | tee -a $GPG_VERIFY_LOG
+          fi
+
+      - name: Verify GPG signatures
+        id: verify_gpg
+        run: |
+          SIG_DIR="artifacts/signatures"
+          GPG_SIGS=$(find $SIG_DIR -name "*.sig" 2>/dev/null || echo "")
+
+          if [ -z "$GPG_SIGS" ]; then
+            echo "::warning::No GPG signatures found in $SIG_DIR" | tee -a $GPG_VERIFY_LOG
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+
+            if [ "${{ github.event.inputs.strict_mode }}" == "true" ]; then
+              echo "::error::Strict mode enabled: GPG signatures required but not found"
+              exit 1
+            fi
+            exit 0
+          fi
+
+          echo "Found GPG signature files:" | tee -a $GPG_VERIFY_LOG
+          echo "$GPG_SIGS" | tee -a $GPG_VERIFY_LOG
+          echo "" | tee -a $GPG_VERIFY_LOG
+
+          VERIFIED_COUNT=0
+          FAILED_COUNT=0
+          TOTAL_COUNT=0
+
+          for sig_file in $GPG_SIGS; do
+            TOTAL_COUNT=$((TOTAL_COUNT + 1))
+            original_file="${sig_file%.sig}"
+
+            echo "Verifying: $sig_file" | tee -a $GPG_VERIFY_LOG
+
+            if [ ! -f "$original_file" ]; then
+              echo "::warning::Original file not found: $original_file" | tee -a $GPG_VERIFY_LOG
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+              continue
+            fi
+
+            if gpg --verify "$sig_file" "$original_file" 2>&1 | tee -a $GPG_VERIFY_LOG; then
+              echo "✓ Verified: $sig_file" | tee -a $GPG_VERIFY_LOG
+              VERIFIED_COUNT=$((VERIFIED_COUNT + 1))
+            else
+              echo "✗ Failed: $sig_file" | tee -a $GPG_VERIFY_LOG
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+            fi
+            echo "" | tee -a $GPG_VERIFY_LOG
+          done
+
+          echo "=== GPG Verification Summary ===" | tee -a $GPG_VERIFY_LOG
+          echo "Total signatures: $TOTAL_COUNT" | tee -a $GPG_VERIFY_LOG
+          echo "Verified: $VERIFIED_COUNT" | tee -a $GPG_VERIFY_LOG
+          echo "Failed: $FAILED_COUNT" | tee -a $GPG_VERIFY_LOG
+
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "::error::GPG signature verification failed for $FAILED_COUNT file(s)"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "count=$VERIFIED_COUNT" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✓ All GPG signatures verified successfully" | tee -a $GPG_VERIFY_LOG
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "count=$VERIFIED_COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload GPG verification log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpg-verification-${{ github.sha }}
+          path: TEST/verify/gpg_*.log
+          retention-days: 90
+
+  verify-minisign-signatures:
+    name: Verify minisign Signatures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: verify-checksums
+    if: always()
+    outputs:
+      minisign_status: ${{ steps.verify_minisign.outputs.status }}
+      minisign_count: ${{ steps.verify_minisign.outputs.count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.verify_tag || github.ref }}
+
+      - name: Setup minisign verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y minisign || {
+            echo "Installing minisign from source..."
+            wget https://github.com/jedisct1/minisign/releases/download/0.11/minisign-0.11-linux.tar.gz
+            tar -xzf minisign-0.11-linux.tar.gz
+            sudo cp minisign-linux/x86_64/minisign /usr/local/bin/
+            sudo chmod +x /usr/local/bin/minisign
+          }
+          mkdir -p TEST/verify
+          echo "MINISIGN_VERIFY_LOG=TEST/verify/minisign_verification_$(date -u +%Y%m%d_%H%M%S).log" >> $GITHUB_ENV
+
+      - name: Import minisign public key
+        env:
+          MINISIGN_PUBLIC_KEY: ${{ secrets.MINISIGN_PUBLIC_KEY }}
+        run: |
+          echo "=== minisign Signature Verification ===" | tee $MINISIGN_VERIFY_LOG
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" | tee -a $MINISIGN_VERIFY_LOG
+          echo "" | tee -a $MINISIGN_VERIFY_LOG
+
+          if [ -n "$MINISIGN_PUBLIC_KEY" ]; then
+            echo "Setting up minisign public key..." | tee -a $MINISIGN_VERIFY_LOG
+            mkdir -p artifacts/keys
+            echo "$MINISIGN_PUBLIC_KEY" > artifacts/keys/minisign.pub
+          else
+            echo "::warning::MINISIGN_PUBLIC_KEY not configured in secrets" | tee -a $MINISIGN_VERIFY_LOG
+            echo "minisign signature verification will be skipped" | tee -a $MINISIGN_VERIFY_LOG
+          fi
+
+      - name: Verify minisign signatures
+        id: verify_minisign
+        run: |
+          SIG_DIR="artifacts/signatures"
+          MINISIGS=$(find $SIG_DIR -name "*.minisig" 2>/dev/null || echo "")
+
+          if [ -z "$MINISIGS" ]; then
+            echo "::warning::No minisign signatures found in $SIG_DIR" | tee -a $MINISIGN_VERIFY_LOG
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+
+            if [ "${{ github.event.inputs.strict_mode }}" == "true" ]; then
+              echo "::error::Strict mode enabled: minisign signatures required but not found"
+              exit 1
+            fi
+            exit 0
+          fi
+
+          if [ ! -f "artifacts/keys/minisign.pub" ]; then
+            echo "::warning::minisign public key not available" | tee -a $MINISIGN_VERIFY_LOG
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Found minisign signature files:" | tee -a $MINISIGN_VERIFY_LOG
+          echo "$MINISIGS" | tee -a $MINISIGN_VERIFY_LOG
+          echo "" | tee -a $MINISIGN_VERIFY_LOG
+
+          VERIFIED_COUNT=0
+          FAILED_COUNT=0
+          TOTAL_COUNT=0
+
+          for sig_file in $MINISIGS; do
+            TOTAL_COUNT=$((TOTAL_COUNT + 1))
+            original_file="${sig_file%.minisig}"
+
+            echo "Verifying: $sig_file" | tee -a $MINISIGN_VERIFY_LOG
+
+            if [ ! -f "$original_file" ]; then
+              echo "::warning::Original file not found: $original_file" | tee -a $MINISIGN_VERIFY_LOG
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+              continue
+            fi
+
+            if minisign -Vm "$original_file" -P "$(cat artifacts/keys/minisign.pub)" 2>&1 | tee -a $MINISIGN_VERIFY_LOG; then
+              echo "✓ Verified: $sig_file" | tee -a $MINISIGN_VERIFY_LOG
+              VERIFIED_COUNT=$((VERIFIED_COUNT + 1))
+            else
+              echo "✗ Failed: $sig_file" | tee -a $MINISIGN_VERIFY_LOG
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+            fi
+            echo "" | tee -a $MINISIGN_VERIFY_LOG
+          done
+
+          echo "=== minisign Verification Summary ===" | tee -a $MINISIGN_VERIFY_LOG
+          echo "Total signatures: $TOTAL_COUNT" | tee -a $MINISIGN_VERIFY_LOG
+          echo "Verified: $VERIFIED_COUNT" | tee -a $MINISIGN_VERIFY_LOG
+          echo "Failed: $FAILED_COUNT" | tee -a $MINISIGN_VERIFY_LOG
+
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "::error::minisign signature verification failed for $FAILED_COUNT file(s)"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "count=$VERIFIED_COUNT" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✓ All minisign signatures verified successfully" | tee -a $MINISIGN_VERIFY_LOG
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "count=$VERIFIED_COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload minisign verification log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: minisign-verification-${{ github.sha }}
+          path: TEST/verify/minisign_*.log
+          retention-days: 90
+
+  verification-summary:
+    name: Verification Summary & Release Gate
+    runs-on: ubuntu-latest
+    needs: [verify-checksums, verify-gpg-signatures, verify-minisign-signatures]
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all verification logs
+        uses: actions/download-artifact@v4
+        with:
+          path: verification-artifacts/
+
+      - name: Generate verification report
+        run: |
+          mkdir -p TEST/verify
+          REPORT_FILE="TEST/verify/verification_report_$(date -u +%Y%m%d_%H%M%S).md"
+
+          echo "# Signature Verification Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "**Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $REPORT_FILE
+          echo "**Workflow**: ${{ github.workflow }}" >> $REPORT_FILE
+          echo "**Run ID**: ${{ github.run_id }}" >> $REPORT_FILE
+          echo "**Commit**: ${{ github.sha }}" >> $REPORT_FILE
+          echo "**Ref**: ${{ github.ref }}" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          echo "## Verification Results" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "| Verification Type | Status | Count |" >> $REPORT_FILE
+          echo "|------------------|--------|-------|" >> $REPORT_FILE
+          echo "| SHA-256 Checksums | ${{ needs.verify-checksums.outputs.checksum_status }} | ${{ needs.verify-checksums.outputs.artifacts_count }} |" >> $REPORT_FILE
+          echo "| GPG Signatures | ${{ needs.verify-gpg-signatures.outputs.gpg_status }} | ${{ needs.verify-gpg-signatures.outputs.gpg_count }} |" >> $REPORT_FILE
+          echo "| minisign Signatures | ${{ needs.verify-minisign-signatures.outputs.minisign_status }} | ${{ needs.verify-minisign-signatures.outputs.minisign_count }} |" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          # Overall status
+          CHECKSUM_STATUS="${{ needs.verify-checksums.outputs.checksum_status }}"
+          GPG_STATUS="${{ needs.verify-gpg-signatures.outputs.gpg_status }}"
+          MINISIGN_STATUS="${{ needs.verify-minisign-signatures.outputs.minisign_status }}"
+
+          echo "## Overall Status" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          if [ "$CHECKSUM_STATUS" == "failed" ]; then
+            echo "❌ **VERIFICATION FAILED**: SHA-256 checksum verification failed" >> $REPORT_FILE
+            echo "status=failed" >> $GITHUB_ENV
+          elif [ "$GPG_STATUS" == "failed" ]; then
+            echo "❌ **VERIFICATION FAILED**: GPG signature verification failed" >> $REPORT_FILE
+            echo "status=failed" >> $GITHUB_ENV
+          elif [ "$MINISIGN_STATUS" == "failed" ]; then
+            echo "❌ **VERIFICATION FAILED**: minisign signature verification failed" >> $REPORT_FILE
+            echo "status=failed" >> $GITHUB_ENV
+          else
+            echo "✅ **VERIFICATION PASSED**: All configured verifications successful" >> $REPORT_FILE
+            echo "status=passed" >> $GITHUB_ENV
+          fi
+          echo "" >> $REPORT_FILE
+
+          echo "## Detailed Logs" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "Verification logs are available as workflow artifacts:" >> $REPORT_FILE
+          echo "- checksum-verification-${{ github.sha }}" >> $REPORT_FILE
+          echo "- gpg-verification-${{ github.sha }}" >> $REPORT_FILE
+          echo "- minisign-verification-${{ github.sha }}" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          cat $REPORT_FILE
+          cat $REPORT_FILE >> $GITHUB_STEP_SUMMARY
+
+      - name: Block release on verification failure
+        if: needs.verify-checksums.outputs.checksum_status == 'failed' || needs.verify-gpg-signatures.outputs.gpg_status == 'failed' || needs.verify-minisign-signatures.outputs.minisign_status == 'failed'
+        run: |
+          echo "::error::Signature verification failed - release blocked"
+          echo "::error::Review verification logs for details"
+          exit 1
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-report-${{ github.sha }}
+          path: TEST/verify/verification_report_*.md
+          retention-days: 90
+
+      - name: Commit verification logs (on release)
+        if: github.event_name == 'release' && env.status == 'passed'
+        run: |
+          # Collect all verification logs
+          find verification-artifacts -name "*.log" -exec cp {} TEST/verify/ \;
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add TEST/verify/
+
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: add verification logs for release [skip ci]
+
+            Release: ${{ github.ref }}
+            Run ID: ${{ github.run_id }}
+
+            Task: SUPPLY-VERIFY"
+
+            git push
+          fi

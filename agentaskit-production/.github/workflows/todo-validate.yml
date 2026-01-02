@@ -1,0 +1,390 @@
+name: TODO Validation
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AgentAsKit Production - TODO Schema Validation Workflow
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Validate .todo file schema and enforce quality standards on PRs
+# Task Reference: OPS-TODO-VALIDATE
+# Owner: @platform
+# Dependencies: None
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+on:
+  pull_request:
+    paths:
+      - '.todo'
+      - '.github/workflows/todo-validate.yml'
+      - 'lint/todo.schema.md'
+  push:
+    branches:
+      - main
+    paths:
+      - '.todo'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-todo:
+    name: Validate TODO File
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup validation environment
+        run: |
+          mkdir -p lint/reports
+          echo "LINT_REPORT=lint/reports/todo-validation-$(date -u +%Y%m%d_%H%M%S).md" >> $GITHUB_ENV
+          echo "LINT_JSON=lint/reports/todo-validation-$(date -u +%Y%m%d_%H%M%S).json" >> $GITHUB_ENV
+
+      - name: Validate TODO schema
+        id: validate
+        run: |
+          #!/bin/bash
+          set -e
+
+          TODO_FILE=".todo"
+          REPORT_FILE="$LINT_REPORT"
+          JSON_FILE="$LINT_JSON"
+
+          # Initialize counters
+          TOTAL_TASKS=0
+          VALID_TASKS=0
+          INVALID_TASKS=0
+          WARNINGS=0
+
+          # Initialize arrays for tracking issues
+          declare -a ERRORS
+          declare -a WARNS
+
+          echo "# TODO Validation Report" > "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "**Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$REPORT_FILE"
+          echo "**File**: $TODO_FILE" >> "$REPORT_FILE"
+          echo "**Workflow**: ${{ github.workflow }}" >> "$REPORT_FILE"
+          echo "**Run ID**: ${{ github.run_id }}" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+
+          # Start JSON report
+          echo "{" > "$JSON_FILE"
+          echo "  \"timestamp\": \"$(date -u +"%Y-%m-%d %H:%M:%S UTC")\"," >> "$JSON_FILE"
+          echo "  \"file\": \"$TODO_FILE\"," >> "$JSON_FILE"
+          echo "  \"validation\": {" >> "$JSON_FILE"
+
+          # Check if file exists
+          if [ ! -f "$TODO_FILE" ]; then
+            echo "::error::TODO file not found: $TODO_FILE"
+            echo "## ❌ Error" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            echo "TODO file not found: $TODO_FILE" >> "$REPORT_FILE"
+            exit 1
+          fi
+
+          echo "Validating $TODO_FILE..." | tee -a "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+
+          # Extract tasks (lines starting with - [ ] or - [x])
+          TASK_LINES=$(grep -n "^- \[[ x]\]" "$TODO_FILE" || echo "")
+
+          if [ -z "$TASK_LINES" ]; then
+            echo "::warning::No tasks found in TODO file"
+            echo "## ⚠️  Warning" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            echo "No tasks found in TODO file" >> "$REPORT_FILE"
+            exit 0
+          fi
+
+          # Process each task line
+          while IFS= read -r line; do
+            LINE_NUM=$(echo "$line" | cut -d: -f1)
+            TASK_LINE=$(echo "$line" | cut -d: -f2-)
+            TOTAL_TASKS=$((TOTAL_TASKS + 1))
+
+            # Validation flags
+            HAS_PRIORITY=false
+            HAS_OWNER=false
+            HAS_DEPS=false
+            HAS_ACC=false
+            HAS_EVID=false
+            HAS_REF=false
+            HAS_TAGS=false
+            HAS_CONTEXT=false
+
+            TASK_ERRORS=()
+            TASK_WARNINGS=()
+
+            # Check for priority format: (A), (B), (C)
+            if echo "$TASK_LINE" | grep -qE '\((A|B|C)\)'; then
+              HAS_PRIORITY=true
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing priority (A), (B), or (C)")
+            fi
+
+            # Check for owner: owner:@...
+            if echo "$TASK_LINE" | grep -qE 'owner:@[a-zA-Z0-9_-]+'; then
+              HAS_OWNER=true
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing or invalid owner (format: owner:@name)")
+            fi
+
+            # Check for deps: deps:[...]
+            if echo "$TASK_LINE" | grep -qE 'deps:\['; then
+              HAS_DEPS=true
+              # Validate deps format
+              DEPS_CONTENT=$(echo "$TASK_LINE" | grep -oE 'deps:\[[^\]]*\]' || echo "")
+              if echo "$DEPS_CONTENT" | grep -q 'deps:\[\]'; then
+                # Empty deps is valid
+                :
+              elif ! echo "$DEPS_CONTENT" | grep -qE 'deps:\[[A-Z0-9_,-]+\]'; then
+                TASK_WARNINGS+=("Line $LINE_NUM: Dependencies format may be incorrect (use UPPERCASE-REF separated by commas)")
+              fi
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing deps field (use deps:[] if no dependencies)")
+            fi
+
+            # Check for acc: acc:"..."
+            if echo "$TASK_LINE" | grep -qE 'acc:"[^"]*"'; then
+              HAS_ACC=true
+              # Check if acceptance criteria is not empty
+              if echo "$TASK_LINE" | grep -qE 'acc:""'; then
+                TASK_ERRORS+=("Line $LINE_NUM: Empty acceptance criteria")
+              fi
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing acceptance criteria (format: acc:\"criteria\")")
+            fi
+
+            # Check for evid: evid:"..."
+            if echo "$TASK_LINE" | grep -qE 'evid:"[^"]*"'; then
+              HAS_EVID=true
+              # Check if evidence is not empty
+              if echo "$TASK_LINE" | grep -qE 'evid:""'; then
+                TASK_ERRORS+=("Line $LINE_NUM: Empty evidence field")
+              fi
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing evidence field (format: evid:\"path/to/evidence\")")
+            fi
+
+            # Check for REF: [REF: XXX-YYY]
+            if echo "$TASK_LINE" | grep -qE '\[REF: [A-Z0-9_-]+\]'; then
+              HAS_REF=true
+            else
+              TASK_ERRORS+=("Line $LINE_NUM: Missing REF code (format: [REF: CODE-NAME])")
+            fi
+
+            # Check for tags: +Tag
+            if echo "$TASK_LINE" | grep -qE '\+[A-Za-z0-9_-]+'; then
+              HAS_TAGS=true
+            else
+              TASK_WARNINGS+=("Line $LINE_NUM: No tags found (recommended: +Tag format)")
+            fi
+
+            # Check for context: @context
+            if echo "$TASK_LINE" | grep -qE '@[a-z]+'; then
+              HAS_CONTEXT=true
+            else
+              TASK_WARNINGS+=("Line $LINE_NUM: No context found (recommended: @context format)")
+            fi
+
+            # Determine if task is valid
+            if [ ${#TASK_ERRORS[@]} -eq 0 ]; then
+              VALID_TASKS=$((VALID_TASKS + 1))
+            else
+              INVALID_TASKS=$((INVALID_TASKS + 1))
+              for error in "${TASK_ERRORS[@]}"; do
+                ERRORS+=("$error")
+                echo "::error::$error"
+              done
+            fi
+
+            # Track warnings
+            if [ ${#TASK_WARNINGS[@]} -gt 0 ]; then
+              WARNINGS=$((WARNINGS + ${#TASK_WARNINGS[@]}))
+              for warning in "${TASK_WARNINGS[@]}"; do
+                WARNS+=("$warning")
+                echo "::warning::$warning"
+              done
+            fi
+
+          done <<< "$TASK_LINES"
+
+          # Generate summary
+          echo "## Summary" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "| Metric | Count |" >> "$REPORT_FILE"
+          echo "|--------|-------|" >> "$REPORT_FILE"
+          echo "| Total Tasks | $TOTAL_TASKS |" >> "$REPORT_FILE"
+          echo "| Valid Tasks | $VALID_TASKS |" >> "$REPORT_FILE"
+          echo "| Invalid Tasks | $INVALID_TASKS |" >> "$REPORT_FILE"
+          echo "| Warnings | $WARNINGS |" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+
+          # Report errors
+          if [ ${#ERRORS[@]} -gt 0 ]; then
+            echo "## ❌ Errors" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            for error in "${ERRORS[@]}"; do
+              echo "- $error" >> "$REPORT_FILE"
+            done
+            echo "" >> "$REPORT_FILE"
+          fi
+
+          # Report warnings
+          if [ ${#WARNS[@]} -gt 0 ]; then
+            echo "## ⚠️  Warnings" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            for warn in "${WARNS[@]}"; do
+              echo "- $warn" >> "$REPORT_FILE"
+            done
+            echo "" >> "$REPORT_FILE"
+          fi
+
+          # Schema validation results
+          echo "## Schema Validation" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "All tasks must have:" >> "$REPORT_FILE"
+          echo "- ✅ Priority: \`(A)\`, \`(B)\`, or \`(C)\`" >> "$REPORT_FILE"
+          echo "- ✅ Owner: \`owner:@name\`" >> "$REPORT_FILE"
+          echo "- ✅ Dependencies: \`deps:[REF1, REF2]\` or \`deps:[]\`" >> "$REPORT_FILE"
+          echo "- ✅ Acceptance criteria: \`acc:\"criteria text\"\`" >> "$REPORT_FILE"
+          echo "- ✅ Evidence: \`evid:\"path/to/evidence\"\`" >> "$REPORT_FILE"
+          echo "- ✅ Reference code: \`[REF: CODE-NAME]\`" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "Recommended (warnings if missing):" >> "$REPORT_FILE"
+          echo "- ⚠️  Tags: \`+Tag +AnotherTag\`" >> "$REPORT_FILE"
+          echo "- ⚠️  Context: \`@context\`" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+
+          # Overall status
+          if [ $INVALID_TASKS -eq 0 ]; then
+            echo "## ✅ Overall Status: PASSED" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            echo "All tasks pass schema validation!" >> "$REPORT_FILE"
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL_TASKS" >> $GITHUB_OUTPUT
+            echo "valid=$VALID_TASKS" >> $GITHUB_OUTPUT
+            echo "invalid=$INVALID_TASKS" >> $GITHUB_OUTPUT
+            echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+          else
+            echo "## ❌ Overall Status: FAILED" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            echo "Found $INVALID_TASKS invalid task(s). Please fix the errors above." >> "$REPORT_FILE"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL_TASKS" >> $GITHUB_OUTPUT
+            echo "valid=$VALID_TASKS" >> $GITHUB_OUTPUT
+            echo "invalid=$INVALID_TASKS" >> $GITHUB_OUTPUT
+            echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+          fi
+
+          # Complete JSON report
+          echo "    \"total_tasks\": $TOTAL_TASKS," >> "$JSON_FILE"
+          echo "    \"valid_tasks\": $VALID_TASKS," >> "$JSON_FILE"
+          echo "    \"invalid_tasks\": $INVALID_TASKS," >> "$JSON_FILE"
+          echo "    \"warnings\": $WARNINGS" >> "$JSON_FILE"
+          echo "  }" >> "$JSON_FILE"
+          echo "}" >> "$JSON_FILE"
+
+          # Display report
+          cat "$REPORT_FILE"
+          cat "$REPORT_FILE" >> $GITHUB_STEP_SUMMARY
+
+          # Fail if invalid tasks found
+          if [ $INVALID_TASKS -gt 0 ]; then
+            echo "::error::TODO validation failed with $INVALID_TASKS invalid task(s)"
+            exit 1
+          fi
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: todo-validation-report-${{ github.sha }}
+          path: |
+            lint/reports/todo-validation-*.md
+            lint/reports/todo-validation-*.json
+          retention-days: 30
+
+      - name: Post validation report as PR comment
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Find the report file
+            const reportFiles = fs.readdirSync('lint/reports').filter(f => f.endsWith('.md'));
+
+            if (reportFiles.length === 0) {
+              console.log('No report file found');
+              return;
+            }
+
+            const report = fs.readFileSync(`lint/reports/${reportFiles[0]}`, 'utf8');
+
+            // Add header
+            const header = '## 📋 TODO Validation Report\n\n';
+            const footer = '\n\n---\n*Automated validation by [TODO Validate workflow](.github/workflows/todo-validate.yml)*';
+            const fullReport = header + report + footer;
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: fullReport
+            });
+
+      - name: Fail PR if validation failed
+        if: steps.validate.outputs.status == 'failed'
+        run: |
+          echo "::error::TODO validation failed - PR cannot be merged"
+          echo "::error::Found ${{ steps.validate.outputs.invalid }} invalid task(s)"
+          echo "::error::Please review the validation report and fix all errors"
+          exit 1
+
+  check-duplicate-refs:
+    name: Check for Duplicate REF Codes
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for duplicate REF codes
+        run: |
+          #!/bin/bash
+
+          TODO_FILE=".todo"
+
+          echo "Checking for duplicate REF codes in $TODO_FILE..."
+
+          # Extract all REF codes
+          REFS=$(grep -oE '\[REF: [A-Z0-9_-]+\]' "$TODO_FILE" | sed 's/\[REF: //g' | sed 's/\]//g' || echo "")
+
+          if [ -z "$REFS" ]; then
+            echo "No REF codes found"
+            exit 0
+          fi
+
+          # Check for duplicates
+          DUPLICATES=$(echo "$REFS" | sort | uniq -d)
+
+          if [ -n "$DUPLICATES" ]; then
+            echo "::error::Found duplicate REF codes:"
+            echo "$DUPLICATES" | while read -r ref; do
+              echo "::error::  - $ref"
+              # Show line numbers
+              grep -n "\[REF: $ref\]" "$TODO_FILE"
+            done
+            exit 1
+          else
+            echo "✅ No duplicate REF codes found"
+            echo "Total unique REF codes: $(echo "$REFS" | sort -u | wc -l)"
+          fi
