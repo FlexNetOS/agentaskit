@@ -313,7 +313,7 @@ async fn start_autonomous_mode() -> Result<()> {
     info!("Verification required: {}", config.verification_required);
 
     // Initialize autonomous pipeline
-    let pipeline = AutonomousPipeline::new(config);
+    let pipeline = AutonomousPipeline::new(config).await?;
     info!("Autonomous pipeline initialized");
 
     // Start the pipeline (non-blocking simulation)
