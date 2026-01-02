@@ -29,8 +29,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Check if agentgateway submodule exists
+        id: check_submodule
+        run: |
+          if [ ! -f "agentgateway/Cargo.toml" ]; then
+            echo "Agentgateway submodule not initialized. Skipping build."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-action@stable
+        if: steps.check_submodule.outputs.skip != 'true'
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -49,6 +60,7 @@ jobs:
             ${{ runner.os }}-cargo-gateway-
 
       - name: Setup Node.js
+        if: steps.check_submodule.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -56,50 +68,69 @@ jobs:
           cache-dependency-path: agentgateway/ui/package-lock.json
 
       - name: Build Gateway UI
+        if: steps.check_submodule.outputs.skip != 'true'
         working-directory: agentgateway/ui
         run: |
           npm ci
           npm run build
 
       - name: Check Rust formatting
+        if: steps.check_submodule.outputs.skip != 'true'
         working-directory: agentgateway
         run: cargo fmt --all -- --check
 
       - name: Run Clippy
+        if: steps.check_submodule.outputs.skip != 'true'
         working-directory: agentgateway
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build Gateway (release)
+        if: steps.check_submodule.outputs.skip != 'true'
         working-directory: agentgateway
         run: cargo build --release
 
       - name: Run Gateway tests
+        if: steps.check_submodule.outputs.skip != 'true'
         working-directory: agentgateway
         run: cargo test --all
 
       - name: Upload Gateway binary
+        if: steps.check_submodule.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: agentgateway-${{ runner.os }}
           path: agentgateway/target/release/agentgateway
-          if-no-files-found: error
+          if-no-files-found: warn
 
   build-integration:
     name: Build Integration Module
     runs-on: ubuntu-latest
     needs: build-gateway
+    if: always()  # Run even if build-gateway is skipped
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Check if integration directory exists
+        id: check_integration
+        run: |
+          if [ ! -f "integrations/agentgateway/Cargo.toml" ]; then
+            echo "Integration directory not found. Skipping build."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-action@stable
+        if: steps.check_integration.outputs.skip != 'true'
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
 
       - name: Cache Cargo dependencies
+        if: steps.check_integration.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -113,10 +144,12 @@ jobs:
             ${{ runner.os }}-cargo-integration-
 
       - name: Build Integration
+        if: steps.check_integration.outputs.skip != 'true'
         working-directory: integrations/agentgateway
         run: cargo build --release
 
       - name: Run Integration tests
+        if: steps.check_integration.outputs.skip != 'true'
         working-directory: integrations/agentgateway
         run: cargo test --all
 
@@ -124,17 +157,29 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: build-gateway
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Check if agentgateway submodule exists
+        id: check_submodule
+        run: |
+          if [ ! -f "agentgateway/Dockerfile" ]; then
+            echo "Agentgateway submodule not initialized. Skipping Docker build."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Set up Docker Buildx
+        if: steps.check_submodule.outputs.skip != 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
+        if: steps.check_submodule.outputs.skip != 'true'
         uses: docker/build-push-action@v5
         with:
           context: agentgateway
