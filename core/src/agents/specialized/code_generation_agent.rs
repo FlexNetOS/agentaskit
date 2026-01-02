@@ -974,16 +974,15 @@ impl Agent for CodeGenerationAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "generation_task_id": result.task_id,
                         "artifacts_generated": result.generated_artifacts.len(),
                         "quality_score": result.quality_score,
                         "success": result.success,
                         "generation_time_ms": result.generation_time.as_millis(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
@@ -992,26 +991,24 @@ impl Agent for CodeGenerationAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_generations": status.total_generations,
                         "success_rate": status.success_rate,
                         "average_quality_score": status.average_quality_score,
                         "lines_generated": status.lines_generated,
                         "active_tasks": status.active_tasks,
                         "supported_languages": status.supported_languages,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Code generation failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

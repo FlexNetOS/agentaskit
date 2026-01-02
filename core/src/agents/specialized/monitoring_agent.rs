@@ -1238,13 +1238,12 @@ impl Agent for MonitoringAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "monitoring_id": monitoring_id,
                         "message": "Monitoring started successfully",
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
@@ -1253,26 +1252,24 @@ impl Agent for MonitoringAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_metric_streams": status.active_metric_streams,
                         "total_metrics_collected": status.total_metrics_collected,
                         "active_alerts": status.active_alerts,
                         "services_monitored": status.services_monitored,
                         "average_availability": status.average_availability,
                         "anomalies_detected": status.anomalies_detected,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Monitoring task failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

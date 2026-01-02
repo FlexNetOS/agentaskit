@@ -132,10 +132,9 @@ impl BoardCoordinator {
                 TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"board_coordination": true}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: crate::agents::ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"board_coordination": true})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 }
             }
         };

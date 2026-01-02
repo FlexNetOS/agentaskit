@@ -1083,7 +1083,7 @@ impl Agent for LegalComplianceBoardAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "overall_compliance_score": status.overall_compliance_score,
                         "compliance_rate": status.compliance_rate,
                         "open_violations": status.open_violations,
@@ -1091,19 +1091,17 @@ impl Agent for LegalComplianceBoardAgent {
                         "legal_risks": status.legal_risks,
                         "high_priority_risks": status.high_priority_risks,
                         "policy_compliance_rate": status.policy_compliance_rate,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Legal compliance check failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

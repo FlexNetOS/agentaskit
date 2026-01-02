@@ -785,16 +785,16 @@ impl EnhancedWorkflowProcessor {
                 description: step.description.clone(),
                 task_type: self.determine_task_type(&step.name).await?,
                 priority: self.convert_priority(&task_subject.priority).await?,
-                required_capabilities: self
-                    .extract_required_capabilities(&step.description)
-                    .await?,
-                parameters: self.generate_task_parameters(step).await?,
-                deadline: Some(Utc::now() + step.estimated_duration),
-                created_at: Utc::now(),
                 status: TaskStatus::Pending,
                 assigned_agent: None,
-                result: None,
-                metadata: HashMap::new(),
+                dependencies: Vec::new(),
+                input_data: self.generate_task_parameters(step).await?,
+                output_data: None,
+                created_at: Utc::now(),
+                started_at: None,
+                completed_at: None,
+                timeout: Some(Utc::now() + step.estimated_duration),
+                retry_count: 0,
             };
 
             // Submit task for orchestration

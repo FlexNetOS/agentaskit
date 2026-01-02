@@ -993,7 +993,7 @@ impl Agent for FinanceBoardAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_revenue": status.total_revenue,
                         "total_expenses": status.total_expenses,
                         "net_profit": status.net_profit,
@@ -1004,19 +1004,17 @@ impl Agent for FinanceBoardAgent {
                         "budget_utilization": status.budget_utilization,
                         "active_risks": status.active_risks,
                         "risk_score": status.risk_score,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Financial analysis failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

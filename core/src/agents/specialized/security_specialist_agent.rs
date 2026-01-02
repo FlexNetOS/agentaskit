@@ -1218,10 +1218,9 @@ impl Agent for SecuritySpecialistAgent {
         let result = TaskResult {
             task_id: task.id,
             status: task_status,
-            result: serde_json::json!({"message": "Task completed"}),
-            error: None,
-            execution_time: std::time::Duration::from_secs(1), // Placeholder
-            resource_usage: ResourceUsage::default(),
+            output_data: Some(serde_json::json!({"message": "Task completed"})),
+            error_message: None,
+            completed_at: chrono::Utc::now(),
         };
 
         Ok(result)
