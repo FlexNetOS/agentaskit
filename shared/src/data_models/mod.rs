@@ -232,18 +232,6 @@ impl Default for ResourceRequirements {
     }
 }
 
-/// Task result structure for completed tasks
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TaskResult {
-    pub task_id: TaskId,
-    pub status: TaskStatus,
-    pub result: Option<serde_json::Value>,
-    pub error: Option<String>,
-    pub started_at: Option<DateTime<Utc>>,
-    pub completed_at: Option<DateTime<Utc>>,
-    pub metrics: HashMap<String, f64>,
-}
-
 /// Resource usage metrics
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceUsage {
