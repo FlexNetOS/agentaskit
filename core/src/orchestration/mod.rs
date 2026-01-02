@@ -290,6 +290,8 @@ impl OrchestratorEngine {
         // In supervised mode, critical decisions require approval
 
         // Configure approval thresholds
+        // TODO: Integrate `approval_threshold` into the supervised approval workflow
+        //       (e.g., store in orchestration configuration or use in decision gating logic).
         let approval_threshold = 0.70; // Decisions below 70% confidence require approval
         info!("Approval required for decisions with confidence < {}",  approval_threshold);
 
