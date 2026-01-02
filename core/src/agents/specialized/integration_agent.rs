@@ -2,7 +2,7 @@
 // Provides comprehensive system integration, API management, data transformation,
 // workflow orchestration, and external system connectivity capabilities
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -19,6 +19,9 @@ use uuid::Uuid;
 /// Integration Agent - Domain expert for system integration and API management
 #[derive(Clone)]
 pub struct IntegrationAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     config: IntegrationConfig,
     api_gateway: Arc<ApiGateway>,
@@ -689,24 +692,29 @@ impl IntegrationAgent {
         let config = config.unwrap_or_default();
         let id = Uuid::new_v4();
 
+        let capabilities = vec![
+            "api-gateway".to_string(),
+            "service-discovery".to_string(),
+            "data-transformation".to_string(),
+            "workflow-orchestration".to_string(),
+            "system-integration".to_string(),
+            "message-broking".to_string(),
+            "protocol-handling".to_string(),
+            "integration-monitoring".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: "Integration".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "api_gateway".to_string(),
-                "service_discovery".to_string(),
-                "data_transformation".to_string(),
-                "workflow_orchestration".to_string(),
-                "system_integration".to_string(),
-                "message_broking".to_string(),
-                "protocol_handling".to_string(),
-                "integration_monitoring".to_string(),
-            ],
+            agent_type: "Specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: None,
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements::default(),
-            health_check_interval: std::time::Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         let api_gateway = Arc::new(ApiGateway::new(config.api_config.clone()));
@@ -723,6 +731,9 @@ impl IntegrationAgent {
             Arc::new(IntegrationMonitor::new(config.monitoring_config.clone()));
 
         Self {
+            id,
+            name: "Integration".to_string(),
+            capabilities,
             metadata,
             config,
             api_gateway,
@@ -954,24 +965,48 @@ impl Agent for IntegrationAgent {
         &self.metadata
     }
 
-    fn capabilities(&self) -> &[String] {
-        &[]
-    }
-
     async fn state(&self) -> AgentStatus {
-        AgentStatus::Active
+        let active = self.active.lock().await;
+        if *active {
+            AgentStatus::Active
+        } else {
+            AgentStatus::Idle
+        }
     }
 
-    async fn initialize(&mut self) -> Result<()> {
+    fn capabilities(&self) -> &[String] {
+        &self.capabilities
+    }
+
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let state = self.state().await;
+        let task_queue_size = self.tasks.lock().await.len() as usize;
+
+        Ok(HealthStatus {
+            agent_id: self.id,
+            state,
+            last_heartbeat: chrono::Utc::now(),
+            cpu_usage: 0.0,  // Would be measured in real implementation
+            memory_usage: 0, // Would be measured in real implementation
+            task_queue_size,
+            completed_tasks: 0, // Would track in real implementation
+            failed_tasks: 0,    // Would track in real implementation
+            average_response_time: std::time::Duration::from_millis(100), // Would calculate in real implementation
+        })
+    }
+
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
+        info!("Updating Integration Agent configuration");
+        // Would parse and apply configuration updates
         Ok(())
     }
 
-    async fn start(&mut self) -> Result<()> {
-        info!("Starting Integration Agent {}", self.metadata.name);
+    async fn start(&mut self) -> AgentResult<()> {
+        info!("Starting Integration Agent {}", self.name);
 
         let mut active = self.active.lock().await;
         if *active {
-            return Err(AgentError::AlreadyRunning.into());
+            return Err(anyhow::anyhow!("Agent already running"));
         }
 
         // Initialize all integration components
@@ -991,19 +1026,16 @@ impl Agent for IntegrationAgent {
         self.start_background_processing().await?;
 
         *active = true;
-        info!(
-            "Integration Agent {} started successfully",
-            self.metadata.name
-        );
+        info!("Integration Agent {} started successfully", self.name);
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
-        info!("Stopping Integration Agent {}", self.metadata.name);
+    async fn stop(&mut self) -> AgentResult<()> {
+        info!("Stopping Integration Agent {}", self.name);
 
         let mut active = self.active.lock().await;
         if !*active {
-            return Err(AgentError::NotRunning.into());
+            return Err(anyhow::anyhow!("Agent not running"));
         }
 
         // Stop all integration components
@@ -1020,26 +1052,23 @@ impl Agent for IntegrationAgent {
         self.integration_monitor.shutdown().await?;
 
         *active = false;
-        info!(
-            "Integration Agent {} stopped successfully",
-            self.metadata.name
-        );
+        info!("Integration Agent {} stopped successfully", self.name);
         Ok(())
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         debug!("Executing task: {} ({})", task.name, task.task_type);
 
         // Store task
         self.tasks.lock().await.insert(task.id, task.clone());
 
-        let result = match task.task_type.as_str() {
+        let status = match task.task_type.as_str() {
             "service_registration" => {
                 // Parse service registration from parameters
                 let service_data = task
                     .parameters
                     .get("service")
-                    .ok_or(AgentError::MissingParameter("service".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: service"))?;
 
                 let service = ServiceRegistration::default(); // Would deserialize from actual data
 
@@ -1056,7 +1085,7 @@ impl Agent for IntegrationAgent {
                 let route_data = task
                     .parameters
                     .get("route")
-                    .ok_or(AgentError::MissingParameter("route".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: route"))?;
 
                 let route = ApiRouteConfig::default(); // Would deserialize
 
@@ -1073,7 +1102,7 @@ impl Agent for IntegrationAgent {
                 let transform_data = task
                     .parameters
                     .get("transformation")
-                    .ok_or(AgentError::MissingParameter("transformation".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: transformation"))?;
 
                 let request = DataTransformationRequest::default(); // Would deserialize
 
@@ -1090,7 +1119,7 @@ impl Agent for IntegrationAgent {
                 let workflow_data = task
                     .parameters
                     .get("workflow")
-                    .ok_or(AgentError::MissingParameter("workflow".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: workflow"))?;
 
                 let request = WorkflowExecutionRequest::default(); // Would deserialize
 
@@ -1107,7 +1136,7 @@ impl Agent for IntegrationAgent {
                 let connection_data = task
                     .parameters
                     .get("connection")
-                    .ok_or(AgentError::MissingParameter("connection".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: connection"))?;
 
                 let request = SystemConnectionRequest::default(); // Would deserialize
 
@@ -1124,7 +1153,7 @@ impl Agent for IntegrationAgent {
                 let message_data = task
                     .parameters
                     .get("message")
-                    .ok_or(AgentError::MissingParameter("message".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: message"))?;
 
                 let request = MessagePublishRequest::default(); // Would deserialize
 
@@ -1141,7 +1170,7 @@ impl Agent for IntegrationAgent {
                 let conversion_data = task
                     .parameters
                     .get("conversion")
-                    .ok_or(AgentError::MissingParameter("conversion".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: conversion"))?;
 
                 let request = ProtocolConversionRequest::default(); // Would deserialize
 
@@ -1166,97 +1195,51 @@ impl Agent for IntegrationAgent {
             }
         };
 
-        debug!("Task {} completed with status: {:?}", task.name, result);
-        Ok(utils::success_result(
-            task.id,
-            serde_json::json!({"status": result}),
-        ))
+        debug!("Task {} completed with status: {:?}", task.name, status);
+
+        Ok(TaskResult {
+            task_id: task.id,
+            status,
+            output_data: None,
+            error_message: None,
+            completed_at: chrono::Utc::now(),
+        })
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
-                match task.name.as_str() {
-                    "integration_request" => {
-                        // Handle integration request from other agents
-                        info!("Received integration request");
+                let result = self.execute_task(task).await?;
 
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(
-                                task.id,
-                                serde_json::json!("Integration request processed"),
-                            ),
-                        };
-
-                        Ok(Some(response))
-                    }
-                    "service_discovery" => {
-                        // Handle service discovery requests
-                        info!("Received service discovery request");
-
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(
-                                task.id,
-                                serde_json::json!("Service discovery response"),
-                            ),
-                        };
-
-                        Ok(Some(response))
-                    }
-                    "workflow_trigger" => {
-                        // Handle workflow trigger requests
-                        let status = self.get_integration_status().await?;
-
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(
-                                task.id,
-                                serde_json::to_value(&status).unwrap_or_default(),
-                            ),
-                        };
-
-                        Ok(Some(response))
-                    }
-                    _ => {
-                        debug!("Unknown task type: {}", task.name);
-                        Ok(None)
-                    }
-                }
+                Ok(Some(AgentMessage::Response {
+                    id: MessageId::new(),
+                    request_id: id,
+                    from: self.metadata().id,
+                    to: from,
+                    result,
+                }))
             }
-            _ => {
-                debug!("Unhandled message type");
+            AgentMessage::Response { .. } => {
+                // Handle response messages if needed
+                Ok(None)
+            }
+            AgentMessage::Broadcast { .. } => {
+                // Handle broadcast messages if needed
+                Ok(None)
+            }
+            AgentMessage::Alert { .. } => {
+                // Handle alert messages if needed
+                Ok(None)
+            }
+            AgentMessage::Heartbeat { .. } => {
+                // Handle heartbeat messages if needed
+                Ok(None)
+            }
+            AgentMessage::Registration { .. } => {
+                // Handle registration messages if needed
                 Ok(None)
             }
         }
-    }
-
-    async fn update_config(&mut self, _config: serde_json::Value) -> Result<()> {
-        Ok(())
-    }
-
-    async fn health_check(&self) -> Result<HealthStatus> {
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: AgentStatus::Active,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0,
-            memory_usage: 1024 * 1024,
-            task_queue_size: 0,
-            completed_tasks: 0,
-            failed_tasks: 0,
-            average_response_time: std::time::Duration::from_millis(100),
-        })
     }
 }
 
@@ -1372,7 +1355,7 @@ pub struct ServiceEntry {
     pub status: ServiceStatus,
     pub registered_at: chrono::DateTime<chrono::Utc>,
     pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
-    pub health_status: HealthStatus,
+    pub health_status: ServiceHealthStatus,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1381,6 +1364,14 @@ pub enum ServiceStatus {
     Inactive,
     Degraded,
     Maintenance,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ServiceHealthStatus {
+    Healthy,
+    Unhealthy,
+    Unknown,
+    Degraded,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1776,7 +1767,7 @@ impl ServiceRegistry {
             status: ServiceStatus::Active,
             registered_at: chrono::Utc::now(),
             last_health_check: None,
-            health_status: HealthStatus::Unknown,
+            health_status: ServiceHealthStatus::Unknown,
         };
         self.services
             .insert(entry.service_id.clone(), entry.clone());
