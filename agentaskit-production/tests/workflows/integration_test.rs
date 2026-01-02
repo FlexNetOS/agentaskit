@@ -60,8 +60,17 @@ impl TaskOrchestrationProtocol for MockTaskOrchestrationProtocol {
         Ok(agentaskit_shared::TaskStatus::Pending)
     }
     
-    async fn get_task(&self, _task_id: agentaskit_shared::TaskId) -> Result<agentaskit_shared::Task> {
-        todo!("Mock implementation")
+    async fn get_task(&self, task_id: agentaskit_shared::TaskId) -> Result<agentaskit_shared::Task> {
+        // Mock task implementation for testing
+        Ok(agentaskit_shared::Task {
+            id: task_id,
+            name: "Mock Task".to_string(),
+            description: "Mock task for integration testing".to_string(),
+            status: agentaskit_shared::TaskStatus::Pending,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            metadata: std::collections::HashMap::new(),
+        })
     }
     
     async fn cancel_task(&self, _task_id: agentaskit_shared::TaskId) -> Result<()> {

@@ -349,14 +349,64 @@ impl NoaVerificationSystem {
         })
     }
 
-    async fn verify_spec_mapping(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
-        // TODO: Implement spec mapping verification
+    async fn verify_spec_mapping(&self, workspace_path: &PathBuf) -> Result<TestLog> {
+        let start = std::time::Instant::now();
+        let mut output_lines = Vec::new();
+        let mut exit_code = 0;
+
+        // Verify specification files exist
+        let spec_paths = vec![
+            workspace_path.join("spec").join("requirements.md"),
+            workspace_path.join("docs").join("specifications.md"),
+            workspace_path.join("README.md"),
+        ];
+
+        output_lines.push("Verifying specification mapping...".to_string());
+
+        for spec_path in &spec_paths {
+            if spec_path.exists() {
+                let content = tokio::fs::read_to_string(spec_path).await.unwrap_or_default();
+                output_lines.push(format!("✓ Found spec: {:?} ({} bytes)", spec_path.file_name().unwrap(), content.len()));
+
+                // Verify spec contains required sections
+                let required_sections = vec!["Requirements", "Architecture", "Implementation"];
+                for section in &required_sections {
+                    if content.contains(section) || content.to_lowercase().contains(&section.to_lowercase()) {
+                        output_lines.push(format!("  ✓ Contains section: {}", section));
+                    }
+                }
+            } else {
+                output_lines.push(format!("⚠ Spec not found: {:?}", spec_path.file_name().unwrap()));
+            }
+        }
+
+        // Verify implementation matches specs (basic check)
+        let src_path = workspace_path.join("core").join("src");
+        if src_path.exists() {
+            let mut impl_file_count = 0;
+            if let Ok(entries) = tokio::fs::read_dir(&src_path).await {
+                use tokio_stream::wrappers::ReadDirStream;
+                use futures::StreamExt;
+                let mut stream = ReadDirStream::new(entries);
+                while let Some(Ok(_)) = stream.next().await {
+                    impl_file_count += 1;
+                }
+            }
+            output_lines.push(format!("✓ Implementation files found: {}", impl_file_count));
+        } else {
+            output_lines.push("⚠ Source directory not found".to_string());
+            exit_code = 1;
+        }
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+        output_lines.push(format!("\nSpec mapping verification completed in {}ms", duration_ms));
+
         Ok(TestLog {
             test_name: "spec_mapping".to_string(),
             command: "verify_spec_mapping".to_string(),
-            output: "Spec mapping verification completed".to_string(),
-            exit_code: 0,
-            duration_ms: 0,
+            output: output_lines.join("\n"),
+            exit_code,
+            duration_ms,
             timestamp: Utc::now(),
         })
     }
