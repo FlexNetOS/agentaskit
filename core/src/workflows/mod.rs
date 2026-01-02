@@ -855,5 +855,5 @@ pub struct SOTAnalysis {
     pub request_alignment: f32, // 0.0 to 1.0 score
 }
 
-// Re-export for external use
-pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};
+// Re-export for external use (AgentMessage already imported at module level)
+pub use crate::agents::{Task, TaskStatus, AgentId};
