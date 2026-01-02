@@ -208,6 +208,33 @@ pub struct BasicAgent {
 impl BasicAgent {
     pub fn new(
         id: Uuid,
+        name: String,
+        layer: AgentLayer,
+        capabilities: Vec<String>,
+    ) -> Self {
+        let metadata = AgentMetadata {
+            id,
+            name,
+            agent_type: format!("{:?}", layer),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            resource_requirements: ResourceRequirements::default(),
+            tags: HashMap::new(),
+        };
+
+        Self {
+            metadata,
+            state: RwLock::new(AgentStatus::Initializing),
+            layer,
+            capabilities,
+        }
+    }
+}
+
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
 pub struct ManagedAgent {
@@ -243,28 +270,6 @@ impl ManagedAgent {
             health_status: HealthStatus::Unknown,
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            resource_requirements,
-            tags: HashMap::new(),
-        };
-        
-        Self {
-            metadata,
-            state: RwLock::new(AgentStatus::Initializing),
-            layer,
-            capabilities,
-        let id = Uuid::new_v4();
-        let now = chrono::Utc::now();
-        
-        let metadata = AgentMetadata {
-            id,
-            name: name.clone(),
-            agent_type: format!("{:?}", layer),
-            version: "1.0.0".to_string(),
-            capabilities: capabilities.clone(),
-            status: AgentStatus::Initializing,
-            health_status: HealthStatus::Unknown,
-            created_at: now,
-            last_updated: now,
             resource_requirements: resource_requirements.clone(),
             tags: HashMap::new(),
         };
@@ -323,44 +328,33 @@ impl Agent for ManagedAgent {
     }
 
     async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
-        // Basic implementation - return success
-        Ok(TaskResult {
-            task_id: task.id,
-            status: TaskStatus::Completed,
-            result: Some(serde_json::json!({
-                "message": "Task completed by BasicAgent"
-            })),
-            error: None,
-            started_at: Some(chrono::Utc::now()),
-            completed_at: Some(chrono::Utc::now()),
-            metrics: HashMap::new(),
         debug!("Agent {} executing task: {}", self.name, task.name);
-        
+
         // Update status to busy
         {
             let mut status = self.status.write().await;
             *status = AgentStatus::Busy;
         }
-        
+
         // Simulate task execution
         // In a real implementation, this would delegate to specialized handlers
-        
+
         // Update metrics
         {
             let mut metrics = self.performance_metrics.write().await;
             metrics.tasks_completed += 1;
         }
-        
+
         // Update status back to active
         {
             let mut status = self.status.write().await;
             *status = AgentStatus::Active;
         }
-        
+
         Ok(TaskResult {
             task_id: task.id,
             status: TaskStatus::Completed,
-            output_data: Some(serde_json::json!({"result": "success"})),
+            output_data: Some(serde_json::json!({"result": "success", "message": "Task completed by BasicAgent"})),
             error_message: None,
             completed_at: chrono::Utc::now(),
         })

@@ -60,8 +60,20 @@ impl TaskOrchestrationProtocol for MockTaskOrchestrationProtocol {
         Ok(agentaskit_shared::TaskStatus::Pending)
     }
     
-    async fn get_task(&self, _task_id: agentaskit_shared::TaskId) -> Result<agentaskit_shared::Task> {
-        todo!("Mock implementation")
+    async fn get_task(&self, task_id: agentaskit_shared::TaskId) -> Result<agentaskit_shared::Task> {
+        // Return a mock task for testing
+        Ok(agentaskit_shared::Task {
+            id: task_id,
+            name: "Mock Test Task".to_string(),
+            description: Some("A mock task for integration testing".to_string()),
+            status: agentaskit_shared::TaskStatus::Pending,
+            priority: agentaskit_shared::TaskPriority::Normal,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            assigned_to: None,
+            dependencies: Vec::new(),
+            metadata: serde_json::Value::Null,
+        })
     }
     
     async fn cancel_task(&self, _task_id: agentaskit_shared::TaskId) -> Result<()> {
