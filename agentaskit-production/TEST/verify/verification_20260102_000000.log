@@ -1,0 +1,14 @@
+=== SHA-256 Checksum Verification ===
+Timestamp: 2026-01-02 00:00:00 UTC
+Commit: 01794e8bb55a4a0b75192ea68f1ad9bf33cbabe4
+Ref: refs/heads/main
+
+Found checksum file: artifacts/checksums/SHA256SUMS
+Total checksums: 4
+
+sbom/agentaskit-core.json: OK
+sbom/agentaskit-shared.json: OK
+sbom/flex-core.json: OK
+sbom/wasm-host.json: OK
+
+✓ All SHA-256 checksums verified successfully

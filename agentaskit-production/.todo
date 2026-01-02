@@ -43,7 +43,7 @@
 - [ ] [93m(B)[0m 2025-10-06 Data retention & privacy [96m+Compliance +Privacy +Retention[0m [95m@prod[0m [REF: COMPL-DATARET] owner:@program deps:[DOC-001] acc:"Retention policy; PII handling; delete workflows; legal review notes" evid:"docs/compliance/data_retention.md"
 
 [1;96m== CI/CD & Automation ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Validate .todo schema on PRs [96m+Automation +CI +QualityGate[0m [95m@prod[0m [REF: OPS-TODO-VALIDATE] owner:@platform deps:[] acc:"Fail PR when owner/deps/acc/evid/REF missing; lint report posted" evid:".github/workflows/todo-validate.yml, lint/todo.schema.md"
+- [x] [93m(B)[0m 2025-10-05 Validate .todo schema on PRs [96m+Automation +CI +QualityGate[0m [95m@prod[0m [REF: OPS-TODO-VALIDATE] owner:@platform deps:[] acc:"Fail PR when owner/deps/acc/evid/REF missing; lint report posted" evid:".github/workflows/todo-validate.yml, lint/todo.schema.md"
 - [ ] [93m(B)[0m 2025-10-05 Sync .todo ↔ GitHub Issues [96m+Automation +CI +Issues[0m [95m@prod[0m [REF: OPS-ISSUE-SYNC] owner:@platform deps:[OPS-TODO-VALIDATE] acc:"Issues keyed by [REF]; labels from +tags/@contexts; owners assigned; idempotent" evid:".github/workflows/todo-sync.yml, logs/gha/"
 - [ ] [93m(B)[0m 2025-10-05 Pre-push hook for SoT/HASHES [96m+Automation +Hooks +QualityGate[0m [95m@prod[0m [REF: OPS-HOOKS] owner:@platform deps:[EVID-HASH, GOV-SOT-EXEC] acc:"Blocks push if SoT not updated or hashes missing for modified artifacts" evid:"hooks/pre-push, scripts/validate_sot.sh"
 - [ ] [93m(B)[0m 2025-10-06 Build & test pipeline [96m+CI +Build +Test[0m [95m@prod[0m [REF: CI-BUILD] owner:@platform deps:[] acc:"Matrix build; unit/integration/perf test jobs; artifacts archived" evid:".github/workflows/ci.yml"
@@ -52,7 +52,7 @@
 [1;96m== Supply Chain & Releases ==[0m
 - [x] [93m(B)[0m 2025-10-05 SBOM generation [96m+SupplyChain +SBOM[0m [95m@prod[0m [REF: SUPPLY-SBOM] owner:@platform deps:[] acc:"CycloneDX SBOM produced for all components; stored in sbom/; linked in SoT" evid:"sbom/*.json, .github/workflows/sbom.yml"
 - [x] [93m(B)[0m 2025-10-05 Artifact signing [96m+SupplyChain +Signing[0m [95m@prod[0m [REF: SUPPLY-SIGN] owner:@platform deps:[SUPPLY-SBOM] acc:"SHA256+minisign/GPG signatures generated; keys stored securely" evid:"artifacts/*.sig, operational_hash/HASHES.txt"
-- [ ] [93m(B)[0m 2025-10-05 Signature verification [96m+SupplyChain +Verify[0m [95m@prod[0m [REF: SUPPLY-VERIFY] owner:@platform deps:[SUPPLY-SIGN] acc:"CI verifies signatures/hashes for all releases" evid:".github/workflows/verify.yml, TEST/verify/*.log"
+- [x] [93m(B)[0m 2025-10-05 Signature verification [96m+SupplyChain +Verify[0m [95m@prod[0m [REF: SUPPLY-VERIFY] owner:@platform deps:[SUPPLY-SIGN] acc:"CI verifies signatures/hashes for all releases" evid:".github/workflows/verify.yml, TEST/verify/*.log"
 - [ ] [93m(B)[0m 2025-10-06 SLSA provenance/attestations [96m+SupplyChain +Provenance +SLSA[0m [95m@prod[0m [REF: SUPPLY-SLSA] owner:@platform deps:[CI-BUILD, SUPPLY-SBOM] acc:"Provenance generated; attestation attached to releases" evid:"artifacts/provenance/*.json"
 - [ ] [93m(B)[0m 2025-10-06 Merkle anchor & receipts [96m+SupplyChain +Anchors[0m [95m@prod[0m [REF: SUPPLY-ANCHOR] owner:@platform deps:[SUPPLY-VERIFY] acc:"Anchors generated per release; receipts stored" evid:"anchors/*.txt"
 - [ ] [93m(B)[0m 2025-10-06 Versioning & release notes [96m+Release +Semver +Notes[0m [95m@prod[0m [REF: REL-VERSIONING] owner:@program deps:[CD-GATES] acc:"SemVer policy; changelog auto-gen; tags signed; GitHub Release" evid:"CHANGELOG.md, .github/release.yml"
@@ -68,7 +68,7 @@
 - [ ] [93m(B)[0m 2025-10-06 On-call rotation [96m+Ops +Oncall[0m [95m@prod[0m [REF: OPS-ONCALL] owner:@sre deps:[OPS-INCIDENTS] acc:"Rotation defined; escalation policy; paging tested" evid:"docs/ops/oncall.md"
 
 [1;96m== Governance & SoT ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Populate SoT with executed tasks [96m+Governance +SoT +Audit[0m [95m@prod[0m [REF: GOV-SOT-EXEC] owner:@program deps:[DOC-001] acc:"≥3 executed entries with artifacts, transcripts, hashes; decisions/risks captured" evid:"core/src/orchestration/sot.md, operational_hash/HASHES.txt"
+- [x] [93m(B)[0m 2025-10-05 Populate SoT with executed tasks [96m+Governance +SoT +Audit[0m [95m@prod[0m [REF: GOV-SOT-EXEC] owner:@program deps:[DOC-001] acc:"≥3 executed entries with artifacts, transcripts, hashes; decisions/risks captured" evid:"core/src/orchestration/sot.md, operational_hash/HASHES.txt"
 - [x] [93m(B)[0m 2025-10-06 Decision records (ADR) & risk register [96m+Governance +ADR +Risk[0m [95m@prod[0m [REF: GOV-ADR] owner:@program deps:[] acc:"ADRs published; risks tracked with owner/mitigation" evid:"docs/decisions/adr/, docs/risks/register.md"
 - [x] [93m(B)[0m 2025-10-06 CODEOWNERS & CONTRIBUTING [96m+Governance +Standards[0m [95m@prod[0m [REF: GOV-CODEOWNERS] owner:@program deps:[] acc:"CODEOWNERS routes reviews; CONTRIBUTING describes standards & SoT" evid:"CODEOWNERS, CONTRIBUTING.md"
 - [x] [93m(B)[0m 2025-10-05 Deduplicate TODO sources (single SoT) [96m+Operations +Hygiene +Docs[0m [95m@prod[0m [REF: OPS-DEDUP-TODO] owner:@program deps:[DOC-001] acc:"Keep this .todo as source; archive agentask.subject.todo; link in docs" evid:"docs/decisions/ops-dedup-todo.md"

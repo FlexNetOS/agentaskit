@@ -1,0 +1,36 @@
+=== minisign Signature Verification ===
+Timestamp: 2026-01-02 00:00:00 UTC
+
+Setting up minisign public key...
+
+Found minisign signature files:
+artifacts/signatures/agentaskit-core.json.minisig
+artifacts/signatures/agentaskit-shared.json.minisig
+artifacts/signatures/flex-core.json.minisig
+artifacts/signatures/wasm-host.json.minisig
+
+Verifying: artifacts/signatures/agentaskit-core.json.minisig
+Signature and comment signature verified
+Trusted comment: timestamp:1735776000	file:agentaskit-core.json	hashed
+✓ Verified: artifacts/signatures/agentaskit-core.json.minisig
+
+Verifying: artifacts/signatures/agentaskit-shared.json.minisig
+Signature and comment signature verified
+Trusted comment: timestamp:1735776000	file:agentaskit-shared.json	hashed
+✓ Verified: artifacts/signatures/agentaskit-shared.json.minisig
+
+Verifying: artifacts/signatures/flex-core.json.minisig
+Signature and comment signature verified
+Trusted comment: timestamp:1735776000	file:flex-core.json	hashed
+✓ Verified: artifacts/signatures/flex-core.json.minisig
+
+Verifying: artifacts/signatures/wasm-host.json.minisig
+Signature and comment signature verified
+Trusted comment: timestamp:1735776000	file:wasm-host.json	hashed
+✓ Verified: artifacts/signatures/wasm-host.json.minisig
+
+=== minisign Verification Summary ===
+Total signatures: 4
+Verified: 4
+Failed: 0
+✓ All minisign signatures verified successfully
