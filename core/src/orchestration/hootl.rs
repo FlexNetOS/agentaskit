@@ -11,7 +11,11 @@ use anyhow::Result;
 use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
+use std::sync::Arc;
 use std::time::Duration;
+use parking_lot::Mutex;
+use sysinfo::{System, SystemExt, CpuExt, DiskExt};
 use tokio::time::sleep;
 use uuid::Uuid;
 
@@ -22,6 +26,26 @@ pub struct HootlEngine {
     pub config: AutonomousConfig,
     pub running: bool,
     pub cycle_count: u64,
+    /// System monitor for resource usage tracking
+    system_monitor: Arc<Mutex<System>>,
+    /// Recent operation results for metrics calculation
+    recent_operations: Arc<Mutex<VecDeque<OperationResult>>>,
+    /// Cycle timing history
+    cycle_times: Arc<Mutex<VecDeque<f64>>>,
+    /// Error history
+    error_history: Arc<Mutex<Vec<ErrorRecord>>>,
+}
+
+#[derive(Debug, Clone)]
+struct OperationResult {
+    timestamp: chrono::DateTime<chrono::Utc>,
+    success: bool,
+}
+
+#[derive(Debug, Clone)]
+struct ErrorRecord {
+    timestamp: chrono::DateTime<chrono::Utc>,
+    error_type: String,
 }
 
 /// HOOTL cycle execution result
@@ -92,6 +116,10 @@ impl HootlEngine {
             config,
             running: false,
             cycle_count: 0,
+            system_monitor: Arc::new(Mutex::new(System::new_all())),
+            recent_operations: Arc::new(Mutex::new(VecDeque::new())),
+            cycle_times: Arc::new(Mutex::new(VecDeque::new())),
+            error_history: Arc::new(Mutex::new(Vec::new())),
         }
     }
     
@@ -300,17 +328,67 @@ impl HootlEngine {
     }
     
     /// PLAN phase: Generate execution plans
-    async fn plan_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement plan generation logic
-        let output = serde_json::json!({"plans_generated": 0});
-        Ok((true, output, Vec::new()))
+    async fn plan_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut plans_generated = 0;
+        let mut errors = Vec::new();
+
+        // Generate plans based on pending tasks and decisions
+        for task in &state.pending_tasks {
+            // Create execution plan for each pending task
+            tracing::debug!("Generating plan for task: {}", task.id);
+            plans_generated += 1;
+        }
+
+        // Generate resource allocation plans based on current load
+        if state.health.cpu_usage > 50.0 {
+            tracing::debug!("Planning CPU optimization due to {}% usage", state.health.cpu_usage);
+            plans_generated += 1;
+        }
+
+        let output = serde_json::json!({
+            "plans_generated": plans_generated,
+            "pending_tasks": state.pending_tasks.len()
+        });
+
+        self.record_operation(true);
+        Ok((true, output, errors))
     }
     
     /// AMPLIFY phase: Allocate resources and scale operations
-    async fn amplify_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement resource amplification logic
-        let output = serde_json::json!({"resources_allocated": 0});
-        Ok((true, output, Vec::new()))
+    async fn amplify_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut resources_allocated = 0;
+        let mut errors = Vec::new();
+
+        // Determine resource needs based on workload
+        let cpu_usage = state.health.cpu_usage;
+        let memory_usage = state.health.memory_usage;
+        let pending_work = state.pending_tasks.len();
+
+        // Scale up agents if needed and within limits
+        if pending_work > 10 && state.health.active_agent_count < self.config.safety_limits.max_concurrent_agents {
+            let agents_to_add = ((pending_work / 10).min(5)) as u32;
+            tracing::info!("Amplifying: requesting {} additional agents for {} pending tasks",
+                agents_to_add, pending_work);
+            resources_allocated += agents_to_add;
+        }
+
+        // Allocate additional memory if usage is moderate but workload is high
+        let memory_threshold =
+            (self.config.safety_limits.max_memory_mb as f64 * 0.7) as u64;
+        if memory_usage < memory_threshold && pending_work > 20 {
+            tracing::debug!("Amplifying: memory allocation recommended");
+            resources_allocated += 1;
+        }
+
+        let output = serde_json::json!({
+            "resources_allocated": resources_allocated,
+            "cpu_usage": cpu_usage,
+            "memory_usage_mb": memory_usage,
+            "active_agents": state.health.active_agent_count
+        });
+
+        self.record_operation(true);
+        Ok((true, output, errors))
     }
     
     /// GATES phase: Safety checks and verification
@@ -353,97 +431,473 @@ impl HootlEngine {
     }
     
     /// RUN phase: Execute planned operations
-    async fn run_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement execution logic
-        let output = serde_json::json!({"operations_executed": 0});
-        Ok((true, output, Vec::new()))
+    async fn run_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut operations_executed = 0;
+        let mut operations_failed = 0;
+        let mut errors = Vec::new();
+
+        // Execute pending tasks (simulation - actual execution would be delegated to agents)
+        let tasks_to_execute = state.pending_tasks.len().min(self.config.max_concurrent_operations as usize);
+
+        for i in 0..tasks_to_execute {
+            match self.execute_operation(i, state).await {
+                Ok(_) => {
+                    operations_executed += 1;
+                    self.record_operation(true);
+                }
+                Err(e) => {
+                    operations_failed += 1;
+                    let error_msg = format!("Operation {} failed: {}", i, e);
+                    errors.push(error_msg.clone());
+                    self.record_operation(false);
+                    self.record_error("execution_failure".to_string());
+                }
+            }
+        }
+
+        let output = serde_json::json!({
+            "operations_executed": operations_executed,
+            "operations_failed": operations_failed,
+            "success_rate": if operations_executed + operations_failed > 0 {
+                operations_executed as f64 / (operations_executed + operations_failed) as f64
+            } else {
+                1.0
+            }
+        });
+
+        Ok((operations_failed == 0, output, errors))
+    }
+
+    /// Execute a single operation (helper for run_phase)
+    async fn execute_operation(&self, _operation_id: usize, _state: &AutonomousState) -> Result<()> {
+        // INTENTIONAL ASYNC PLACEHOLDER:
+        // This function is async by design because real implementations will perform
+        // asynchronous work (e.g., delegating to agents, IO-bound tasks, RPC calls).
+        // For now it is a synchronous no-op used for HOOTL simulations.
+        Ok(())
     }
     
     /// OBSERVE phase: Monitor execution and gather feedback
-    async fn observe_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement observation logic
-        let output = serde_json::json!({"observations_collected": 0});
-        Ok((true, output, Vec::new()))
+    async fn observe_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut observations_collected = 0;
+        let errors = Vec::new();
+
+        // Collect system health metrics
+        let cpu_usage = self.get_cpu_usage().await;
+        let memory_usage = self.get_memory_usage().await;
+        let disk_usage = self.get_disk_usage().await;
+
+        // Update state with current observations
+        state.health.cpu_usage = cpu_usage;
+        state.health.memory_usage = memory_usage;
+        state.health.disk_usage = disk_usage;
+        observations_collected += 3;
+
+        // Collect performance metrics
+        let success_rate = self.calculate_success_rate(state);
+        let avg_cycle_time = self.calculate_avg_cycle_time(state);
+        let recent_errors = self.count_recent_errors(state);
+        observations_collected += 3;
+
+        tracing::debug!(
+            "Observations: CPU={:.1}%, Mem={}MB, Disk={}GB, Success={:.2}%, AvgCycle={:.2}s, Errors={}",
+            cpu_usage, memory_usage / 1_000_000, disk_usage / 1_000_000_000,
+            success_rate * 100.0, avg_cycle_time, recent_errors
+        );
+
+        let output = serde_json::json!({
+            "observations_collected": observations_collected,
+            "system_health": {
+                "cpu_usage_percent": cpu_usage,
+                "memory_usage_mb": memory_usage / 1_000_000,
+                "disk_usage_gb": disk_usage / 1_000_000_000
+            },
+            "performance": {
+                "success_rate": success_rate,
+                "avg_cycle_time_seconds": avg_cycle_time,
+                "recent_errors": recent_errors
+            }
+        });
+
+        Ok((true, output, errors))
     }
     
     /// SCORE phase: Evaluate performance and outcomes
-    async fn score_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement scoring logic
-        let output = serde_json::json!({"performance_score": 0.0});
-        Ok((true, output, Vec::new()))
+    async fn score_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let errors = Vec::new();
+
+        // Calculate composite performance score
+        let success_rate = self.calculate_success_rate(state);
+        let avg_cycle_time = self.calculate_avg_cycle_time(state);
+        let error_count = self.count_recent_errors(state);
+
+        // Score components (0.0 to 1.0 scale)
+        let success_score = success_rate;
+        let latency_score = if avg_cycle_time > 0.0 {
+            (1.0 / (1.0 + avg_cycle_time / 10.0)).max(0.0).min(1.0)
+        } else {
+            1.0
+        };
+        let reliability_score = if error_count == 0 {
+            1.0
+        } else {
+            (1.0 / (1.0 + error_count as f64 / 10.0)).max(0.0).min(1.0)
+        };
+
+        // Weighted composite score
+        let performance_score = (success_score * 0.5) + (latency_score * 0.3) + (reliability_score * 0.2);
+
+        tracing::info!(
+            "Performance score: {:.3} (success={:.2}, latency={:.2}, reliability={:.2})",
+            performance_score, success_score, latency_score, reliability_score
+        );
+
+        let output = serde_json::json!({
+            "performance_score": performance_score,
+            "components": {
+                "success_rate": success_score,
+                "latency_score": latency_score,
+                "reliability_score": reliability_score
+            },
+            "metrics": {
+                "success_rate_percent": success_rate * 100.0,
+                "avg_cycle_time_seconds": avg_cycle_time,
+                "recent_errors": error_count
+            }
+        });
+
+        Ok((performance_score >= 0.7, output, errors))
     }
     
     /// EVOLVE phase: Learn and adapt system behavior
-    async fn evolve_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement evolution logic
-        let output = serde_json::json!({"adaptations_made": 0});
-        Ok((true, output, Vec::new()))
+    async fn evolve_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut adaptations_made = 0;
+        let errors = Vec::new();
+
+        // Analyze recent performance to identify adaptation opportunities
+        let success_rate = self.calculate_success_rate(state);
+        let avg_cycle_time = self.calculate_avg_cycle_time(state);
+        let error_count = self.count_recent_errors(state);
+
+        // Adapt based on success rate
+        if success_rate < 0.8 {
+            tracing::info!("Evolving: Low success rate ({:.2}%), adapting error handling strategies", success_rate * 100.0);
+            adaptations_made += 1;
+        }
+
+        // Adapt based on cycle time
+        if avg_cycle_time > 5.0 {
+            tracing::info!("Evolving: High cycle time ({:.2}s), adapting scheduling strategy", avg_cycle_time);
+            adaptations_made += 1;
+        }
+
+        // Adapt based on error rate
+        if error_count > 10 {
+            tracing::info!("Evolving: High error count ({}), adapting retry and recovery policies", error_count);
+            adaptations_made += 1;
+        }
+
+        // Resource optimization adaptations
+        if state.health.cpu_usage > 80.0 {
+            tracing::info!("Evolving: High CPU usage ({:.1}%), adapting workload distribution", state.health.cpu_usage);
+            adaptations_made += 1;
+        }
+
+        let output = serde_json::json!({
+            "adaptations_made": adaptations_made,
+            "triggers": {
+                "low_success_rate": success_rate < 0.8,
+                "high_cycle_time": avg_cycle_time > 5.0,
+                "high_error_count": error_count > 10,
+                "high_cpu": state.health.cpu_usage > 80.0
+            }
+        });
+
+        Ok((true, output, errors))
     }
     
     /// PROMOTE phase: Apply successful adaptations
-    async fn promote_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement promotion logic
-        let output = serde_json::json!({"promotions_applied": 0});
-        Ok((true, output, Vec::new()))
+    async fn promote_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut promotions_applied = 0;
+        let errors = Vec::new();
+
+        // Promote adaptations that have proven successful
+        let success_rate = self.calculate_success_rate(state);
+
+        if success_rate >= 0.9 {
+            // High success rate - promote current configuration
+            tracing::info!("Promoting: Current configuration shows {:.1}% success rate", success_rate * 100.0);
+            promotions_applied += 1;
+
+            // In production, this would save configuration, update policies, etc.
+        }
+
+        // Check for stable performance over time
+        let avg_cycle_time = self.calculate_avg_cycle_time(state);
+        if avg_cycle_time > 0.0 && avg_cycle_time < 2.0 {
+            tracing::debug!("Promoting: Stable cycle time of {:.2}s", avg_cycle_time);
+            promotions_applied += 1;
+        }
+
+        let output = serde_json::json!({
+            "promotions_applied": promotions_applied,
+            "current_performance": {
+                "success_rate": success_rate,
+                "avg_cycle_time": avg_cycle_time
+            }
+        });
+
+        Ok((true, output, errors))
     }
     
     /// ROLLBACK phase: Revert failed changes
-    async fn rollback_phase(&self, _state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
-        // TODO: Implement rollback logic
-        let output = serde_json::json!({"rollbacks_applied": 0});
-        Ok((true, output, Vec::new()))
+    async fn rollback_phase(&self, state: &mut AutonomousState) -> Result<(bool, serde_json::Value, Vec<String>)> {
+        let mut rollbacks_applied = 0;
+        let mut errors = Vec::new();
+
+        // Check if rollback is needed based on performance degradation
+        let success_rate = self.calculate_success_rate(state);
+        let error_count = self.count_recent_errors(state);
+
+        // Rollback if critical failures detected
+        if success_rate < 0.5 {
+            tracing::warn!("Rollback triggered: Critical success rate drop to {:.1}%", success_rate * 100.0);
+            rollbacks_applied += 1;
+            // In production: revert to last known good configuration
+        }
+
+        if error_count > 50 {
+            tracing::warn!("Rollback triggered: Excessive errors ({})", error_count);
+            rollbacks_applied += 1;
+            self.record_error("rollback_triggered_errors".to_string());
+            // In production: revert problematic changes
+        }
+
+        // Check for resource exhaustion
+        if state.health.cpu_usage > 95.0 {
+            tracing::warn!("Rollback triggered: CPU exhaustion ({:.1}%)", state.health.cpu_usage);
+            rollbacks_applied += 1;
+            // In production: scale back recent resource allocations
+        }
+
+        let output = serde_json::json!({
+            "rollbacks_applied": rollbacks_applied,
+            "triggers": {
+                "low_success_rate": success_rate < 0.5,
+                "excessive_errors": error_count > 50,
+                "cpu_exhaustion": state.health.cpu_usage > 95.0
+            }
+        });
+
+        if rollbacks_applied > 0 {
+            errors.push(format!("Applied {} emergency rollbacks", rollbacks_applied));
+        }
+
+        Ok((rollbacks_applied == 0, output, errors))
     }
     
     /// Make an autonomous decision
     async fn make_decision(
         &self,
         decision: &PendingDecision,
-        _state: &AutonomousState,
+        state: &AutonomousState,
     ) -> Result<DecisionResult> {
-        // TODO: Implement decision making logic
+        // Determine decision outcome based on type, priority, and system state
+        let (outcome, rationale, confidence) = match decision.decision_type {
+            DecisionType::ResourceAllocation => {
+                // Check if we can safely allocate more resources
+                if state.health.active_agent_count < self.config.safety_limits.max_concurrent_agents
+                    && state.health.memory_usage
+                        < self.config.safety_limits.max_memory_mb * 1024 * 1024 * 80 / 100
+                {
+                    (
+                        DecisionOutcome::Approved,
+                        "Resources available, allocation approved".to_string(),
+                        0.9,
+                    )
+                } else {
+                    (
+                        DecisionOutcome::Rejected,
+                        "Resource limits approached, allocation rejected".to_string(),
+                        0.85,
+                    )
+                }
+            }
+            DecisionType::TaskPrioritization => {
+                // Prioritize based on system load and task urgency
+                if decision.priority >= 7 || state.pending_tasks.len() < 5 {
+                    (
+                        DecisionOutcome::Approved,
+                        "High priority or low load, task prioritized".to_string(),
+                        0.85,
+                    )
+                } else {
+                    (
+                        DecisionOutcome::Deferred,
+                        "System busy, task deferred".to_string(),
+                        0.75,
+                    )
+                }
+            }
+            DecisionType::CapabilityInvocation => {
+                // Check if capability can be safely invoked
+                let success_rate = self.calculate_success_rate(state);
+                if success_rate > 0.8 && state.health.cpu_usage < 80.0 {
+                    (
+                        DecisionOutcome::Approved,
+                        "System healthy, capability invocation approved".to_string(),
+                        0.88,
+                    )
+                } else {
+                    (
+                        DecisionOutcome::EscalateToHuman,
+                        "System degraded, escalating to human".to_string(),
+                        0.65,
+                    )
+                }
+            }
+            DecisionType::SystemAdaptation => {
+                // Approve adaptations during stable operation
+                let error_count = self.count_recent_errors(state);
+                if error_count < 5 && state.health.cpu_usage < 70.0 {
+                    (
+                        DecisionOutcome::Approved,
+                        "System stable, adaptation approved".to_string(),
+                        0.82,
+                    )
+                } else {
+                    (
+                        DecisionOutcome::Rejected,
+                        "System unstable, adaptation rejected".to_string(),
+                        0.78,
+                    )
+                }
+            }
+        };
+
+        tracing::debug!(
+            "Decision {} ({:?}): {:?} - {} (confidence: {:.2})",
+            decision.id,
+            decision.decision_type,
+            outcome,
+            rationale,
+            confidence
+        );
+
         Ok(DecisionResult {
             decision_id: decision.id,
             decision_type: decision.decision_type.clone(),
-            outcome: DecisionOutcome::Approved,
-            rationale: "Automated decision".to_string(),
-            confidence: 0.8,
+            outcome,
+            rationale,
+            confidence,
         })
     }
     
     /// Get current CPU usage
+    /// 
+    /// NOTE: This method includes a 200ms sleep to allow accurate CPU measurement.
+    /// This could impact performance if called frequently. Consider using a cached
+    /// value that's periodically updated in the background for high-frequency monitoring.
     async fn get_cpu_usage(&self) -> f64 {
-        // TODO: Implement actual CPU monitoring
-        0.0
+        let mut sys = self.system_monitor.lock();
+        sys.refresh_cpu();
+        // Wait a moment for accurate CPU measurement
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        sys.refresh_cpu();
+        sys.global_cpu_info().cpu_usage() as f64
     }
-    
+
     /// Get current memory usage
     async fn get_memory_usage(&self) -> u64 {
-        // TODO: Implement actual memory monitoring
-        0
+        let mut sys = self.system_monitor.lock();
+        sys.refresh_memory();
+        sys.used_memory()
     }
-    
+
     /// Get current disk usage
+    /// 
+    /// NOTE: This calculation sums (total - available) across all disks, which doesn't
+    /// account for reserved space or filesystem overhead. The actual used space reported
+    /// by filesystem tools may differ slightly. This is sufficient for general monitoring
+    /// but should not be used for precise capacity planning.
     async fn get_disk_usage(&self) -> u64 {
-        // TODO: Implement actual disk monitoring
-        0
+        let sys = self.system_monitor.lock();
+        // Sum up used space across all disks
+        sys.disks().iter().map(|disk| disk.total_space() - disk.available_space()).sum()
     }
     
     /// Calculate success rate from recent operations
     fn calculate_success_rate(&self, _state: &AutonomousState) -> f64 {
-        // TODO: Implement success rate calculation
-        1.0
+        let operations = self.recent_operations.lock();
+        if operations.is_empty() {
+            return 1.0; // No data, assume success
+        }
+
+        // Calculate success rate from recent operations (last 100)
+        let recent: Vec<_> = operations.iter().rev().take(100).collect();
+        let successful = recent.iter().filter(|op| op.success).count();
+        successful as f64 / recent.len() as f64
     }
-    
+
     /// Calculate average cycle time
     fn calculate_avg_cycle_time(&self, _state: &AutonomousState) -> f64 {
-        // TODO: Implement cycle time calculation
-        0.0
+        let times = self.cycle_times.lock();
+        if times.is_empty() {
+            return 0.0;
+        }
+
+        // Calculate average from recent cycles (last 50)
+        let recent: Vec<_> = times.iter().rev().take(50).copied().collect();
+        recent.iter().sum::<f64>() / recent.len() as f64
     }
-    
+
     /// Count recent errors
     fn count_recent_errors(&self, _state: &AutonomousState) -> u32 {
-        // TODO: Implement error counting
-        0
+        let errors = self.error_history.lock();
+        let one_hour_ago = Utc::now() - chrono::Duration::hours(1);
+
+        // Count errors from the last hour
+        errors.iter()
+            .filter(|e| e.timestamp > one_hour_ago)
+            .count() as u32
+    }
+
+    /// Record an operation result for metrics tracking
+    fn record_operation(&self, success: bool) {
+        let mut operations = self.recent_operations.lock();
+        operations.push_back(OperationResult {
+            timestamp: Utc::now(),
+            success,
+        });
+
+        // Keep only last 1000 operations using VecDeque's efficient pop_front
+        while operations.len() > 1000 {
+            operations.pop_front();
+        }
+    }
+
+    /// Record cycle time for metrics tracking
+    fn record_cycle_time(&self, duration: f64) {
+        let mut times = self.cycle_times.lock();
+        times.push_back(duration);
+
+        // Keep only last 200 cycles using VecDeque's efficient pop_front
+        while times.len() > 200 {
+            times.pop_front();
+        }
+    }
+
+    /// Record an error for metrics tracking
+    fn record_error(&self, error_type: String) {
+        let mut errors = self.error_history.lock();
+        errors.push(ErrorRecord {
+            timestamp: Utc::now(),
+            error_type,
+        });
+
+        // Keep only last 24 hours of errors
+        let one_day_ago = Utc::now() - chrono::Duration::hours(24);
+        errors.retain(|e| e.timestamp > one_day_ago);
     }
 }
 

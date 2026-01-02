@@ -261,8 +261,47 @@ impl AutonomousOrchestrator {
     
     /// Run a single verification check
     async fn run_verification_check(&self) -> Result<bool> {
-        // TODO: Implement actual verification logic
-        Ok(true)
+        // Comprehensive verification logic
+        let mut all_checks_passed = true;
+
+        // Check 1: Verify orchestrator state is valid
+        let state = self.state.read().await;
+        if state.total_tasks == 0 && state.completed_tasks > 0 {
+            tracing::warn!("Verification failed: Invalid task counters");
+            all_checks_passed = false;
+        }
+
+        // Check 2: Verify task queue integrity
+        let queue = self.task_queue.read().await;
+        let queue_size = queue.pending_tasks.len() + queue.running_tasks.len();
+        if queue_size > 10000 {
+            tracing::warn!("Verification failed: Task queue size excessive ({})", queue_size);
+            all_checks_passed = false;
+        }
+
+        // Check 3: Verify no orphaned running tasks
+        if state.active_tasks > queue.running_tasks.len() as u32 {
+            tracing::warn!("Verification failed: Active task count mismatch");
+            all_checks_passed = false;
+        }
+
+        // Check 4: Verify system health metrics are within bounds
+        if state.cpu_usage > 100.0 || state.memory_usage_mb > u64::MAX / 1_000_000 {
+            tracing::warn!("Verification failed: Invalid health metrics");
+            all_checks_passed = false;
+        }
+
+        // Check 5: Verify timestamp consistency
+        if state.last_update > Utc::now() {
+            tracing::warn!("Verification failed: Future timestamp detected");
+            all_checks_passed = false;
+        }
+
+        if all_checks_passed {
+            tracing::debug!("Verification check passed");
+        }
+
+        Ok(all_checks_passed)
     }
     
     /// Calculate checksum for output
