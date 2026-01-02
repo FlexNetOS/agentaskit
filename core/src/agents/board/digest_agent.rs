@@ -1261,16 +1261,15 @@ impl Agent for DigestAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "digest_id": digest.digest_id,
                         "title": digest.title,
                         "confidence_score": digest.confidence_score,
                         "insights_count": digest.key_insights.len(),
                         "recommendations_count": digest.strategic_recommendations.len(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
@@ -1279,26 +1278,24 @@ impl Agent for DigestAgent {
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_knowledge_domains": status.active_knowledge_domains,
                         "insights_generated": status.insights_generated,
                         "patterns_identified": status.patterns_identified,
                         "reports_generated": status.reports_generated,
                         "data_quality_score": status.data_quality_score,
                         "synthesis_accuracy": status.synthesis_accuracy,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
                 status: TaskStatus::Failed("Digest processing failed".to_string()),
-                result: serde_json::Value::Null,
-                error: Some(format!("Unknown task type: {}", task.name)),
-                execution_time: start_time.elapsed(),
-                resource_usage: ResourceUsage::default(),
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
             }),
         }
     }

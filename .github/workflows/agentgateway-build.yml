@@ -153,6 +153,22 @@ jobs:
         working-directory: integrations/agentgateway
         run: cargo test --all
 
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: mdBook Action
+        uses: peaceiris/actions-mdbook@v2.0.0
+
+      - name: Build mdBook
+        run: mdbook build docs
+        continue-on-error: true
+
   docker-build:
     name: Build Docker Image
     runs-on: ubuntu-latest
