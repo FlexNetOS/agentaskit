@@ -325,18 +325,22 @@ impl NoaVerificationSystem {
 
     // Helper methods for test execution
     async fn run_cargo_check(&self, workspace_path: &PathBuf) -> Result<TestLog> {
+        let start = std::time::Instant::now();
+
         let output = tokio::process::Command::new("cargo")
             .args(&["check", "--workspace", "--all-features"])
             .current_dir(workspace_path)
             .output()
             .await?;
 
+        let duration_ms = start.elapsed().as_millis() as u64;
+
         Ok(TestLog {
             test_name: "cargo_check".to_string(),
             command: "cargo check --workspace --all-features".to_string(),
             output: String::from_utf8_lossy(&output.stdout).to_string(),
             exit_code: output.status.code().unwrap_or(-1),
-            duration_ms: 0, // TODO: Measure duration
+            duration_ms,
             timestamp: Utc::now(),
         })
     }
@@ -487,11 +491,21 @@ impl EvidenceLedger {
 
         let metadata = fs::metadata(&path).await?;
 
+        // Get actual file modification time
+        let last_modified = metadata
+            .modified()
+            .ok()
+            .and_then(|t| chrono::DateTime::from_timestamp(
+                t.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs() as i64,
+                0
+            ))
+            .unwrap_or_else(Utc::now);
+
         let evidence = FileEvidence {
             path: path.clone(),
             sha256_hash: hash,
             size_bytes: metadata.len(),
-            last_modified: Utc::now(), // TODO: Use actual file modification time
+            last_modified,
             content_type: Self::detect_content_type(&path),
         };
 
