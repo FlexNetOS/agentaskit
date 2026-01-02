@@ -3,11 +3,6 @@
 
 use super::*;
 use crate::agents::Agent;
-use agentaskit_shared::{
-    board::{BoardLayer, BoardLayerConfig},
-    executive::{ExecutiveLayer, ExecutiveLayerConfig},
-    specialized::SpecializedLayer,
-};
 use std::time::Duration;
 use tokio::time::timeout;
 use tracing::{error, info};

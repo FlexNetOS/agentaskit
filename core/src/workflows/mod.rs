@@ -669,17 +669,17 @@ impl EnhancedWorkflowProcessor {
         }
     }
 
-    /// Convert RequestPriority to deliverable_manager::Priority
+    /// Convert RequestPriority to agentaskit_shared::Priority
     async fn convert_to_deliverable_priority(
         &self,
         priority: &RequestPriority,
-    ) -> Result<deliverable_manager::Priority> {
-        use deliverable_manager::Priority as DP;
+    ) -> Result<agentaskit_shared::Priority> {
+        use agentaskit_shared::Priority as P;
         Ok(match priority {
-            RequestPriority::Low => DP::Low,
-            RequestPriority::Medium => DP::Medium,
-            RequestPriority::High => DP::High,
-            RequestPriority::Critical => DP::Critical,
+            RequestPriority::Low => P::Low,
+            RequestPriority::Medium => P::Medium,
+            RequestPriority::High => P::High,
+            RequestPriority::Critical => P::Critical,
         })
     }
 

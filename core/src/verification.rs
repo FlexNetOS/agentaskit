@@ -408,11 +408,8 @@ impl NoaVerificationSystem {
         let src_path = workspace_path.join("core").join("src");
         if src_path.exists() {
             let mut impl_file_count = 0;
-            if let Ok(entries) = tokio::fs::read_dir(&src_path).await {
-                use futures::StreamExt;
-                use tokio_stream::wrappers::ReadDirStream;
-                let mut stream = ReadDirStream::new(entries);
-                while let Some(Ok(_)) = stream.next().await {
+            if let Ok(mut entries) = tokio::fs::read_dir(&src_path).await {
+                while let Ok(Some(_)) = entries.next_entry().await {
                     impl_file_count += 1;
                 }
             }
