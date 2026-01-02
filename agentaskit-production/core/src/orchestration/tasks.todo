@@ -475,6 +475,7 @@
 - [ ] Review basenames present outside production (top sample):
   - [ ] .gitattributes
   - [ ] .gitignore
+  - [ ] .gitmodules
   - [ ] .qoderignore
   - [ ] agent_directory_template.csv
   - [ ] agent_map_crosswalk.md
@@ -522,7 +523,6 @@
   - [ ] performance_optimizer.py
   - [ ] readme.txt
   - [ ] readme_20251005-081849.md
-  - [ ] readme_extended_20251005-081849.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
