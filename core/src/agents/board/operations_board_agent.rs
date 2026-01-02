@@ -14,7 +14,7 @@ use agentaskit_shared::{
 };
 
 /// Operations Board Agent - Operational excellence and process management
-/// 
+///
 /// The Operations Board Agent is responsible for:
 /// - Operational excellence and continuous improvement
 /// - Process optimization and standardization
@@ -26,19 +26,19 @@ pub struct OperationsBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Operations management system
     operations_manager: Arc<RwLock<OperationsManager>>,
-    
+
     /// Process optimization engine
     process_optimizer: Arc<RwLock<ProcessOptimizer>>,
-    
+
     /// Performance monitoring system
     performance_monitor: Arc<RwLock<PerformanceMonitor>>,
-    
+
     /// Quality management system
     quality_manager: Arc<RwLock<QualityManager>>,
-    
+
     /// Configuration
     config: OperationsBoardConfig,
 }
@@ -48,19 +48,19 @@ pub struct OperationsBoardAgent {
 pub struct OperationsBoardConfig {
     /// Performance review frequency
     pub performance_review_interval: Duration,
-    
+
     /// Process optimization cycle
     pub optimization_cycle: Duration,
-    
+
     /// Quality audit frequency
     pub quality_audit_interval: Duration,
-    
+
     /// Capacity planning horizon
     pub capacity_planning_horizon: Duration,
-    
+
     /// Performance thresholds
     pub performance_thresholds: PerformanceThresholds,
-    
+
     /// Optimization priorities
     pub optimization_priorities: OptimizationPriorities,
 }
@@ -89,7 +89,7 @@ impl Default for OperationsBoardConfig {
     fn default() -> Self {
         Self {
             performance_review_interval: Duration::from_secs(3600), // Hourly
-            optimization_cycle: Duration::from_secs(86400), // Daily
+            optimization_cycle: Duration::from_secs(86400),         // Daily
             quality_audit_interval: Duration::from_secs(86400 * 7), // Weekly
             capacity_planning_horizon: Duration::from_secs(86400 * 30), // 30 days
             performance_thresholds: PerformanceThresholds {
@@ -115,19 +115,19 @@ impl Default for OperationsBoardConfig {
 struct OperationsManager {
     /// Operational processes
     processes: HashMap<String, OperationalProcess>,
-    
+
     /// Service catalog
     service_catalog: Vec<ServiceDefinition>,
-    
+
     /// Operational policies
     policies: HashMap<String, OperationalPolicy>,
-    
+
     /// Incident management
     incident_manager: IncidentManager,
-    
+
     /// Change management
     change_manager: ChangeManager,
-    
+
     /// Operations metrics
     operations_metrics: OperationsMetrics,
 }
@@ -504,13 +504,13 @@ struct OperationsMetrics {
 struct ProcessOptimizer {
     /// Optimization algorithms
     algorithms: Vec<OptimizationAlgorithm>,
-    
+
     /// Optimization history
     optimization_history: VecDeque<OptimizationResult>,
-    
+
     /// Performance baselines
     baselines: HashMap<String, PerformanceBaseline>,
-    
+
     /// Improvement opportunities
     opportunities: Vec<ImprovementOpportunity>,
 }
@@ -588,13 +588,13 @@ enum OpportunityType {
 struct PerformanceMonitor {
     /// Performance dashboards
     dashboards: HashMap<String, PerformanceDashboard>,
-    
+
     /// Metrics collection
     metrics_collector: MetricsCollector,
-    
+
     /// Alerting system
     alerting_system: AlertingSystem,
-    
+
     /// Performance reports
     performance_reports: VecDeque<PerformanceReport>,
 }
@@ -768,13 +768,13 @@ struct PerformanceSummary {
 struct QualityManager {
     /// Quality standards
     quality_standards: HashMap<String, QualityStandard>,
-    
+
     /// Quality audits
     audit_manager: AuditManager,
-    
+
     /// Quality metrics
     quality_metrics: QualityMetrics,
-    
+
     /// Continuous improvement
     improvement_tracker: ImprovementTracker,
 }
@@ -979,9 +979,9 @@ impl OperationsBoardAgent {
             resource_requirements: ResourceRequirements {
                 min_cpu: 0.4,
                 min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 100 * 1024 * 1024,  // 100MB
+                min_storage: 100 * 1024 * 1024, // 100MB
                 max_cpu: 2.0,
-                max_memory: 8 * 1024 * 1024 * 1024, // 8GB
+                max_memory: 8 * 1024 * 1024 * 1024,  // 8GB
                 max_storage: 5 * 1024 * 1024 * 1024, // 5GB
             },
             health_check_interval: Duration::from_secs(30),
@@ -1003,12 +1003,12 @@ impl OperationsBoardAgent {
     pub async fn get_operations_status(&self) -> Result<OperationsStatus> {
         let operations_manager = self.operations_manager.read().await;
         let performance_monitor = self.performance_monitor.read().await;
-        
+
         Ok(OperationsStatus {
             total_processes: operations_manager.operations_metrics.total_processes,
             active_processes: operations_manager.operations_metrics.active_processes,
             automation_rate: if operations_manager.operations_metrics.total_processes > 0 {
-                operations_manager.operations_metrics.automated_processes as f64 
+                operations_manager.operations_metrics.automated_processes as f64
                     / operations_manager.operations_metrics.total_processes as f64
             } else {
                 0.0
@@ -1045,28 +1045,30 @@ impl Agent for OperationsBoardAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Operations Board Agent");
-        
+
         // Initialize operations management
         let mut operations_manager = self.operations_manager.write().await;
-        self.initialize_operational_processes(&mut operations_manager).await?;
-        
+        self.initialize_operational_processes(&mut operations_manager)
+            .await?;
+
         // Initialize performance monitoring
         let mut performance_monitor = self.performance_monitor.write().await;
-        self.initialize_performance_dashboards(&mut performance_monitor).await?;
-        
+        self.initialize_performance_dashboards(&mut performance_monitor)
+            .await?;
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Operations Board Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Operations Board Agent");
-        
+
         // Start performance monitoring
         let performance_monitor = self.performance_monitor.clone();
         let review_interval = self.config.performance_review_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(review_interval);
             loop {
@@ -1076,11 +1078,11 @@ impl Agent for OperationsBoardAgent {
                 }
             }
         });
-        
+
         // Start process optimization
         let process_optimizer = self.process_optimizer.clone();
         let optimization_cycle = self.config.optimization_cycle;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(optimization_cycle);
             loop {
@@ -1090,16 +1092,16 @@ impl Agent for OperationsBoardAgent {
                 }
             }
         });
-        
+
         tracing::info!("Operations Board Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Operations Board Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Operations Board Agent stopped successfully");
         Ok(())
     }
@@ -1108,7 +1110,7 @@ impl Agent for OperationsBoardAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -1123,11 +1125,11 @@ impl Agent for OperationsBoardAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "get-status" => {
                 let status = self.get_operations_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1146,12 +1148,14 @@ impl Agent for OperationsBoardAgent {
                 })
             }
             "optimize-process" => {
-                let process_id = task.parameters.get("process_id")
+                let process_id = task
+                    .parameters
+                    .get("process_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
-                
+
                 // TODO: Implement process optimization
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1164,28 +1168,26 @@ impl Agent for OperationsBoardAgent {
                     resource_usage: ResourceUsage::default(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Operations planning failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed("Operations planning failed".to_string()),
+                result: serde_json::Value::Null,
+                error: Some(format!("Unknown task type: {}", task.name)),
+                execution_time: start_time.elapsed(),
+                resource_usage: ResourceUsage::default(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
         let operations_manager = self.operations_manager.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0, // Placeholder
+            cpu_usage: 10.0,                  // Placeholder
             memory_usage: 1024 * 1024 * 1024, // 1GB placeholder
             task_queue_size: 0,
             completed_tasks: operations_manager.operations_metrics.total_processes,
@@ -1215,42 +1217,42 @@ impl OperationsBoardAgent {
         operations_manager.operations_metrics.active_processes = 5;
         operations_manager.operations_metrics.automated_processes = 3;
         operations_manager.operations_metrics.service_availability = 0.999;
-        
+
         tracing::info!("Initialized operational processes");
         Ok(())
     }
-    
+
     /// Initialize performance dashboards
     async fn initialize_performance_dashboards(
         &self,
         performance_monitor: &mut PerformanceMonitor,
     ) -> Result<()> {
         // TODO: Initialize performance dashboards and monitoring
-        
+
         tracing::info!("Initialized performance monitoring dashboards");
         Ok(())
     }
-    
+
     /// Run performance review (background task)
     async fn run_performance_review(
         performance_monitor: Arc<RwLock<PerformanceMonitor>>,
     ) -> Result<()> {
         let _performance_monitor = performance_monitor.read().await;
-        
+
         // TODO: Implement performance review cycle
-        
+
         tracing::debug!("Performance review cycle completed");
         Ok(())
     }
-    
+
     /// Run optimization cycle (background task)
     async fn run_optimization_cycle(
         process_optimizer: Arc<RwLock<ProcessOptimizer>>,
     ) -> Result<()> {
         let _process_optimizer = process_optimizer.read().await;
-        
+
         // TODO: Implement process optimization cycle
-        
+
         tracing::debug!("Process optimization cycle completed");
         Ok(())
     }

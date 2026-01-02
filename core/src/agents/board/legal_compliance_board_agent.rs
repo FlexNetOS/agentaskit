@@ -14,7 +14,7 @@ use agentaskit_shared::{
 };
 
 /// Legal Compliance Board Agent - Legal oversight and regulatory compliance
-/// 
+///
 /// The Legal Compliance Board Agent is responsible for:
 /// - Legal compliance monitoring and assessment
 /// - Regulatory requirement tracking and implementation
@@ -26,19 +26,19 @@ pub struct LegalComplianceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Compliance management system
     compliance_manager: Arc<RwLock<ComplianceManager>>,
-    
+
     /// Regulatory tracking system
     regulatory_tracker: Arc<RwLock<RegulatoryTracker>>,
-    
+
     /// Legal risk assessment system
     legal_risk_assessor: Arc<RwLock<LegalRiskAssessor>>,
-    
+
     /// Policy management system
     policy_manager: Arc<RwLock<PolicyManager>>,
-    
+
     /// Configuration
     config: LegalComplianceBoardConfig,
 }
@@ -48,19 +48,19 @@ pub struct LegalComplianceBoardAgent {
 pub struct LegalComplianceBoardConfig {
     /// Compliance review frequency
     pub compliance_review_interval: Duration,
-    
+
     /// Regulatory update check frequency
     pub regulatory_check_interval: Duration,
-    
+
     /// Legal risk assessment frequency
     pub risk_assessment_interval: Duration,
-    
+
     /// Policy review cycle
     pub policy_review_cycle: Duration,
-    
+
     /// Compliance thresholds
     pub compliance_thresholds: ComplianceThresholds,
-    
+
     /// Jurisdictions monitored
     pub monitored_jurisdictions: Vec<String>,
 }
@@ -68,11 +68,11 @@ pub struct LegalComplianceBoardConfig {
 /// Compliance thresholds
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComplianceThresholds {
-    pub compliance_score_warning: f64,    // 0.8
-    pub compliance_score_critical: f64,   // 0.6
-    pub risk_tolerance: f64,              // 0.3
-    pub audit_preparation_days: u32,      // 30 days
-    pub violation_response_hours: u32,    // 24 hours
+    pub compliance_score_warning: f64,  // 0.8
+    pub compliance_score_critical: f64, // 0.6
+    pub risk_tolerance: f64,            // 0.3
+    pub audit_preparation_days: u32,    // 30 days
+    pub violation_response_hours: u32,  // 24 hours
 }
 
 impl Default for LegalComplianceBoardConfig {
@@ -81,7 +81,7 @@ impl Default for LegalComplianceBoardConfig {
             compliance_review_interval: Duration::from_secs(86400), // Daily
             regulatory_check_interval: Duration::from_secs(3600 * 4), // Every 4 hours
             risk_assessment_interval: Duration::from_secs(86400 * 7), // Weekly
-            policy_review_cycle: Duration::from_secs(86400 * 90), // Quarterly
+            policy_review_cycle: Duration::from_secs(86400 * 90),   // Quarterly
             compliance_thresholds: ComplianceThresholds {
                 compliance_score_warning: 0.8,
                 compliance_score_critical: 0.6,
@@ -89,11 +89,7 @@ impl Default for LegalComplianceBoardConfig {
                 audit_preparation_days: 30,
                 violation_response_hours: 24,
             },
-            monitored_jurisdictions: vec![
-                "US".to_string(),
-                "EU".to_string(),
-                "UK".to_string(),
-            ],
+            monitored_jurisdictions: vec!["US".to_string(), "EU".to_string(), "UK".to_string()],
         }
     }
 }
@@ -103,16 +99,16 @@ impl Default for LegalComplianceBoardConfig {
 struct ComplianceManager {
     /// Active compliance frameworks
     compliance_frameworks: HashMap<String, ComplianceFramework>,
-    
+
     /// Compliance assessments
     assessments: VecDeque<ComplianceAssessment>,
-    
+
     /// Compliance violations
     violations: HashMap<String, ComplianceViolation>,
-    
+
     /// Remediation actions
     remediation_actions: Vec<RemediationAction>,
-    
+
     /// Compliance metrics
     compliance_metrics: ComplianceMetrics,
 }
@@ -194,10 +190,10 @@ struct AssessmentCriterion {
 /// Scoring scales
 #[derive(Debug, Clone)]
 enum ScoringScale {
-    Binary,        // 0 or 1
-    Scale5,        // 1-5
-    Scale10,       // 1-10
-    Percentage,    // 0-100%
+    Binary,     // 0 or 1
+    Scale5,     // 1-5
+    Scale10,    // 1-10
+    Percentage, // 0-100%
     Custom(Vec<String>),
 }
 
@@ -375,16 +371,16 @@ struct ComplianceMetrics {
 struct RegulatoryTracker {
     /// Tracked regulations
     regulations: HashMap<String, Regulation>,
-    
+
     /// Regulatory changes
     regulatory_changes: VecDeque<RegulatoryChange>,
-    
+
     /// Compliance obligations
     obligations: HashMap<String, ComplianceObligation>,
-    
+
     /// Monitoring sources
     monitoring_sources: Vec<MonitoringSource>,
-    
+
     /// Tracking metrics
     tracking_metrics: TrackingMetrics,
 }
@@ -543,16 +539,16 @@ struct TrackingMetrics {
 struct LegalRiskAssessor {
     /// Risk models
     risk_models: HashMap<String, LegalRiskModel>,
-    
+
     /// Identified risks
     legal_risks: HashMap<String, LegalRisk>,
-    
+
     /// Risk assessments
     risk_assessments: VecDeque<LegalRiskAssessment>,
-    
+
     /// Mitigation strategies
     mitigation_strategies: Vec<RiskMitigationStrategy>,
-    
+
     /// Risk metrics
     risk_metrics: LegalRiskMetrics,
 }
@@ -698,16 +694,16 @@ struct LegalRiskMetrics {
 struct PolicyManager {
     /// Organizational policies
     policies: HashMap<String, OrganizationalPolicy>,
-    
+
     /// Policy templates
     policy_templates: HashMap<String, PolicyTemplate>,
-    
+
     /// Policy reviews
     policy_reviews: VecDeque<PolicyReview>,
-    
+
     /// Policy compliance tracking
     compliance_tracking: HashMap<String, PolicyComplianceTracking>,
-    
+
     /// Policy metrics
     policy_metrics: PolicyMetrics,
 }
@@ -918,10 +914,10 @@ impl LegalComplianceBoardAgent {
             resource_requirements: ResourceRequirements {
                 min_cpu: 0.2,
                 min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 50 * 1024 * 1024,  // 50MB
+                min_storage: 50 * 1024 * 1024, // 50MB
                 max_cpu: 1.0,
                 max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024, // 1GB
+                max_storage: 1024 * 1024 * 1024,    // 1GB
             },
             health_check_interval: Duration::from_secs(60),
         };
@@ -944,9 +940,11 @@ impl LegalComplianceBoardAgent {
         let regulatory_tracker = self.regulatory_tracker.read().await;
         let legal_risk_assessor = self.legal_risk_assessor.read().await;
         let policy_manager = self.policy_manager.read().await;
-        
+
         Ok(ComplianceStatus {
-            overall_compliance_score: compliance_manager.compliance_metrics.overall_compliance_score,
+            overall_compliance_score: compliance_manager
+                .compliance_metrics
+                .overall_compliance_score,
             active_frameworks: compliance_manager.compliance_metrics.active_frameworks,
             compliance_rate: if compliance_manager.compliance_metrics.total_requirements > 0 {
                 compliance_manager.compliance_metrics.compliant_requirements as f64
@@ -992,32 +990,35 @@ impl Agent for LegalComplianceBoardAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Legal Compliance Board Agent");
-        
+
         // Initialize compliance frameworks
         let mut compliance_manager = self.compliance_manager.write().await;
-        self.initialize_compliance_frameworks(&mut compliance_manager).await?;
-        
+        self.initialize_compliance_frameworks(&mut compliance_manager)
+            .await?;
+
         // Initialize regulatory tracking
         let mut regulatory_tracker = self.regulatory_tracker.write().await;
-        self.initialize_regulatory_monitoring(&mut regulatory_tracker).await?;
-        
+        self.initialize_regulatory_monitoring(&mut regulatory_tracker)
+            .await?;
+
         // Initialize legal risk models
         let mut legal_risk_assessor = self.legal_risk_assessor.write().await;
-        self.initialize_risk_models(&mut legal_risk_assessor).await?;
-        
+        self.initialize_risk_models(&mut legal_risk_assessor)
+            .await?;
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Legal Compliance Board Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Legal Compliance Board Agent");
-        
+
         // Start compliance monitoring
         let compliance_manager = self.compliance_manager.clone();
         let review_interval = self.config.compliance_review_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(review_interval);
             loop {
@@ -1027,11 +1028,11 @@ impl Agent for LegalComplianceBoardAgent {
                 }
             }
         });
-        
+
         // Start regulatory monitoring
         let regulatory_tracker = self.regulatory_tracker.clone();
         let check_interval = self.config.regulatory_check_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(check_interval);
             loop {
@@ -1041,16 +1042,16 @@ impl Agent for LegalComplianceBoardAgent {
                 }
             }
         });
-        
+
         tracing::info!("Legal Compliance Board Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Legal Compliance Board Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Legal Compliance Board Agent stopped successfully");
         Ok(())
     }
@@ -1059,7 +1060,7 @@ impl Agent for LegalComplianceBoardAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -1074,11 +1075,11 @@ impl Agent for LegalComplianceBoardAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "get-status" => {
                 let status = self.get_compliance_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1096,28 +1097,26 @@ impl Agent for LegalComplianceBoardAgent {
                     resource_usage: ResourceUsage::default(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Legal compliance check failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed("Legal compliance check failed".to_string()),
+                result: serde_json::Value::Null,
+                error: Some(format!("Unknown task type: {}", task.name)),
+                execution_time: start_time.elapsed(),
+                resource_usage: ResourceUsage::default(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
         let compliance_manager = self.compliance_manager.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 3.0, // Placeholder
+            cpu_usage: 3.0,                  // Placeholder
             memory_usage: 256 * 1024 * 1024, // 256MB placeholder
             task_queue_size: 0,
             completed_tasks: compliance_manager.compliance_metrics.active_frameworks,
@@ -1153,11 +1152,11 @@ impl LegalComplianceBoardAgent {
             pending_actions: 3,
             completed_actions: 15,
         };
-        
+
         tracing::info!("Initialized compliance frameworks");
         Ok(())
     }
-    
+
     /// Initialize regulatory monitoring
     async fn initialize_regulatory_monitoring(
         &self,
@@ -1170,11 +1169,11 @@ impl LegalComplianceBoardAgent {
             monitoring_sources: 8,
             update_frequency: Duration::from_secs(3600 * 4),
         };
-        
+
         tracing::info!("Initialized regulatory monitoring");
         Ok(())
     }
-    
+
     /// Initialize legal risk models
     async fn initialize_risk_models(
         &self,
@@ -1187,31 +1186,31 @@ impl LegalComplianceBoardAgent {
             average_risk_score: 3.2,
             risk_trend: "Stable".to_string(),
         };
-        
+
         tracing::info!("Initialized legal risk assessment models");
         Ok(())
     }
-    
+
     /// Run compliance review (background task)
     async fn run_compliance_review(
         compliance_manager: Arc<RwLock<ComplianceManager>>,
     ) -> Result<()> {
         let _compliance_manager = compliance_manager.read().await;
-        
+
         // TODO: Implement compliance review cycle
-        
+
         tracing::debug!("Compliance review cycle completed");
         Ok(())
     }
-    
+
     /// Run regulatory monitoring (background task)
     async fn run_regulatory_monitoring(
         regulatory_tracker: Arc<RwLock<RegulatoryTracker>>,
     ) -> Result<()> {
         let _regulatory_tracker = regulatory_tracker.read().await;
-        
+
         // TODO: Implement regulatory monitoring cycle
-        
+
         tracing::debug!("Regulatory monitoring cycle completed");
         Ok(())
     }

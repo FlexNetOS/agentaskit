@@ -1,12 +1,12 @@
 use anyhow::Result;
+use chrono::{DateTime, Duration, Utc};
+use ring::{digest, hmac};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use chrono::{DateTime, Utc, Duration};
-use ring::{digest, hmac};
-use tracing::{info, warn, error, debug};
 
 /// Security capabilities and permissions
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -17,21 +17,21 @@ pub enum Capability {
     TaskOrchestration,
     SecurityManagement,
     MonitoringAccess,
-    
+
     // Agent layer capabilities
     StrategicPlanning,
     PolicyEnforcement,
     OperationalControl,
     DomainExpertise,
     TaskExecution,
-    
+
     // Functional capabilities
     DataAccess,
     NetworkAccess,
     FileSystemAccess,
     DatabaseAccess,
     ExternalAPIAccess,
-    
+
     // Security operations
     AuditLog,
     ComplianceCheck,
@@ -117,7 +117,7 @@ impl SecurityManager {
     pub async fn new() -> Result<Self> {
         // In production, this should use a secure key management system
         let signing_key = hmac::Key::new(hmac::HMAC_SHA256, b"agentaskit-security-key");
-        
+
         Ok(Self {
             active_tokens: Arc::new(RwLock::new(HashMap::new())),
             access_control_list: Arc::new(RwLock::new(HashMap::new())),
@@ -128,15 +128,24 @@ impl SecurityManager {
     }
 
     /// Issue a capability token for an agent
-    pub async fn issue_token(&self, agent_id: Uuid, capabilities: Vec<Capability>) -> Result<CapabilityToken> {
+    pub async fn issue_token(
+        &self,
+        agent_id: Uuid,
+        capabilities: Vec<Capability>,
+    ) -> Result<CapabilityToken> {
         let token_id = Uuid::new_v4();
         let issued_at = Utc::now();
         let expires_at = issued_at + self.token_validity_duration;
 
         // Create token data for signing
-        let token_data = format!("{}:{}:{}:{:?}", 
-            token_id, agent_id, expires_at.timestamp(), capabilities);
-        
+        let token_data = format!(
+            "{}:{}:{}:{:?}",
+            token_id,
+            agent_id,
+            expires_at.timestamp(),
+            capabilities
+        );
+
         // Sign the token
         let signature = hmac::sign(&self.signing_key, token_data.as_bytes());
         let signature_hex = hex::encode(signature.as_ref());
@@ -152,7 +161,10 @@ impl SecurityManager {
         };
 
         // Store the token
-        self.active_tokens.write().await.insert(token_id, token.clone());
+        self.active_tokens
+            .write()
+            .await
+            .insert(token_id, token.clone());
 
         // Log the issuance
         self.log_security_event(
@@ -166,16 +178,20 @@ impl SecurityManager {
                 "capabilities": capabilities,
                 "expires_at": expires_at
             }),
-        ).await;
+        )
+        .await;
 
-        info!("Issued capability token {} for agent {}", token_id, agent_id);
+        info!(
+            "Issued capability token {} for agent {}",
+            token_id, agent_id
+        );
         Ok(token)
     }
 
     /// Validate a capability token
     pub async fn validate_token(&self, token_id: Uuid) -> Result<CapabilityToken> {
         let tokens = self.active_tokens.read().await;
-        
+
         if let Some(token) = tokens.get(&token_id) {
             if token.is_valid() {
                 Ok(token.clone())
@@ -193,7 +209,7 @@ impl SecurityManager {
     /// Revoke a capability token
     pub async fn revoke_token(&self, token_id: Uuid) -> Result<()> {
         let mut tokens = self.active_tokens.write().await;
-        
+
         if let Some(token) = tokens.remove(&token_id) {
             self.log_security_event(
                 token.agent_id,
@@ -205,8 +221,9 @@ impl SecurityManager {
                     "token_id": token_id,
                     "reason": "manual_revocation"
                 }),
-            ).await;
-            
+            )
+            .await;
+
             info!("Revoked capability token {}", token_id);
             Ok(())
         } else {
@@ -215,27 +232,38 @@ impl SecurityManager {
     }
 
     /// Check if an agent has permission to access a resource
-    pub async fn check_access(&self, agent_id: Uuid, resource: &str, required_capability: &Capability) -> Result<bool> {
+    pub async fn check_access(
+        &self,
+        agent_id: Uuid,
+        resource: &str,
+        required_capability: &Capability,
+    ) -> Result<bool> {
         // Check if agent has an active token with the required capability
         let tokens = self.active_tokens.read().await;
-        let agent_token = tokens.values()
+        let agent_token = tokens
+            .values()
             .find(|token| token.agent_id == agent_id && token.is_valid());
 
         if let Some(token) = agent_token {
             let has_capability = token.has_capability(required_capability);
-            
+
             // Log the access attempt
             self.log_security_event(
                 agent_id,
                 "access_check".to_string(),
                 Some(resource.to_string()),
                 has_capability,
-                if has_capability { None } else { Some("insufficient_capabilities".to_string()) },
+                if has_capability {
+                    None
+                } else {
+                    Some("insufficient_capabilities".to_string())
+                },
                 serde_json::json!({
                     "required_capability": required_capability,
                     "agent_capabilities": token.capabilities
                 }),
-            ).await;
+            )
+            .await;
 
             Ok(has_capability)
         } else {
@@ -249,14 +277,21 @@ impl SecurityManager {
                 serde_json::json!({
                     "required_capability": required_capability
                 }),
-            ).await;
+            )
+            .await;
 
             Ok(false)
         }
     }
 
     /// Grant access to a resource for an agent
-    pub async fn grant_access(&self, resource_id: String, agent_id: Uuid, capabilities: Vec<Capability>, granted_by: Uuid) -> Result<()> {
+    pub async fn grant_access(
+        &self,
+        resource_id: String,
+        agent_id: Uuid,
+        capabilities: Vec<Capability>,
+        granted_by: Uuid,
+    ) -> Result<()> {
         let access_entry = AccessControlEntry {
             resource_id: resource_id.clone(),
             agent_id,
@@ -265,7 +300,9 @@ impl SecurityManager {
             granted_by,
         };
 
-        self.access_control_list.write().await
+        self.access_control_list
+            .write()
+            .await
             .entry(resource_id.clone())
             .or_insert_with(Vec::new)
             .push(access_entry);
@@ -280,19 +317,28 @@ impl SecurityManager {
                 "target_agent": agent_id,
                 "capabilities": capabilities
             }),
-        ).await;
+        )
+        .await;
 
-        info!("Granted access to resource {} for agent {}", resource_id, agent_id);
+        info!(
+            "Granted access to resource {} for agent {}",
+            resource_id, agent_id
+        );
         Ok(())
     }
 
     /// Revoke access to a resource for an agent
-    pub async fn revoke_access(&self, resource_id: &str, agent_id: Uuid, revoked_by: Uuid) -> Result<()> {
+    pub async fn revoke_access(
+        &self,
+        resource_id: &str,
+        agent_id: Uuid,
+        revoked_by: Uuid,
+    ) -> Result<()> {
         let mut acl = self.access_control_list.write().await;
-        
+
         if let Some(entries) = acl.get_mut(resource_id) {
             entries.retain(|entry| entry.agent_id != agent_id);
-            
+
             self.log_security_event(
                 revoked_by,
                 "access_revoked".to_string(),
@@ -302,9 +348,13 @@ impl SecurityManager {
                 serde_json::json!({
                     "target_agent": agent_id
                 }),
-            ).await;
+            )
+            .await;
 
-            info!("Revoked access to resource {} for agent {}", resource_id, agent_id);
+            info!(
+                "Revoked access to resource {} for agent {}",
+                resource_id, agent_id
+            );
             Ok(())
         } else {
             Err(anyhow::anyhow!("Resource not found in ACL"))
@@ -338,7 +388,7 @@ impl SecurityManager {
     /// Get audit log entries for analysis
     pub async fn get_audit_log(&self, limit: Option<usize>) -> Vec<AuditLogEntry> {
         let log = self.audit_log.read().await;
-        
+
         if let Some(limit) = limit {
             log.iter().rev().take(limit).cloned().collect()
         } else {
@@ -350,15 +400,19 @@ impl SecurityManager {
     pub async fn cleanup_expired_tokens(&self) -> Result<()> {
         let mut tokens = self.active_tokens.write().await;
         let current_time = Utc::now();
-        
-        let expired_tokens: Vec<Uuid> = tokens.iter()
+
+        let expired_tokens: Vec<Uuid> = tokens
+            .iter()
             .filter(|(_, token)| current_time >= token.expires_at)
             .map(|(id, _)| *id)
             .collect();
 
         for token_id in expired_tokens {
             if let Some(token) = tokens.remove(&token_id) {
-                debug!("Removed expired token {} for agent {}", token_id, token.agent_id);
+                debug!(
+                    "Removed expired token {} for agent {}",
+                    token_id, token.agent_id
+                );
             }
         }
 
@@ -373,12 +427,14 @@ impl SecurityManager {
 
         let now = Utc::now();
         let one_hour_ago = now - Duration::hours(1);
-        
-        let recent_events = audit_log.iter()
+
+        let recent_events = audit_log
+            .iter()
             .filter(|entry| entry.timestamp >= one_hour_ago)
             .count();
 
-        let failed_events = audit_log.iter()
+        let failed_events = audit_log
+            .iter()
             .filter(|entry| entry.timestamp >= one_hour_ago && !entry.success)
             .count();
 
@@ -439,15 +495,17 @@ pub mod security_utils {
                 Capability::DataAccess,
                 Capability::ExternalAPIAccess,
             ],
-            crate::agents::AgentLayer::Micro => vec![
-                Capability::TaskExecution,
-                Capability::DataAccess,
-            ],
+            crate::agents::AgentLayer::Micro => {
+                vec![Capability::TaskExecution, Capability::DataAccess]
+            }
         }
     }
 
     /// Validate that a requested capability is appropriate for an agent layer
-    pub fn validate_capability_for_layer(layer: &crate::agents::AgentLayer, capability: &Capability) -> bool {
+    pub fn validate_capability_for_layer(
+        layer: &crate::agents::AgentLayer,
+        capability: &Capability,
+    ) -> bool {
         let allowed_capabilities = get_layer_capabilities(layer);
         allowed_capabilities.contains(capability)
     }

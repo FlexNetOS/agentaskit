@@ -4,8 +4,8 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -55,12 +55,12 @@ pub struct SecurityConfig {
 /// Security scan intervals configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScanIntervals {
-    pub vulnerability_scan: u64,      // seconds
-    pub threat_detection: u64,        // seconds
-    pub compliance_check: u64,        // seconds
-    pub access_audit: u64,           // seconds
-    pub policy_validation: u64,       // seconds
-    pub deep_security_scan: u64,      // seconds
+    pub vulnerability_scan: u64, // seconds
+    pub threat_detection: u64,   // seconds
+    pub compliance_check: u64,   // seconds
+    pub access_audit: u64,       // seconds
+    pub policy_validation: u64,  // seconds
+    pub deep_security_scan: u64, // seconds
 }
 
 /// Threat detection configuration
@@ -442,12 +442,12 @@ impl Default for SecurityConfig {
     fn default() -> Self {
         Self {
             scan_intervals: ScanIntervals {
-                vulnerability_scan: 3600,     // 1 hour
-                threat_detection: 60,         // 1 minute
-                compliance_check: 86400,      // 1 day
-                access_audit: 1800,           // 30 minutes
-                policy_validation: 3600,      // 1 hour
-                deep_security_scan: 604800,   // 1 week
+                vulnerability_scan: 3600,   // 1 hour
+                threat_detection: 60,       // 1 minute
+                compliance_check: 86400,    // 1 day
+                access_audit: 1800,         // 30 minutes
+                policy_validation: 3600,    // 1 hour
+                deep_security_scan: 604800, // 1 week
             },
             threat_detection: ThreatDetectionConfig {
                 enabled_detectors: vec![
@@ -545,11 +545,12 @@ impl SecuritySpecialistAgent {
     pub fn new(config: Option<SecurityConfig>) -> Self {
         let config = config.unwrap_or_default();
         let id = Uuid::new_v4();
-        
+
         let security_engine = Arc::new(SecurityEngine::new(config.clone()));
         let vulnerability_scanner = Arc::new(VulnerabilityScanner::new());
         let threat_detector = Arc::new(ThreatDetector::new(config.threat_detection.clone()));
-        let compliance_monitor = Arc::new(ComplianceMonitor::new(config.compliance_frameworks.clone()));
+        let compliance_monitor =
+            Arc::new(ComplianceMonitor::new(config.compliance_frameworks.clone()));
         let access_controller = Arc::new(AccessController::new(config.access_control.clone()));
         let security_policies = Arc::new(RwLock::new(SecurityPolicyEngine::new()));
         let incident_responder = Arc::new(IncidentResponder::new(config.incident_response.clone()));
@@ -604,8 +605,15 @@ impl SecuritySpecialistAgent {
     }
 
     /// Perform comprehensive security scan
-    pub async fn perform_security_scan(&self, target: &str, scan_type: &str) -> crate::agents::AgentResult<SecurityScanResult> {
-        info!("Starting security scan for target: {}, type: {}", target, scan_type);
+    pub async fn perform_security_scan(
+        &self,
+        target: &str,
+        scan_type: &str,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
+        info!(
+            "Starting security scan for target: {}, type: {}",
+            target, scan_type
+        );
 
         let scan_id = Uuid::new_v4();
         let scan = SecurityScan {
@@ -619,7 +627,11 @@ impl SecuritySpecialistAgent {
         };
 
         // Store active scan
-        self.security_engine.active_scans.lock().await.insert(scan_id, scan);
+        self.security_engine
+            .active_scans
+            .lock()
+            .await
+            .insert(scan_id, scan);
 
         // Perform the actual scan based on type
         let result = match scan_type {
@@ -628,11 +640,22 @@ impl SecuritySpecialistAgent {
             "compliance" => self.run_compliance_scan(target, scan_id).await?,
             "access_audit" => self.run_access_audit_scan(target, scan_id).await?,
             "deep_security" => self.run_deep_security_scan(target, scan_id).await?,
-            _ => return Err(AgentError::InvalidInput(format!("Unknown scan type: {}", scan_type))),
+            _ => {
+                return Err(AgentError::InvalidInput(format!(
+                    "Unknown scan type: {}",
+                    scan_type
+                )))
+            }
         };
 
         // Update scan completion
-        if let Some(mut scan) = self.security_engine.active_scans.lock().await.get_mut(&scan_id) {
+        if let Some(mut scan) = self
+            .security_engine
+            .active_scans
+            .lock()
+            .await
+            .get_mut(&scan_id)
+        {
             scan.status = ScanStatus::Completed;
             scan.completed_at = Some(chrono::Utc::now());
             scan.progress = 100;
@@ -643,9 +666,13 @@ impl SecuritySpecialistAgent {
     }
 
     /// Run vulnerability assessment scan
-    async fn run_vulnerability_scan(&self, target: &str, scan_id: Uuid) -> crate::agents::AgentResult<SecurityScanResult> {
+    async fn run_vulnerability_scan(
+        &self,
+        target: &str,
+        scan_id: Uuid,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
         let scan_result = self.vulnerability_scanner.scan_target(target).await?;
-        
+
         let result = SecurityScanResult {
             scan_id,
             scan_type: "vulnerability".to_string(),
@@ -660,14 +687,20 @@ impl SecuritySpecialistAgent {
     }
 
     /// Run threat detection scan
-    async fn run_threat_detection_scan(&self, target: &str, scan_id: Uuid) -> crate::agents::AgentResult<SecurityScanResult> {
+    async fn run_threat_detection_scan(
+        &self,
+        target: &str,
+        scan_id: Uuid,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
         let threats = self.threat_detector.detect_threats(target).await?;
-        
+
         let mut severity_breakdown = HashMap::new();
         let mut recommendations = vec![];
 
         for threat in &threats {
-            *severity_breakdown.entry(threat.severity.clone()).or_insert(0) += 1;
+            *severity_breakdown
+                .entry(threat.severity.clone())
+                .or_insert(0) += 1;
             recommendations.extend(threat.mitigation_steps.clone());
         }
 
@@ -685,9 +718,13 @@ impl SecuritySpecialistAgent {
     }
 
     /// Run compliance assessment scan
-    async fn run_compliance_scan(&self, target: &str, scan_id: Uuid) -> crate::agents::AgentResult<SecurityScanResult> {
+    async fn run_compliance_scan(
+        &self,
+        target: &str,
+        scan_id: Uuid,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
         let compliance_results = self.compliance_monitor.assess_compliance(target).await?;
-        
+
         let mut severity_breakdown = HashMap::new();
         let mut recommendations = vec![];
 
@@ -720,14 +757,20 @@ impl SecuritySpecialistAgent {
     }
 
     /// Run access control audit scan
-    async fn run_access_audit_scan(&self, target: &str, scan_id: Uuid) -> crate::agents::AgentResult<SecurityScanResult> {
+    async fn run_access_audit_scan(
+        &self,
+        target: &str,
+        scan_id: Uuid,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
         let audit_results = self.access_controller.audit_access_controls(target).await?;
-        
+
         let mut severity_breakdown = HashMap::new();
         let mut recommendations = vec![];
 
         for finding in &audit_results.findings {
-            *severity_breakdown.entry(finding.severity.clone()).or_insert(0) += 1;
+            *severity_breakdown
+                .entry(finding.severity.clone())
+                .or_insert(0) += 1;
             recommendations.push(finding.recommendation.clone());
         }
 
@@ -745,7 +788,11 @@ impl SecuritySpecialistAgent {
     }
 
     /// Run comprehensive deep security scan
-    async fn run_deep_security_scan(&self, target: &str, scan_id: Uuid) -> crate::agents::AgentResult<SecurityScanResult> {
+    async fn run_deep_security_scan(
+        &self,
+        target: &str,
+        scan_id: Uuid,
+    ) -> crate::agents::AgentResult<SecurityScanResult> {
         // Combine multiple scan types for comprehensive analysis
         let vuln_result = self.run_vulnerability_scan(target, scan_id).await?;
         let threat_result = self.run_threat_detection_scan(target, scan_id).await?;
@@ -753,12 +800,18 @@ impl SecuritySpecialistAgent {
         let access_result = self.run_access_audit_scan(target, scan_id).await?;
 
         // Combine all results
-        let total_findings = vuln_result.findings + threat_result.findings + 
-                           compliance_result.findings + access_result.findings;
+        let total_findings = vuln_result.findings
+            + threat_result.findings
+            + compliance_result.findings
+            + access_result.findings;
 
         let mut combined_severity = HashMap::new();
-        for (severity, count) in [vuln_result.severity_breakdown, threat_result.severity_breakdown,
-                                 compliance_result.severity_breakdown, access_result.severity_breakdown] {
+        for (severity, count) in [
+            vuln_result.severity_breakdown,
+            threat_result.severity_breakdown,
+            compliance_result.severity_breakdown,
+            access_result.severity_breakdown,
+        ] {
             for (sev, cnt) in severity {
                 *combined_severity.entry(sev).or_insert(0) += cnt;
             }
@@ -784,38 +837,66 @@ impl SecuritySpecialistAgent {
     }
 
     /// Handle security incident
-    pub async fn handle_security_incident(&self, incident: SecurityIncident) -> crate::agents::AgentResult<IncidentResponse> {
-        info!("Handling security incident: {} ({})", incident.title, incident.incident_type);
+    pub async fn handle_security_incident(
+        &self,
+        incident: SecurityIncident,
+    ) -> crate::agents::AgentResult<IncidentResponse> {
+        info!(
+            "Handling security incident: {} ({})",
+            incident.title, incident.incident_type
+        );
 
         let response = self.incident_responder.handle_incident(incident).await?;
-        
-        info!("Security incident handled with response ID: {}", response.response_id);
+
+        info!(
+            "Security incident handled with response ID: {}",
+            response.response_id
+        );
         Ok(response)
     }
 
     /// Enforce security policy
-    pub async fn enforce_security_policy(&self, policy_id: &str, target: &str) -> crate::agents::AgentResult<PolicyEnforcementResult> {
-        info!("Enforcing security policy {} on target: {}", policy_id, target);
+    pub async fn enforce_security_policy(
+        &self,
+        policy_id: &str,
+        target: &str,
+    ) -> crate::agents::AgentResult<PolicyEnforcementResult> {
+        info!(
+            "Enforcing security policy {} on target: {}",
+            policy_id, target
+        );
 
         let policies = self.security_policies.read().await;
         let enforcement_result = policies.enforce_policy(policy_id, target).await?;
-        
-        info!("Policy enforcement completed with {} violations found", enforcement_result.violations.len());
+
+        info!(
+            "Policy enforcement completed with {} violations found",
+            enforcement_result.violations.len()
+        );
         Ok(enforcement_result)
     }
 
     /// Generate security audit report
-    pub async fn generate_security_audit_report(&self, scope: AuditScope) -> crate::agents::AgentResult<SecurityAuditReport> {
+    pub async fn generate_security_audit_report(
+        &self,
+        scope: AuditScope,
+    ) -> crate::agents::AgentResult<SecurityAuditReport> {
         info!("Generating security audit report for scope: {:?}", scope);
 
         let report = self.security_audit.generate_audit_report(scope).await?;
-        
-        info!("Security audit report generated with ID: {}", report.report_id);
+
+        info!(
+            "Security audit report generated with ID: {}",
+            report.report_id
+        );
         Ok(report)
     }
 
     /// Update security policies
-    pub async fn update_security_policies(&self, policies: Vec<SecurityPolicy>) -> crate::agents::AgentResult<()> {
+    pub async fn update_security_policies(
+        &self,
+        policies: Vec<SecurityPolicy>,
+    ) -> crate::agents::AgentResult<()> {
         info!("Updating {} security policies", policies.len());
 
         let mut policy_engine = self.security_policies.write().await;
@@ -859,10 +940,10 @@ impl SecuritySpecialistAgent {
         let vuln_scanner = Arc::clone(&self.vulnerability_scanner);
         let vuln_config = config.clone();
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(vuln_config.scan_intervals.vulnerability_scan)
-            );
-            
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+                vuln_config.scan_intervals.vulnerability_scan,
+            ));
+
             loop {
                 interval.tick().await;
                 if let Err(e) = vuln_scanner.perform_scheduled_scan().await {
@@ -874,10 +955,10 @@ impl SecuritySpecialistAgent {
         // Start threat detection task
         let threat_config = config.clone();
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(threat_config.scan_intervals.threat_detection)
-            );
-            
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+                threat_config.scan_intervals.threat_detection,
+            ));
+
             loop {
                 interval.tick().await;
                 if let Err(e) = threat_detector.continuous_monitoring().await {
@@ -889,10 +970,10 @@ impl SecuritySpecialistAgent {
         // Start compliance monitoring task
         let compliance_config = config.clone();
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(compliance_config.scan_intervals.compliance_check)
-            );
-            
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+                compliance_config.scan_intervals.compliance_check,
+            ));
+
             loop {
                 interval.tick().await;
                 if let Err(e) = compliance_monitor.scheduled_compliance_check().await {
@@ -926,7 +1007,7 @@ impl Agent for SecuritySpecialistAgent {
 
     async fn start(&mut self) -> Result<()> {
         info!("Starting Security Specialist Agent {}", self.name);
-        
+
         let mut active = self.active.lock().await;
         if *active {
             return Err(AgentError::AlreadyRunning.into());
@@ -945,13 +1026,16 @@ impl Agent for SecuritySpecialistAgent {
         self.start_background_monitoring().await?;
 
         *active = true;
-        info!("Security Specialist Agent {} started successfully", self.name);
+        info!(
+            "Security Specialist Agent {} started successfully",
+            self.name
+        );
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         info!("Stopping Security Specialist Agent {}", self.name);
-        
+
         let mut active = self.active.lock().await;
         if !*active {
             return Err(AgentError::NotRunning.into());
@@ -967,7 +1051,10 @@ impl Agent for SecuritySpecialistAgent {
         self.security_audit.shutdown().await?;
 
         *active = false;
-        info!("Security Specialist Agent {} stopped successfully", self.name);
+        info!(
+            "Security Specialist Agent {} stopped successfully",
+            self.name
+        );
         Ok(())
     }
 
@@ -982,7 +1069,7 @@ impl Agent for SecuritySpecialistAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         info!("Initializing Security Specialist Agent {}", self.name);
-        
+
         // Initialize all security components
         self.security_engine.initialize().await?;
         self.vulnerability_scanner.initialize().await?;
@@ -992,32 +1079,35 @@ impl Agent for SecuritySpecialistAgent {
         self.incident_responder.initialize().await?;
         self.security_audit.initialize().await?;
 
-        info!("Security Specialist Agent {} initialized successfully", self.name);
+        info!(
+            "Security Specialist Agent {} initialized successfully",
+            self.name
+        );
         Ok(())
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let status = self.get_security_status().await?;
-        
+
         Ok(crate::agents::HealthStatus {
             agent_id: self.metadata.id,
             state: self.state().await,
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 0.0, // Would be actual CPU usage
+            cpu_usage: 0.0,  // Would be actual CPU usage
             memory_usage: 0, // Would be actual memory usage
             task_queue_size: self.tasks.lock().await.len() as usize,
             completed_tasks: 0, // Would track completed tasks
-            failed_tasks: 0, // Would track failed tasks
+            failed_tasks: 0,    // Would track failed tasks
             average_response_time: std::time::Duration::from_millis(100), // Placeholder
         })
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
         info!("Updating Security Specialist Agent configuration");
-        
+
         // Parse and update configuration
         // This would deserialize the config and update the agent settings
-        
+
         info!("Security Specialist Agent configuration updated");
         Ok(())
     }
@@ -1030,13 +1120,17 @@ impl Agent for SecuritySpecialistAgent {
 
         let task_status = match task.task_type.as_str() {
             "security_scan" => {
-                let target = task.parameters.get("target")
+                let target = task
+                    .parameters
+                    .get("target")
                     .and_then(|v| v.as_str())
                     .ok_or(AgentError::MissingParameter("target".to_string()))?;
-                let scan_type = task.parameters.get("scan_type")
+                let scan_type = task
+                    .parameters
+                    .get("scan_type")
                     .and_then(|v| v.as_str())
                     .ok_or(AgentError::MissingParameter("scan_type".to_string()))?;
-                
+
                 match self.perform_security_scan(target, scan_type).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
@@ -1047,12 +1141,14 @@ impl Agent for SecuritySpecialistAgent {
             }
             "incident_response" => {
                 // Parse incident from parameters
-                let incident_data = task.parameters.get("incident")
+                let incident_data = task
+                    .parameters
+                    .get("incident")
                     .ok_or(AgentError::MissingParameter("incident".to_string()))?;
-                
+
                 // Would deserialize actual incident data
                 let incident = SecurityIncident::default(); // Placeholder
-                
+
                 match self.handle_security_incident(incident).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
@@ -1062,13 +1158,17 @@ impl Agent for SecuritySpecialistAgent {
                 }
             }
             "policy_enforcement" => {
-                let policy_id = task.parameters.get("policy_id")
+                let policy_id = task
+                    .parameters
+                    .get("policy_id")
                     .and_then(|v| v.as_str())
                     .ok_or(AgentError::MissingParameter("policy_id".to_string()))?;
-                let target = task.parameters.get("target")
+                let target = task
+                    .parameters
+                    .get("target")
                     .and_then(|v| v.as_str())
                     .ok_or(AgentError::MissingParameter("target".to_string()))?;
-                
+
                 match self.enforce_security_policy(policy_id, target).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
@@ -1078,11 +1178,13 @@ impl Agent for SecuritySpecialistAgent {
                 }
             }
             "audit_report" => {
-                let scope_str = task.parameters.get("scope")
+                let scope_str = task
+                    .parameters
+                    .get("scope")
                     .ok_or(AgentError::MissingParameter("scope".to_string()))?;
-                
+
                 let scope = AuditScope::System; // Would parse from scope_str
-                
+
                 match self.generate_security_audit_report(scope).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
@@ -1091,23 +1193,24 @@ impl Agent for SecuritySpecialistAgent {
                     }
                 }
             }
-            "status_check" => {
-                match self.get_security_status().await {
-                    Ok(_) => TaskStatus::Completed,
-                    Err(e) => {
-                        error!("Security status check failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
-                    }
+            "status_check" => match self.get_security_status().await {
+                Ok(_) => TaskStatus::Completed,
+                Err(e) => {
+                    error!("Security status check failed: {}", e);
+                    TaskStatus::Failed(e.to_string())
                 }
-            }
+            },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
                 TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
             }
         };
 
-        debug!("Task {} completed with status: {:?}", task.name, task_status);
-        
+        debug!(
+            "Task {} completed with status: {:?}",
+            task.name, task_status
+        );
+
         // Convert TaskStatus to TaskResult
         let result = TaskResult {
             task_id: task.id,
@@ -1117,18 +1220,25 @@ impl Agent for SecuritySpecialistAgent {
             execution_time: std::time::Duration::from_secs(1), // Placeholder
             resource_usage: ResourceUsage::default(),
         };
-        
+
         Ok(result)
     }
 
     async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, to, task, priority, timeout } => {
+            AgentMessage::Request {
+                id,
+                from,
+                to,
+                task,
+                priority,
+                timeout,
+            } => {
                 debug!("Received task request: {} from {}", task.name, from.0);
-                
+
                 // Execute the requested task
                 let task_result = self.execute_task(task.clone()).await?;
-                
+
                 let response = AgentMessage::Response {
                     id: MessageId::new(),
                     request_id: id,
@@ -1136,12 +1246,18 @@ impl Agent for SecuritySpecialistAgent {
                     to: from,
                     result: task_result,
                 };
-                
+
                 Ok(Some(response))
             }
-            AgentMessage::Broadcast { id, from, topic, payload, scope } => {
+            AgentMessage::Broadcast {
+                id,
+                from,
+                topic,
+                payload,
+                scope,
+            } => {
                 debug!("Received broadcast: {} from {}", topic, from.0);
-                
+
                 // Handle broadcast messages based on topic
                 match topic.as_str() {
                     "security_alert" => {
@@ -1160,15 +1276,26 @@ impl Agent for SecuritySpecialistAgent {
                     }
                 }
             }
-            AgentMessage::Alert { id, from, severity, message, context, timestamp } => {
+            AgentMessage::Alert {
+                id,
+                from,
+                severity,
+                message,
+                context,
+                timestamp,
+            } => {
                 debug!("Received alert: {} from {}", message, from.0);
-                
+
                 // Handle security alerts
-                if matches!(severity, crate::agents::AlertSeverity::Critical | crate::agents::AlertSeverity::Emergency) {
+                if matches!(
+                    severity,
+                    crate::agents::AlertSeverity::Critical
+                        | crate::agents::AlertSeverity::Emergency
+                ) {
                     info!("Processing critical security alert: {}", message);
                     // Trigger incident response for critical alerts
                 }
-                
+
                 Ok(None)
             }
             _ => {
@@ -1177,7 +1304,6 @@ impl Agent for SecuritySpecialistAgent {
             }
         }
     }
-
 }
 
 // Additional type definitions for comprehensive security functionality
@@ -1443,7 +1569,10 @@ impl VulnerabilityScanner {
         Ok(())
     }
 
-    pub async fn scan_target(&self, target: &str) -> crate::agents::AgentResult<VulnerabilityScanResult> {
+    pub async fn scan_target(
+        &self,
+        target: &str,
+    ) -> crate::agents::AgentResult<VulnerabilityScanResult> {
         info!("Scanning target: {}", target);
         // Implementation would perform actual vulnerability scanning
         Ok(VulnerabilityScanResult {
@@ -1505,7 +1634,10 @@ impl ThreatDetector {
         Ok(())
     }
 
-    pub async fn detect_threats(&self, target: &str) -> crate::agents::AgentResult<Vec<DetectedThreat>> {
+    pub async fn detect_threats(
+        &self,
+        target: &str,
+    ) -> crate::agents::AgentResult<Vec<DetectedThreat>> {
         info!("Detecting threats for target: {}", target);
         // Implementation would perform actual threat detection
         Ok(vec![])
@@ -1543,7 +1675,10 @@ impl ComplianceMonitor {
         Ok(())
     }
 
-    pub async fn assess_compliance(&self, target: &str) -> crate::agents::AgentResult<HashMap<ComplianceFramework, ComplianceStatus>> {
+    pub async fn assess_compliance(
+        &self,
+        target: &str,
+    ) -> crate::agents::AgentResult<HashMap<ComplianceFramework, ComplianceStatus>> {
         info!("Assessing compliance for target: {}", target);
         // Implementation would perform actual compliance assessment
         Ok(HashMap::new())
@@ -1577,7 +1712,10 @@ impl AccessController {
         Ok(())
     }
 
-    pub async fn audit_access_controls(&self, target: &str) -> crate::agents::AgentResult<AccessAuditResult> {
+    pub async fn audit_access_controls(
+        &self,
+        target: &str,
+    ) -> crate::agents::AgentResult<AccessAuditResult> {
         info!("Auditing access controls for target: {}", target);
         // Implementation would perform actual access control audit
         Ok(AccessAuditResult {
@@ -1597,13 +1735,20 @@ impl SecurityPolicyEngine {
         }
     }
 
-    pub async fn add_or_update_policy(&mut self, policy: SecurityPolicy) -> crate::agents::AgentResult<()> {
+    pub async fn add_or_update_policy(
+        &mut self,
+        policy: SecurityPolicy,
+    ) -> crate::agents::AgentResult<()> {
         info!("Adding/updating security policy: {}", policy.id);
         self.policies.insert(policy.id.clone(), policy);
         Ok(())
     }
 
-    pub async fn enforce_policy(&self, policy_id: &str, target: &str) -> crate::agents::AgentResult<PolicyEnforcementResult> {
+    pub async fn enforce_policy(
+        &self,
+        policy_id: &str,
+        target: &str,
+    ) -> crate::agents::AgentResult<PolicyEnforcementResult> {
         info!("Enforcing policy {} on target: {}", policy_id, target);
         // Implementation would perform actual policy enforcement
         Ok(PolicyEnforcementResult {
@@ -1637,7 +1782,10 @@ impl IncidentResponder {
         Ok(())
     }
 
-    pub async fn handle_incident(&self, incident: SecurityIncident) -> crate::agents::AgentResult<IncidentResponse> {
+    pub async fn handle_incident(
+        &self,
+        incident: SecurityIncident,
+    ) -> crate::agents::AgentResult<IncidentResponse> {
         info!("Handling security incident: {}", incident.incident_id);
         // Implementation would perform actual incident response
         Ok(IncidentResponse {
@@ -1672,7 +1820,10 @@ impl SecurityAuditor {
         Ok(())
     }
 
-    pub async fn generate_audit_report(&self, scope: AuditScope) -> crate::agents::AgentResult<SecurityAuditReport> {
+    pub async fn generate_audit_report(
+        &self,
+        scope: AuditScope,
+    ) -> crate::agents::AgentResult<SecurityAuditReport> {
         info!("Generating security audit report for scope: {:?}", scope);
         // Implementation would perform actual audit report generation
         Ok(SecurityAuditReport {
@@ -1981,8 +2132,8 @@ pub struct SessionConfig {
 impl Default for SessionConfig {
     fn default() -> Self {
         Self {
-            default_timeout: 3600,    // 1 hour
-            max_idle_time: 1800,      // 30 minutes
+            default_timeout: 3600, // 1 hour
+            max_idle_time: 1800,   // 30 minutes
             require_renewal: true,
             concurrent_sessions: 5,
         }

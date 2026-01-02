@@ -10,40 +10,40 @@ pub enum AgentAsKitError {
     AgentAlreadyExists(uuid::Uuid),
     AgentStartupFailed(String),
     AgentShutdownTimeout(uuid::Uuid),
-    
+
     // Task execution errors
     TaskNotFound(uuid::Uuid),
     TaskExecutionFailed(String),
     TaskTimeout(uuid::Uuid),
     TaskDependencyFailed(uuid::Uuid),
-    
+
     // Communication errors
     MessageDeliveryFailed(String),
     CommunicationTimeout,
     InvalidMessageFormat(String),
     UnauthorizedAccess(uuid::Uuid),
-    
+
     // Resource errors
     InsufficientResources(String),
     ResourceAllocationFailed(String),
     ResourceLimitExceeded(String),
-    
+
     // Health monitoring errors
     HealthCheckFailed(String),
     MetricsCollectionFailed(String),
     AlertingSystemDown,
-    
+
     // Deployment errors
     DeploymentFailed(String),
     ManifestValidationFailed(String),
     ScalingFailed(String),
     RollbackFailed(String),
-    
+
     // Capability errors
     CapabilityDenied(String),
     InvalidCapabilityToken(String),
     CapabilityExpired(uuid::Uuid),
-    
+
     // FlexNetOS specific errors
     SandboxCreationFailed(String),
     WasmExecutionFailed(String),
@@ -55,13 +55,13 @@ pub enum AgentAsKitError {
     ManifestParsingFailed(String),
     AgentRegistrationFailed(String),
     HealthMonitoringFailed(String),
-    
+
     // System errors
     ConfigurationError(String),
     DatabaseConnectionFailed(String),
     NetworkError(String),
     FileSystemError(String),
-    
+
     // Generic errors
     Internal(String),
     NotImplemented(String),
@@ -80,48 +80,86 @@ impl Display for AgentAsKitError {
             AgentAsKitError::AgentNotFound(id) => write!(f, "Agent not found: {}", id),
             AgentAsKitError::AgentAlreadyExists(id) => write!(f, "Agent already exists: {}", id),
             AgentAsKitError::AgentStartupFailed(msg) => write!(f, "Agent startup failed: {}", msg),
-            AgentAsKitError::AgentShutdownTimeout(id) => write!(f, "Agent shutdown timeout: {}", id),
-            
+            AgentAsKitError::AgentShutdownTimeout(id) => {
+                write!(f, "Agent shutdown timeout: {}", id)
+            }
+
             AgentAsKitError::TaskNotFound(id) => write!(f, "Task not found: {}", id),
-            AgentAsKitError::TaskExecutionFailed(msg) => write!(f, "Task execution failed: {}", msg),
+            AgentAsKitError::TaskExecutionFailed(msg) => {
+                write!(f, "Task execution failed: {}", msg)
+            }
             AgentAsKitError::TaskTimeout(id) => write!(f, "Task timeout: {}", id),
-            AgentAsKitError::TaskDependencyFailed(id) => write!(f, "Task dependency failed: {}", id),
-            
-            AgentAsKitError::MessageDeliveryFailed(msg) => write!(f, "Message delivery failed: {}", msg),
+            AgentAsKitError::TaskDependencyFailed(id) => {
+                write!(f, "Task dependency failed: {}", id)
+            }
+
+            AgentAsKitError::MessageDeliveryFailed(msg) => {
+                write!(f, "Message delivery failed: {}", msg)
+            }
             AgentAsKitError::CommunicationTimeout => write!(f, "Communication timeout"),
-            AgentAsKitError::InvalidMessageFormat(msg) => write!(f, "Invalid message format: {}", msg),
-            AgentAsKitError::UnauthorizedAccess(id) => write!(f, "Unauthorized access by agent: {}", id),
-            
-            AgentAsKitError::InsufficientResources(msg) => write!(f, "Insufficient resources: {}", msg),
-            AgentAsKitError::ResourceAllocationFailed(msg) => write!(f, "Resource allocation failed: {}", msg),
-            AgentAsKitError::ResourceLimitExceeded(msg) => write!(f, "Resource limit exceeded: {}", msg),
-            
+            AgentAsKitError::InvalidMessageFormat(msg) => {
+                write!(f, "Invalid message format: {}", msg)
+            }
+            AgentAsKitError::UnauthorizedAccess(id) => {
+                write!(f, "Unauthorized access by agent: {}", id)
+            }
+
+            AgentAsKitError::InsufficientResources(msg) => {
+                write!(f, "Insufficient resources: {}", msg)
+            }
+            AgentAsKitError::ResourceAllocationFailed(msg) => {
+                write!(f, "Resource allocation failed: {}", msg)
+            }
+            AgentAsKitError::ResourceLimitExceeded(msg) => {
+                write!(f, "Resource limit exceeded: {}", msg)
+            }
+
             AgentAsKitError::HealthCheckFailed(msg) => write!(f, "Health check failed: {}", msg),
-            AgentAsKitError::MetricsCollectionFailed(msg) => write!(f, "Metrics collection failed: {}", msg),
+            AgentAsKitError::MetricsCollectionFailed(msg) => {
+                write!(f, "Metrics collection failed: {}", msg)
+            }
             AgentAsKitError::AlertingSystemDown => write!(f, "Alerting system is down"),
-            
+
             AgentAsKitError::DeploymentFailed(msg) => write!(f, "Deployment failed: {}", msg),
-            AgentAsKitError::ManifestValidationFailed(msg) => write!(f, "Manifest validation failed: {}", msg),
+            AgentAsKitError::ManifestValidationFailed(msg) => {
+                write!(f, "Manifest validation failed: {}", msg)
+            }
             AgentAsKitError::ScalingFailed(msg) => write!(f, "Scaling failed: {}", msg),
             AgentAsKitError::RollbackFailed(msg) => write!(f, "Rollback failed: {}", msg),
-            
+
             AgentAsKitError::CapabilityDenied(msg) => write!(f, "Capability denied: {}", msg),
-            AgentAsKitError::InvalidCapabilityToken(msg) => write!(f, "Invalid capability token: {}", msg),
+            AgentAsKitError::InvalidCapabilityToken(msg) => {
+                write!(f, "Invalid capability token: {}", msg)
+            }
             AgentAsKitError::CapabilityExpired(id) => write!(f, "Capability expired: {}", id),
-            
-            AgentAsKitError::SandboxCreationFailed(msg) => write!(f, "Sandbox creation failed: {}", msg),
-            AgentAsKitError::WasmExecutionFailed(msg) => write!(f, "WASM execution failed: {}", msg),
-            AgentAsKitError::ContractValidationFailed(msg) => write!(f, "Contract validation failed: {}", msg),
-            
-            AgentAsKitError::ManifestParsingFailed(msg) => write!(f, "Manifest parsing failed: {}", msg),
-            AgentAsKitError::AgentRegistrationFailed(msg) => write!(f, "Agent registration failed: {}", msg),
-            AgentAsKitError::HealthMonitoringFailed(msg) => write!(f, "Health monitoring failed: {}", msg),
-            
+
+            AgentAsKitError::SandboxCreationFailed(msg) => {
+                write!(f, "Sandbox creation failed: {}", msg)
+            }
+            AgentAsKitError::WasmExecutionFailed(msg) => {
+                write!(f, "WASM execution failed: {}", msg)
+            }
+            AgentAsKitError::ContractValidationFailed(msg) => {
+                write!(f, "Contract validation failed: {}", msg)
+            }
+
+            AgentAsKitError::ManifestParsingFailed(msg) => {
+                write!(f, "Manifest parsing failed: {}", msg)
+            }
+            AgentAsKitError::AgentRegistrationFailed(msg) => {
+                write!(f, "Agent registration failed: {}", msg)
+            }
+            AgentAsKitError::HealthMonitoringFailed(msg) => {
+                write!(f, "Health monitoring failed: {}", msg)
+            }
+
             AgentAsKitError::ConfigurationError(msg) => write!(f, "Configuration error: {}", msg),
-            AgentAsKitError::DatabaseConnectionFailed(msg) => write!(f, "Database connection failed: {}", msg),
+            AgentAsKitError::DatabaseConnectionFailed(msg) => {
+                write!(f, "Database connection failed: {}", msg)
+            }
             AgentAsKitError::NetworkError(msg) => write!(f, "Network error: {}", msg),
             AgentAsKitError::FileSystemError(msg) => write!(f, "File system error: {}", msg),
-            
+
             AgentAsKitError::Internal(msg) => write!(f, "Internal error: {}", msg),
             AgentAsKitError::NotImplemented(msg) => write!(f, "Not implemented: {}", msg),
             AgentAsKitError::ValidationFailed(msg) => write!(f, "Validation failed: {}", msg),
@@ -142,45 +180,45 @@ pub struct AgentAsKitConfig {
     pub system_name: String,
     pub version: String,
     pub environment: Environment,
-    
+
     // Agent configuration
     pub max_agents: u32,
     pub agent_timeout_seconds: u64,
     pub agent_heartbeat_interval_seconds: u64,
-    
+
     // Task configuration
     pub max_concurrent_tasks: u32,
     pub task_timeout_seconds: u64,
     pub task_retry_limit: u32,
-    
+
     // Communication configuration
     pub message_queue_size: u32,
     pub message_timeout_seconds: u64,
     pub broadcast_timeout_seconds: u64,
-    
+
     // Health monitoring configuration
     pub health_check_interval_seconds: u64,
     pub health_check_timeout_seconds: u64,
     pub metrics_collection_interval_seconds: u64,
-    
+
     // Resource limits
     pub memory_limit_mb: Option<u64>,
     pub cpu_limit_percent: Option<f64>,
     pub disk_limit_mb: Option<u64>,
     pub network_limit_mbps: Option<u32>,
-    
+
     // FlexNetOS configuration
     pub flexnetos: FlexNetOSConfig,
-    
+
     // NOA configuration
     pub noa: NoaConfig,
-    
+
     // Security configuration
     pub security: SecurityConfig,
-    
+
     // Logging configuration
     pub logging: LoggingConfig,
-    
+
     // Custom configuration
     pub custom: HashMap<String, serde_json::Value>,
 }
@@ -259,34 +297,34 @@ pub enum LogOutput {
 /// Constants used across AgentAsKit systems
 pub mod constants {
     use std::time::Duration;
-    
+
     // Timeouts
     pub const DEFAULT_AGENT_TIMEOUT: Duration = Duration::from_secs(30);
     pub const DEFAULT_TASK_TIMEOUT: Duration = Duration::from_secs(300);
     pub const DEFAULT_MESSAGE_TIMEOUT: Duration = Duration::from_secs(10);
     pub const DEFAULT_HEALTH_CHECK_TIMEOUT: Duration = Duration::from_secs(5);
-    
+
     // Limits
     pub const MAX_AGENTS_DEFAULT: u32 = 1000;
     pub const MAX_CONCURRENT_TASKS_DEFAULT: u32 = 10000;
     pub const MAX_MESSAGE_SIZE_BYTES: u32 = 1024 * 1024; // 1MB
     pub const MAX_RETRY_ATTEMPTS: u32 = 3;
-    
+
     // Health monitoring
     pub const HEALTH_CHECK_INTERVAL: Duration = Duration::from_secs(30);
     pub const METRICS_COLLECTION_INTERVAL: Duration = Duration::from_secs(60);
     pub const HEALTH_CHECK_FAILURE_THRESHOLD: u32 = 3;
-    
+
     // FlexNetOS
     pub const WASM_MAX_MEMORY_PAGES: u32 = 1000; // ~64MB
     pub const SANDBOX_MAX_EXECUTION_TIME: Duration = Duration::from_secs(60);
     pub const CAPABILITY_TOKEN_DEFAULT_LIFETIME: Duration = Duration::from_secs(3600); // 1 hour
-    
+
     // NOA
     pub const DEPLOYMENT_TIMEOUT: Duration = Duration::from_secs(600); // 10 minutes
     pub const SCALING_COOLDOWN: Duration = Duration::from_secs(300); // 5 minutes
     pub const AUTO_REPAIR_MAX_ATTEMPTS: u32 = 5;
-    
+
     // System
     pub const SYSTEM_NAME: &str = "AgentAsKit";
     pub const API_VERSION: &str = "v1";
@@ -329,7 +367,8 @@ impl Default for FlexNetOSConfig {
         Self {
             enable_wasm_host: true,
             sandbox_timeout_seconds: constants::SANDBOX_MAX_EXECUTION_TIME.as_secs(),
-            capability_token_lifetime_seconds: constants::CAPABILITY_TOKEN_DEFAULT_LIFETIME.as_secs(),
+            capability_token_lifetime_seconds: constants::CAPABILITY_TOKEN_DEFAULT_LIFETIME
+                .as_secs(),
             contract_validation_enabled: true,
             tri_sandbox_enabled: true,
             numa_optimization_enabled: false,

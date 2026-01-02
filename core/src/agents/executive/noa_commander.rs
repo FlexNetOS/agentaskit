@@ -9,14 +9,14 @@ use uuid::Uuid;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    Agent, AgentContext, AgentError, AgentId, AgentMetadata, AgentRegistry, AgentResult, AgentRole, AgentStatus,
-    AgentMessage, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
-    communication::CommunicationManager,
-    specialized::integration_agent::MessageBroker,
+    communication::CommunicationManager, specialized::integration_agent::MessageBroker, Agent,
+    AgentContext, AgentError, AgentId, AgentMessage, AgentMetadata, AgentRegistry, AgentResult,
+    AgentRole, AgentStatus, AlertSeverity, HealthStatus, MessageId, Priority, ResourceRequirements,
+    ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA
-/// 
+///
 /// The NOA Commander is the highest-level autonomous agent responsible for:
 /// - Overall system coordination and strategic decision-making
 /// - Agent prioritization and resource allocation across all layers
@@ -27,22 +27,22 @@ pub struct NoaCommander {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Strategic planning and decision-making engine
     strategic_engine: Arc<RwLock<StrategicEngine>>,
-    
+
     /// Agent coordination and management
     agent_coordinator: Arc<RwLock<AgentCoordinator>>,
-    
+
     /// Emergency response system
     emergency_system: Arc<RwLock<EmergencyResponseSystem>>,
-    
+
     /// Resource allocation manager
     resource_manager: Arc<RwLock<ResourceManager>>,
-    
+
     /// Performance metrics and monitoring
     performance_monitor: Arc<RwLock<PerformanceMonitor>>,
-    
+
     /// Configuration and policies
     config: CommanderConfig,
 }
@@ -52,25 +52,25 @@ pub struct NoaCommander {
 pub struct CommanderConfig {
     /// Maximum concurrent strategic decisions
     pub max_concurrent_decisions: usize,
-    
+
     /// Decision timeout for complex operations
     pub decision_timeout: Duration,
-    
+
     /// Emergency response threshold (0.0-1.0)
     pub emergency_threshold: f64,
-    
+
     /// Resource allocation update interval
     pub resource_update_interval: Duration,
-    
+
     /// Agent health check interval
     pub health_check_interval: Duration,
-    
+
     /// Strategic planning cycle duration
     pub planning_cycle_duration: Duration,
-    
+
     /// System modification approval threshold
     pub modification_approval_threshold: f64,
-    
+
     /// Cross-cluster coordination timeout
     pub coordination_timeout: Duration,
 }
@@ -95,13 +95,13 @@ impl Default for CommanderConfig {
 struct StrategicEngine {
     /// Current strategic goals
     strategic_goals: HashMap<String, StrategicGoal>,
-    
+
     /// Decision history for learning
     decision_history: Vec<StrategicDecision>,
-    
+
     /// System performance metrics
     performance_metrics: SystemPerformanceMetrics,
-    
+
     /// Long-term planning state
     planning_state: PlanningState,
 }
@@ -262,13 +262,13 @@ enum RiskType {
 struct AgentCoordinator {
     /// Active coordination sessions
     coordination_sessions: HashMap<Uuid, CoordinationSession>,
-    
+
     /// Agent assignments and workloads
     agent_assignments: HashMap<AgentId, AgentWorkload>,
-    
+
     /// Cross-cluster coordination state
     cluster_coordination: HashMap<String, ClusterCoordinationState>,
-    
+
     /// Task dependencies and workflows
     workflow_manager: WorkflowManager,
 }
@@ -410,13 +410,13 @@ struct WorkflowExecution {
 struct EmergencyResponseSystem {
     /// Active emergencies
     active_emergencies: HashMap<Uuid, Emergency>,
-    
+
     /// Emergency response procedures
     response_procedures: HashMap<EmergencyType, ResponseProcedure>,
-    
+
     /// System recovery state
     recovery_state: RecoveryState,
-    
+
     /// Emergency contacts and escalation
     escalation_matrix: EscalationMatrix,
 }
@@ -452,10 +452,10 @@ enum EmergencyType {
 /// Emergency severity levels
 #[derive(Debug, Clone)]
 enum EmergencySeverity {
-    Critical,   // System-threatening
-    Major,      // Significant impact
-    Minor,      // Limited impact
-    Warning,    // Potential issue
+    Critical, // System-threatening
+    Major,    // Significant impact
+    Minor,    // Limited impact
+    Warning,  // Potential issue
 }
 
 /// Emergency status
@@ -591,13 +591,13 @@ struct NotificationChannel {
 struct ResourceManager {
     /// Current resource allocations
     resource_allocations: HashMap<String, ResourceAllocation>,
-    
+
     /// Resource constraints and limits
     resource_constraints: HashMap<String, ResourceConstraint>,
-    
+
     /// Allocation history for optimization
     allocation_history: Vec<AllocationEvent>,
-    
+
     /// Resource forecasting models
     forecasting_models: HashMap<String, ForecastingModel>,
 }
@@ -672,13 +672,13 @@ enum ForecastingModelType {
 struct PerformanceMonitor {
     /// Real-time metrics
     current_metrics: HashMap<String, MetricValue>,
-    
+
     /// Metric history for trending
     metric_history: HashMap<String, Vec<MetricPoint>>,
-    
+
     /// Performance thresholds and alerts
     performance_thresholds: HashMap<String, PerformanceThreshold>,
-    
+
     /// Benchmark data
     benchmarks: HashMap<String, Benchmark>,
 }
@@ -805,25 +805,29 @@ impl NoaCommander {
         input_data: serde_json::Value,
     ) -> Result<StrategicDecision> {
         let mut strategic_engine = self.strategic_engine.write().await;
-        
+
         // Analyze current system state
         let system_analysis = self.analyze_system_state().await?;
-        
+
         // Generate decision options
-        let decision_options = self.generate_decision_options(&decision_type, &input_data).await?;
-        
+        let decision_options = self
+            .generate_decision_options(&decision_type, &input_data)
+            .await?;
+
         // Evaluate each option
         let mut best_option = None;
         let mut best_score = f64::NEG_INFINITY;
-        
+
         for option in decision_options {
-            let score = self.evaluate_decision_option(&option, &system_analysis).await?;
+            let score = self
+                .evaluate_decision_option(&option, &system_analysis)
+                .await?;
             if score > best_score {
                 best_score = score;
                 best_option = Some(option);
             }
         }
-        
+
         if let Some(option) = best_option {
             let decision = StrategicDecision {
                 id: Uuid::new_v4(),
@@ -837,25 +841,25 @@ impl NoaCommander {
                     estimated_impact: best_score,
                     affected_components: vec![], // TODO: Analyze affected components
                     risk_level: 1.0 - best_score, // Higher score = lower risk
-                    rollback_complexity: 0.5,     // TODO: Calculate rollback complexity
+                    rollback_complexity: 0.5,    // TODO: Calculate rollback complexity
                     success_probability: best_score,
                 },
             };
-            
+
             strategic_engine.decision_history.push(decision.clone());
-            
+
             Ok(decision)
         } else {
             Err(anyhow::anyhow!("No viable decision options found"))
         }
     }
-    
+
     /// Analyze current system state for decision-making
     async fn analyze_system_state(&self) -> Result<serde_json::Value> {
         let performance_monitor = self.performance_monitor.read().await;
         let resource_manager = self.resource_manager.read().await;
         let agent_coordinator = self.agent_coordinator.read().await;
-        
+
         let analysis = serde_json::json!({
             "system_health": self.calculate_system_health(&performance_monitor).await,
             "resource_utilization": self.calculate_resource_utilization(&resource_manager).await,
@@ -863,10 +867,10 @@ impl NoaCommander {
             "current_load": self.calculate_current_load().await,
             "trend_analysis": self.analyze_performance_trends(&performance_monitor).await,
         });
-        
+
         Ok(analysis)
     }
-    
+
     /// Generate decision options for a given decision type
     async fn generate_decision_options(
         &self,
@@ -889,17 +893,17 @@ impl NoaCommander {
             _ => Ok(vec![serde_json::json!({"default_option": true})]),
         }
     }
-    
+
     /// Generate resource allocation options
     async fn generate_resource_allocation_options(
         &self,
         _input_data: &serde_json::Value,
     ) -> Result<Vec<serde_json::Value>> {
         let resource_manager = self.resource_manager.read().await;
-        
+
         // Analyze current resource state
         let mut options = Vec::new();
-        
+
         // Option 1: Conservative allocation
         options.push(serde_json::json!({
             "strategy": "conservative",
@@ -907,7 +911,7 @@ impl NoaCommander {
             "memory_allocation": 0.6,
             "risk_level": 0.2,
         }));
-        
+
         // Option 2: Balanced allocation
         options.push(serde_json::json!({
             "strategy": "balanced",
@@ -915,7 +919,7 @@ impl NoaCommander {
             "memory_allocation": 0.75,
             "risk_level": 0.4,
         }));
-        
+
         // Option 3: Aggressive allocation
         options.push(serde_json::json!({
             "strategy": "aggressive",
@@ -923,45 +927,45 @@ impl NoaCommander {
             "memory_allocation": 0.9,
             "risk_level": 0.7,
         }));
-        
+
         Ok(options)
     }
-    
+
     /// Generate agent deployment options
     async fn generate_agent_deployment_options(
         &self,
         _input_data: &serde_json::Value,
     ) -> Result<Vec<serde_json::Value>> {
         let agent_coordinator = self.agent_coordinator.read().await;
-        
+
         let mut options = Vec::new();
-        
+
         // Option 1: Scale up existing agents
         options.push(serde_json::json!({
             "strategy": "scale_up",
             "target_agents": ["research-cluster", "application-cluster"],
             "scale_factor": 1.5,
         }));
-        
+
         // Option 2: Deploy new specialized agents
         options.push(serde_json::json!({
             "strategy": "deploy_new",
             "agent_types": ["monitoring-agent", "optimization-agent"],
             "deployment_priority": "high",
         }));
-        
+
         Ok(options)
     }
-    
+
     /// Generate system modification options
     async fn generate_system_modification_options(
         &self,
         _input_data: &serde_json::Value,
     ) -> Result<Vec<serde_json::Value>> {
         let strategic_engine = self.strategic_engine.read().await;
-        
+
         let mut options = Vec::new();
-        
+
         // Analyze system performance and generate modification options
         options.push(serde_json::json!({
             "modification_type": "performance_optimization",
@@ -969,31 +973,32 @@ impl NoaCommander {
             "estimated_improvement": 0.15,
             "rollback_available": true,
         }));
-        
+
         options.push(serde_json::json!({
             "modification_type": "capacity_expansion",
             "target_resources": ["memory", "storage"],
             "expansion_factor": 1.3,
             "rollback_available": false,
         }));
-        
+
         Ok(options)
     }
-    
+
     /// Generate emergency response options
     async fn generate_emergency_response_options(
         &self,
         input_data: &serde_json::Value,
     ) -> Result<Vec<serde_json::Value>> {
         let emergency_system = self.emergency_system.read().await;
-        
+
         let mut options = Vec::new();
-        
+
         // Determine emergency type from input
-        let emergency_type = input_data.get("emergency_type")
+        let emergency_type = input_data
+            .get("emergency_type")
             .and_then(|v| v.as_str())
             .unwrap_or("unknown");
-        
+
         match emergency_type {
             "system_failure" => {
                 options.push(serde_json::json!({
@@ -1001,7 +1006,7 @@ impl NoaCommander {
                     "affected_components": input_data.get("affected_components"),
                     "estimated_downtime": 300, // 5 minutes
                 }));
-                
+
                 options.push(serde_json::json!({
                     "response_type": "failover_to_backup",
                     "backup_systems": ["cluster-backup", "data-backup"],
@@ -1014,7 +1019,7 @@ impl NoaCommander {
                     "scale_factor": 2.0,
                     "temporary": true,
                 }));
-                
+
                 options.push(serde_json::json!({
                     "response_type": "load_shedding",
                     "priority_threshold": "high",
@@ -1029,10 +1034,10 @@ impl NoaCommander {
                 }));
             }
         }
-        
+
         Ok(options)
     }
-    
+
     /// Evaluate a decision option
     async fn evaluate_decision_option(
         &self,
@@ -1042,85 +1047,95 @@ impl NoaCommander {
         // Multi-criteria decision analysis
         let mut score = 0.0;
         let mut weight_sum = 0.0;
-        
+
         // Criteria 1: Performance impact (30%)
-        let performance_impact = self.assess_performance_impact(option, system_analysis).await?;
+        let performance_impact = self
+            .assess_performance_impact(option, system_analysis)
+            .await?;
         score += performance_impact * 0.3;
         weight_sum += 0.3;
-        
+
         // Criteria 2: Risk level (25%)
         let risk_score = 1.0 - self.assess_risk_level(option).await?;
         score += risk_score * 0.25;
         weight_sum += 0.25;
-        
+
         // Criteria 3: Resource efficiency (20%)
         let resource_efficiency = self.assess_resource_efficiency(option).await?;
         score += resource_efficiency * 0.2;
         weight_sum += 0.2;
-        
+
         // Criteria 4: Strategic alignment (15%)
         let strategic_alignment = self.assess_strategic_alignment(option).await?;
         score += strategic_alignment * 0.15;
         weight_sum += 0.15;
-        
+
         // Criteria 5: Implementation complexity (10%)
         let implementation_ease = 1.0 - self.assess_implementation_complexity(option).await?;
         score += implementation_ease * 0.1;
         weight_sum += 0.1;
-        
+
         Ok(score / weight_sum)
     }
-    
+
     // Helper methods for decision evaluation
-    async fn assess_performance_impact(&self, _option: &serde_json::Value, _system_analysis: &serde_json::Value) -> Result<f64> {
+    async fn assess_performance_impact(
+        &self,
+        _option: &serde_json::Value,
+        _system_analysis: &serde_json::Value,
+    ) -> Result<f64> {
         // TODO: Implement performance impact assessment
         Ok(0.8) // Placeholder
     }
-    
+
     async fn assess_risk_level(&self, option: &serde_json::Value) -> Result<f64> {
-        option.get("risk_level")
+        option
+            .get("risk_level")
             .and_then(|v| v.as_f64())
             .map(Ok)
             .unwrap_or(Ok(0.5))
     }
-    
+
     async fn assess_resource_efficiency(&self, _option: &serde_json::Value) -> Result<f64> {
         // TODO: Implement resource efficiency assessment
         Ok(0.7) // Placeholder
     }
-    
+
     async fn assess_strategic_alignment(&self, _option: &serde_json::Value) -> Result<f64> {
         // TODO: Implement strategic alignment assessment
         Ok(0.75) // Placeholder
     }
-    
+
     async fn assess_implementation_complexity(&self, _option: &serde_json::Value) -> Result<f64> {
         // TODO: Implement complexity assessment
         Ok(0.4) // Placeholder
     }
-    
+
     // Helper methods for system analysis
     async fn calculate_system_health(&self, _performance_monitor: &PerformanceMonitor) -> f64 {
         // TODO: Implement system health calculation
         0.85 // Placeholder
     }
-    
+
     async fn calculate_resource_utilization(&self, _resource_manager: &ResourceManager) -> f64 {
         // TODO: Implement resource utilization calculation
         0.65 // Placeholder
     }
-    
+
     async fn calculate_agent_performance(&self, _agent_coordinator: &AgentCoordinator) -> f64 {
         // TODO: Implement agent performance calculation
         0.8 // Placeholder
     }
-    
+
     async fn calculate_current_load(&self) -> f64 {
         // TODO: Implement current load calculation
         0.7 // Placeholder
     }
-    
-    async fn analyze_performance_trends(&self, _performance_monitor: &PerformanceMonitor) -> serde_json::Value {
+
+    async fn analyze_performance_trends(
+        &self,
+        _performance_monitor: &PerformanceMonitor,
+    ) -> serde_json::Value {
         // TODO: Implement trend analysis
         serde_json::json!({"trend": "stable", "confidence": 0.8})
     }
@@ -1138,10 +1153,10 @@ impl Agent for NoaCommander {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing NOA Commander");
-        
+
         // Initialize strategic engine with default goals
         let mut strategic_engine = self.strategic_engine.write().await;
-        
+
         // Set initial strategic goals
         let initial_goals = vec![
             StrategicGoal {
@@ -1175,101 +1190,117 @@ impl Agent for NoaCommander {
                 current_progress: 0.0,
                 required_resources: HashMap::new(),
                 dependent_goals: Vec::new(),
-                success_metrics: vec!["cpu_efficiency".to_string(), "memory_efficiency".to_string()],
+                success_metrics: vec![
+                    "cpu_efficiency".to_string(),
+                    "memory_efficiency".to_string(),
+                ],
             },
         ];
-        
+
         for goal in initial_goals {
-            strategic_engine.strategic_goals.insert(goal.id.clone(), goal);
+            strategic_engine
+                .strategic_goals
+                .insert(goal.id.clone(), goal);
         }
-        
+
         // Initialize emergency response procedures
         let mut emergency_system = self.emergency_system.write().await;
-        
+
         // TODO: Initialize emergency response procedures
-        
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("NOA Commander initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting NOA Commander");
-        
+
         // Start strategic planning cycle
         let strategic_engine = self.strategic_engine.clone();
         let planning_interval = self.config.planning_cycle_duration;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(planning_interval);
             loop {
                 interval.tick().await;
-                
+
                 // Execute strategic planning cycle
                 if let Err(e) = Self::execute_planning_cycle(strategic_engine.clone()).await {
                     tracing::error!("Strategic planning cycle failed: {}", e);
                 }
             }
         });
-        
+
         // Start resource management cycle
         let resource_manager = self.resource_manager.clone();
         let resource_interval = self.config.resource_update_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(resource_interval);
             loop {
                 interval.tick().await;
-                
+
                 // Update resource allocations
                 if let Err(e) = Self::update_resource_allocations(resource_manager.clone()).await {
                     tracing::error!("Resource allocation update failed: {}", e);
                 }
             }
         });
-        
+
         // Start performance monitoring
         let performance_monitor = self.performance_monitor.clone();
         let health_interval = self.config.health_check_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(health_interval);
             loop {
                 interval.tick().await;
-                
+
                 // Update performance metrics
-                if let Err(e) = Self::update_performance_metrics(performance_monitor.clone()).await {
+                if let Err(e) = Self::update_performance_metrics(performance_monitor.clone()).await
+                {
                     tracing::error!("Performance metrics update failed: {}", e);
                 }
             }
         });
-        
+
         tracing::info!("NOA Commander started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping NOA Commander");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         // TODO: Implement graceful shutdown procedures
         // - Save current state
         // - Complete ongoing strategic decisions
         // - Hand over emergency situations to backup systems
-        
+
         tracing::info!("NOA Commander stopped successfully");
         Ok(())
     }
 
     async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, priority, .. } => {
-                tracing::debug!("NOA Commander received task request from {}: {}", from.0, task.name);
-                
+            AgentMessage::Request {
+                id,
+                from,
+                task,
+                priority,
+                ..
+            } => {
+                tracing::debug!(
+                    "NOA Commander received task request from {}: {}",
+                    from.0,
+                    task.name
+                );
+
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: MessageId::new(),
                     request_id: id,
@@ -1278,22 +1309,34 @@ impl Agent for NoaCommander {
                     result,
                 }))
             }
-            AgentMessage::Alert { severity, message, context, .. } => {
-                tracing::warn!("NOA Commander received alert ({}): {}", 
-                    format!("{:?}", severity), message);
-                
+            AgentMessage::Alert {
+                severity,
+                message,
+                context,
+                ..
+            } => {
+                tracing::warn!(
+                    "NOA Commander received alert ({}): {}",
+                    format!("{:?}", severity),
+                    message
+                );
+
                 // Handle system alerts and potentially trigger emergency response
-                if matches!(severity, crate::agents::AlertSeverity::Emergency | crate::agents::AlertSeverity::Critical) {
+                if matches!(
+                    severity,
+                    crate::agents::AlertSeverity::Emergency
+                        | crate::agents::AlertSeverity::Critical
+                ) {
                     self.handle_emergency_alert(message, context).await?;
                 }
-                
+
                 Ok(None)
             }
             AgentMessage::Heartbeat { from, health, .. } => {
                 // Update agent health information
                 let mut agent_coordinator = self.agent_coordinator.write().await;
                 // TODO: Update agent health tracking
-                
+
                 tracing::debug!("Received heartbeat from agent {}", from.0);
                 Ok(None)
             }
@@ -1306,43 +1349,51 @@ impl Agent for NoaCommander {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = std::time::Instant::now();
-        
+
         match task.name.as_str() {
             "strategic-decision" => {
-                let decision_type = task.parameters.get("decision_type")
+                let decision_type = task
+                    .parameters
+                    .get("decision_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown");
-                
+
                 let decision = match decision_type {
                     "resource-allocation" => {
                         self.make_strategic_decision(
                             DecisionType::ResourceAllocation,
-                            task.parameters.clone()
-                        ).await?
+                            task.parameters.clone(),
+                        )
+                        .await?
                     }
                     "agent-deployment" => {
                         self.make_strategic_decision(
                             DecisionType::AgentDeployment,
-                            task.parameters.clone()
-                        ).await?
+                            task.parameters.clone(),
+                        )
+                        .await?
                     }
                     "system-modification" => {
                         self.make_strategic_decision(
                             DecisionType::SystemModification,
-                            task.parameters.clone()
-                        ).await?
+                            task.parameters.clone(),
+                        )
+                        .await?
                     }
                     _ => {
                         return Ok(TaskResult {
                             task_id: task.id,
                             status: TaskStatus::Failed,
                             output_data: None,
-                            error_message: Some(format!("Unknown decision type: {}", decision_type)),
+                            error_message: Some(format!(
+                                "Unknown decision type: {}",
+                                decision_type
+                            )),
                             completed_at: chrono::Utc::now(),
                         });
                     }
                 };
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1353,7 +1404,7 @@ impl Agent for NoaCommander {
             }
             "system-status" => {
                 let system_status = self.get_system_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1364,7 +1415,7 @@ impl Agent for NoaCommander {
             }
             "emergency-response" => {
                 let response = self.coordinate_emergency_response(task.parameters).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -1373,41 +1424,39 @@ impl Agent for NoaCommander {
                     completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed,
-                    output_data: None,
-                    error_message: Some(format!("Unknown task type: {}", task.name)),
-                    completed_at: chrono::Utc::now(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
-        
+
         // TODO: Calculate real health metrics
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0, // Placeholder
-            memory_usage: 512 * 1024 * 1024, // 512MB placeholder
-            task_queue_size: 0, // Placeholder
-            completed_tasks: 0, // Placeholder
-            failed_tasks: 0,    // Placeholder
+            cpu_usage: 25.0,                                   // Placeholder
+            memory_usage: 512 * 1024 * 1024,                   // 512MB placeholder
+            task_queue_size: 0,                                // Placeholder
+            completed_tasks: 0,                                // Placeholder
+            failed_tasks: 0,                                   // Placeholder
             average_response_time: Duration::from_millis(100), // Placeholder
         })
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
         tracing::info!("Updating NOA Commander configuration");
-        
+
         // TODO: Update configuration from JSON
         // This would involve parsing the config and updating self.config
-        
+
         Ok(())
     }
 
@@ -1424,9 +1473,9 @@ impl NoaCommander {
         context: serde_json::Value,
     ) -> Result<()> {
         tracing::error!("Emergency alert received: {}", message);
-        
+
         let mut emergency_system = self.emergency_system.write().await;
-        
+
         // Create emergency record
         let emergency = Emergency {
             id: Uuid::new_v4(),
@@ -1438,14 +1487,16 @@ impl NoaCommander {
             response_actions: Vec::new(),
             status: EmergencyStatus::Detected,
         };
-        
-        emergency_system.active_emergencies.insert(emergency.id, emergency);
-        
+
+        emergency_system
+            .active_emergencies
+            .insert(emergency.id, emergency);
+
         // TODO: Trigger emergency response procedures
-        
+
         Ok(())
     }
-    
+
     /// Get comprehensive system status
     async fn get_system_status(&self) -> Result<serde_json::Value> {
         let strategic_engine = self.strategic_engine.read().await;
@@ -1453,7 +1504,7 @@ impl NoaCommander {
         let resource_manager = self.resource_manager.read().await;
         let performance_monitor = self.performance_monitor.read().await;
         let emergency_system = self.emergency_system.read().await;
-        
+
         let status = serde_json::json!({
             "commander_status": "active",
             "strategic_goals": strategic_engine.strategic_goals.len(),
@@ -1464,22 +1515,23 @@ impl NoaCommander {
             "coordination_sessions": agent_coordinator.coordination_sessions.len(),
             "timestamp": chrono::Utc::now().timestamp(),
         });
-        
+
         Ok(status)
     }
-    
+
     /// Coordinate emergency response
     async fn coordinate_emergency_response(
         &self,
         parameters: serde_json::Value,
     ) -> Result<serde_json::Value> {
         let mut emergency_system = self.emergency_system.write().await;
-        
+
         // Parse emergency parameters
-        let emergency_type = parameters.get("type")
+        let emergency_type = parameters
+            .get("type")
             .and_then(|v| v.as_str())
             .unwrap_or("unknown");
-        
+
         // TODO: Implement proper emergency response coordination
         let response = serde_json::json!({
             "emergency_type": emergency_type,
@@ -1487,54 +1539,60 @@ impl NoaCommander {
             "estimated_resolution_time": 300, // 5 minutes
             "response_actions": ["isolate", "investigate", "mitigate"],
         });
-        
+
         Ok(response)
     }
-    
+
     // Background task methods
     async fn execute_planning_cycle(strategic_engine: Arc<RwLock<StrategicEngine>>) -> Result<()> {
         let mut engine = strategic_engine.write().await;
-        
+
         // Update planning cycle counter
         engine.planning_state.current_planning_cycle += 1;
-        
-        tracing::debug!("Executing strategic planning cycle #{}", 
-            engine.planning_state.current_planning_cycle);
-        
+
+        tracing::debug!(
+            "Executing strategic planning cycle #{}",
+            engine.planning_state.current_planning_cycle
+        );
+
         // TODO: Implement strategic planning logic
         // - Review strategic goals progress
         // - Update resource forecasts
         // - Adjust technology roadmap
         // - Update risk assessments
-        
+
         Ok(())
     }
-    
-    async fn update_resource_allocations(resource_manager: Arc<RwLock<ResourceManager>>) -> Result<()> {
+
+    async fn update_resource_allocations(
+        resource_manager: Arc<RwLock<ResourceManager>>,
+    ) -> Result<()> {
         let mut manager = resource_manager.write().await;
-        
+
         tracing::debug!("Updating resource allocations");
-        
+
         // TODO: Implement resource allocation updates
         // - Review current allocations
         // - Check for expired allocations
         // - Optimize resource distribution
         // - Update forecasting models
-        
+
         Ok(())
     }
-    
-    async fn update_performance_metrics(performance_monitor: Arc<RwLock<PerformanceMonitor>>) -> Result<()> {
+
+    async fn update_performance_metrics(
+        performance_monitor: Arc<RwLock<PerformanceMonitor>>,
+    ) -> Result<()> {
         let mut monitor = performance_monitor.write().await;
-        
+
         tracing::debug!("Updating performance metrics");
-        
+
         // TODO: Implement performance metrics collection
         // - Collect real-time metrics
         // - Update metric history
         // - Check thresholds
         // - Update benchmarks
-        
+
         Ok(())
     }
 }

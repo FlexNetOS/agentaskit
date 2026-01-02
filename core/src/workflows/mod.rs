@@ -1,31 +1,31 @@
 //! Enhanced Workflow Processing System
-//! 
+//!
 //! This module implements the complete workflow from user chat requests through
 //! AI model processing, SOT reading, TODO updating with 4D method application,
 //! and deliverable definition with target locations.
 
-pub mod seven_phase;
-pub mod sop_parser;
-pub mod methodology_engine;
+pub mod ai_sop_interface;
 pub mod deliverable_manager;
 pub mod location_manager;
-pub mod ai_sop_interface;
+pub mod methodology_engine;
+pub mod seven_phase;
+pub mod sop_parser;
 
 // Re-export key types for convenience
-pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
-pub use methodology_engine::{Scores, QualityGates, MethodologyEngine};
-pub use sop_parser::{SOPDocument, SOPProcedure, SOPStep};
 pub use ai_sop_interface::{AISopAnalyzer, ContentAnalysis, ProcedureValidation};
+pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
+pub use methodology_engine::{MethodologyEngine, QualityGates, Scores};
+pub use sop_parser::{SOPDocument, SOPProcedure, SOPStep};
 
 use anyhow::Result;
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use tokio::fs;
-use chrono::{DateTime, Utc};
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
@@ -292,7 +292,7 @@ pub struct TargetLocation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LocationType {
-    ProductionDirectory,  // agentaskit-production
+    ProductionDirectory, // agentaskit-production
     DocsSubdirectory,    // ~/docs
     TestDirectory,       // tests/
     ConfigDirectory,     // configs/
@@ -367,7 +367,7 @@ impl EnhancedWorkflowProcessor {
             let orchestrator = seven_phase::SevenPhaseOrchestrator::new().await?;
             return orchestrator.execute_workflow(request).await;
         }
-        
+
         // Fall back to enhanced workflow processing
         self.process_enhanced_workflow(request).await
     }
@@ -375,11 +375,11 @@ impl EnhancedWorkflowProcessor {
     /// Check if request requires 7-phase workflow processing
     fn is_seven_phase_request(&self, request: &ChatRequest) -> bool {
         let message = request.message.to_lowercase();
-        message.contains("7-phase") || 
-        message.contains("928-agent") || 
-        message.contains("performance optimization") ||
-        message.contains("triple cross-reference") ||
-        request.priority == RequestPriority::Critical
+        message.contains("7-phase")
+            || message.contains("928-agent")
+            || message.contains("performance optimization")
+            || message.contains("triple cross-reference")
+            || request.priority == RequestPriority::Critical
     }
 
     /// Process using enhanced workflow (original implementation)
@@ -422,29 +422,33 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Analyze SOT content in context of user request using AI SOP interface
-    async fn analyze_sot_content(&self, sot_content: &str, request: &ChatRequest) -> Result<SOTAnalysis> {
+    async fn analyze_sot_content(
+        &self,
+        sot_content: &str,
+        request: &ChatRequest,
+    ) -> Result<SOTAnalysis> {
         // Parse SOT content using sop_parser
         let sop_document = sop_parser::parse_sop(sot_content)?;
-        
+
         // Analyze using AI SOP interface
         let ai_analyzer = ai_sop_interface::AISopAnalyzer::new(sop_document.clone());
         let content_analysis = ai_analyzer.analyze_content().await?;
-        
+
         // Validate request against SOP procedures
         let validation = ai_analyzer.validate_procedure(&request.message).await?;
-        
+
         // Extract task information from SOT
         let executed_tasks = self.extract_executed_tasks(sot_content).await?;
         let in_progress_tasks = self.extract_in_progress_tasks(sot_content).await?;
         let system_constraints = self.extract_system_constraints(sot_content).await?;
-        
+
         // Enhanced alignment assessment using AI analysis
         let request_alignment = if validation.is_valid {
             content_analysis.completeness_score
         } else {
             content_analysis.completeness_score * 0.5 // Penalize invalid procedures
         };
-        
+
         Ok(SOTAnalysis {
             executed_tasks,
             in_progress_tasks,
@@ -455,24 +459,32 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Apply 4D methodology to create task subject with comprehensive scoring and validation
-    async fn apply_4d_method(&self, request: &ChatRequest, sot_analysis: &SOTAnalysis) -> Result<TaskSubject> {
+    async fn apply_4d_method(
+        &self,
+        request: &ChatRequest,
+        sot_analysis: &SOTAnalysis,
+    ) -> Result<TaskSubject> {
         // Phase 1: DECONSTRUCT
         let deconstruct = self.deconstruct_request(request, sot_analysis).await?;
-        
-        // Phase 2: DIAGNOSE  
+
+        // Phase 2: DIAGNOSE
         let diagnose = self.diagnose_requirements(&deconstruct, request).await?;
-        
+
         // Phase 3: DEVELOP
         let develop = self.develop_approach(&diagnose, &deconstruct).await?;
-        
+
         // Phase 4: DELIVER
-        let deliver = self.design_delivery(&develop, &diagnose, &deconstruct).await?;
+        let deliver = self
+            .design_delivery(&develop, &diagnose, &deconstruct)
+            .await?;
 
         // Create initial task subject
         let task_subject = TaskSubject {
             id: Uuid::new_v4(),
             title: self.generate_task_title(request, &deconstruct).await?,
-            description: self.generate_task_description(request, &deconstruct).await?,
+            description: self
+                .generate_task_description(request, &deconstruct)
+                .await?,
             deconstruct: deconstruct.clone(),
             diagnose: diagnose.clone(),
             develop: develop.clone(),
@@ -488,16 +500,16 @@ impl EnhancedWorkflowProcessor {
         // Apply methodology engine for comprehensive scoring and validation
         let methodology = methodology_engine::MethodologyEngine::new();
         let scores = methodology.score_all(&task_subject)?;
-        
+
         // Generate quality report
         let quality_report = methodology.generate_quality_report(&scores)?;
-        
+
         // Check quality gates
         if !scores.quality_gate_passed {
             // Log warning but continue - allow manual override for critical tasks
             eprintln!("Warning: Quality gates not passed. Scores: {:?}", scores);
             eprintln!("Quality Report:\n{}", quality_report);
-            
+
             // Generate recommendations for improvement
             let recommendations = methodology.generate_recommendations(&scores)?;
             eprintln!("Recommendations:\n{}", recommendations.join("\n"));
@@ -510,14 +522,16 @@ impl EnhancedWorkflowProcessor {
     async fn update_todo_file(&self, task_subject: &TaskSubject) -> Result<()> {
         // Read existing TODO content
         let existing_content = if self.todo_path.exists() {
-            fs::read_to_string(&self.todo_path).await.unwrap_or_default()
+            fs::read_to_string(&self.todo_path)
+                .await
+                .unwrap_or_default()
         } else {
             String::new()
         };
 
         // Generate TODO entry
         let todo_entry = self.generate_todo_entry(task_subject).await?;
-        
+
         // Append new entry
         let updated_content = if existing_content.is_empty() {
             format!("# AgentAsKit TODO List\n\n{}", todo_entry)
@@ -532,12 +546,15 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Define deliverables and target locations using deliverable_manager and location_manager
-    async fn define_deliverables_and_targets(&self, task_subject: &TaskSubject) -> Result<Vec<Deliverable>> {
+    async fn define_deliverables_and_targets(
+        &self,
+        task_subject: &TaskSubject,
+    ) -> Result<Vec<Deliverable>> {
         let mut deliverables = Vec::new();
 
         // Initialize location manager for workspace detection
         let location_mgr = location_manager::LocationManager::new()?;
-        
+
         // Initialize deliverable manager
         let deliverable_mgr = deliverable_manager::DeliverableManager::new(
             location_mgr.clone(),
@@ -551,32 +568,38 @@ impl EnhancedWorkflowProcessor {
                 name: self.generate_deliverable_name(output_req).await?,
                 deliverable_type: self.determine_deliverable_type(output_req).await?,
                 category: self.determine_category_from_requirement(output_req).await?,
-                priority: self.convert_to_deliverable_priority(&task_subject.priority).await?,
+                priority: self
+                    .convert_to_deliverable_priority(&task_subject.priority)
+                    .await?,
                 expected_size: None, // Will be determined by manager
                 format_requirements: vec![],
             };
-            
+
             // Plan deliverable with location resolution
             let planned = deliverable_mgr.plan(&spec).await?;
-            
+
             // Convert to Deliverable structure
             let deliverable = Deliverable {
                 id: Uuid::new_v4(),
                 name: planned.spec.name.clone(),
                 description: output_req.to_string(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
-                target_location: self.convert_to_target_location(&planned.primary_location).await?,
+                target_location: self
+                    .convert_to_target_location(&planned.primary_location)
+                    .await?,
                 file_specifications: vec![format!(
                     "Format: {:?}, Max size: {:?}, Category: {}",
                     planned.spec.format_requirements,
                     planned.spec.expected_size,
                     planned.spec.category
                 )],
-                quality_requirements: self.generate_quality_requirements(&task_subject.develop.request_type).await?,
+                quality_requirements: self
+                    .generate_quality_requirements(&task_subject.develop.request_type)
+                    .await?,
                 acceptance_criteria: self.generate_acceptance_criteria(output_req).await?,
                 dependencies: Vec::new(),
             };
-            
+
             deliverables.push(deliverable);
         }
 
@@ -585,21 +608,33 @@ impl EnhancedWorkflowProcessor {
 
         Ok(deliverables)
     }
-    
+
     /// Convert location_manager::ResolvedLocation to workflows::TargetLocation
-    async fn convert_to_target_location(&self, resolved: &location_manager::ResolvedLocation) -> Result<TargetLocation> {
+    async fn convert_to_target_location(
+        &self,
+        resolved: &location_manager::ResolvedLocation,
+    ) -> Result<TargetLocation> {
         Ok(TargetLocation {
             location_type: self.convert_location_type(&resolved.location_type).await?,
             base_path: resolved.workspace_root.clone(),
             relative_path: resolved.relative_path.clone(),
             filename_pattern: "*.rs".to_string(), // Default pattern, can be customized
-            organization_rules: self.get_organization_rules_for_location(&resolved.location_type).await?,
-            backup_locations: resolved.backup_paths.iter().map(|p| p.to_string_lossy().to_string()).collect(),
+            organization_rules: self
+                .get_organization_rules_for_location(&resolved.location_type)
+                .await?,
+            backup_locations: resolved
+                .backup_paths
+                .iter()
+                .map(|p| p.to_string_lossy().to_string())
+                .collect(),
         })
     }
-    
+
     /// Convert location_manager::LocationType to workflows::LocationType
-    async fn convert_location_type(&self, loc_type: &location_manager::LocationType) -> Result<LocationType> {
+    async fn convert_location_type(
+        &self,
+        loc_type: &location_manager::LocationType,
+    ) -> Result<LocationType> {
         use location_manager::LocationType as LM;
         Ok(match loc_type {
             LM::ProductionDirectory => LocationType::ProductionDirectory,
@@ -611,7 +646,7 @@ impl EnhancedWorkflowProcessor {
             LM::TempDirectory => LocationType::TempDirectory,
         })
     }
-    
+
     /// Determine category from output requirement string
     async fn determine_category_from_requirement(&self, requirement: &str) -> Result<String> {
         let req_lower = requirement.to_lowercase();
@@ -633,9 +668,12 @@ impl EnhancedWorkflowProcessor {
             Ok("general".to_string())
         }
     }
-    
+
     /// Convert RequestPriority to deliverable_manager::Priority
-    async fn convert_to_deliverable_priority(&self, priority: &RequestPriority) -> Result<deliverable_manager::Priority> {
+    async fn convert_to_deliverable_priority(
+        &self,
+        priority: &RequestPriority,
+    ) -> Result<deliverable_manager::Priority> {
         use deliverable_manager::Priority as DP;
         Ok(match priority {
             RequestPriority::Low => DP::Low,
@@ -644,9 +682,12 @@ impl EnhancedWorkflowProcessor {
             RequestPriority::Critical => DP::Critical,
         })
     }
-    
+
     /// Get organization rules for specific location type
-    async fn get_organization_rules_for_location(&self, loc_type: &location_manager::LocationType) -> Result<Vec<String>> {
+    async fn get_organization_rules_for_location(
+        &self,
+        loc_type: &location_manager::LocationType,
+    ) -> Result<Vec<String>> {
         use location_manager::LocationType as LM;
         Ok(match loc_type {
             LM::ProductionDirectory => vec![
@@ -676,17 +717,23 @@ impl EnhancedWorkflowProcessor {
         priority: &RequestPriority,
     ) -> Result<Deliverable> {
         let deliverable_type = self.determine_deliverable_type(output_requirement).await?;
-        let target_location = self.determine_target_location(&deliverable_type, priority).await?;
-        
+        let target_location = self
+            .determine_target_location(&deliverable_type, priority)
+            .await?;
+
         Ok(Deliverable {
             id: Uuid::new_v4(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
             deliverable_type,
             target_location,
-            file_specifications: self.generate_file_specifications(output_requirement).await?,
+            file_specifications: self
+                .generate_file_specifications(output_requirement)
+                .await?,
             quality_requirements: self.generate_quality_requirements(request_type).await?,
-            acceptance_criteria: self.generate_acceptance_criteria(output_requirement).await?,
+            acceptance_criteria: self
+                .generate_acceptance_criteria(output_requirement)
+                .await?,
             dependencies: Vec::new(),
         })
     }
@@ -709,27 +756,13 @@ impl EnhancedWorkflowProcessor {
         };
 
         let base_path = match location_type {
-            LocationType::ProductionDirectory => {
-                PathBuf::from("agentaskit-production")
-            }
-            LocationType::DocsSubdirectory => {
-                PathBuf::from("docs")
-            }
-            LocationType::TestDirectory => {
-                PathBuf::from("agentaskit-production/tests")
-            }
-            LocationType::ConfigDirectory => {
-                PathBuf::from("agentaskit-production/configs")
-            }
-            LocationType::ScriptsDirectory => {
-                PathBuf::from("agentaskit-production/scripts")
-            }
-            LocationType::ArchiveDirectory => {
-                PathBuf::from("archive")
-            }
-            LocationType::TempDirectory => {
-                PathBuf::from("temp")
-            }
+            LocationType::ProductionDirectory => PathBuf::from("agentaskit-production"),
+            LocationType::DocsSubdirectory => PathBuf::from("docs"),
+            LocationType::TestDirectory => PathBuf::from("agentaskit-production/tests"),
+            LocationType::ConfigDirectory => PathBuf::from("agentaskit-production/configs"),
+            LocationType::ScriptsDirectory => PathBuf::from("agentaskit-production/scripts"),
+            LocationType::ArchiveDirectory => PathBuf::from("archive"),
+            LocationType::TempDirectory => PathBuf::from("temp"),
         };
 
         Ok(TargetLocation {
@@ -752,7 +785,9 @@ impl EnhancedWorkflowProcessor {
                 description: step.description.clone(),
                 task_type: self.determine_task_type(&step.name).await?,
                 priority: self.convert_priority(&task_subject.priority).await?,
-                required_capabilities: self.extract_required_capabilities(&step.description).await?,
+                required_capabilities: self
+                    .extract_required_capabilities(&step.description)
+                    .await?,
                 parameters: self.generate_task_parameters(step).await?,
                 deadline: Some(Utc::now() + step.estimated_duration),
                 created_at: Utc::now(),
@@ -764,7 +799,7 @@ impl EnhancedWorkflowProcessor {
 
             // Submit task for orchestration
             let task_id = self.task_protocol.submit_task(task).await?;
-            
+
             // Send notification to communication protocol
             let message = AgentMessage::TaskAssignment {
                 id: uuid::Uuid::new_v4(),
@@ -774,7 +809,7 @@ impl EnhancedWorkflowProcessor {
                 task: task,
                 deadline: Some(Utc::now() + step.estimated_duration),
             };
-            
+
             self.communication_protocol.send_message(message).await?;
         }
 
@@ -788,7 +823,7 @@ impl EnhancedWorkflowProcessor {
         let lines: Vec<&str> = sot_content.lines().collect();
         let mut executed_tasks = Vec::new();
         let mut in_executed_section = false;
-        
+
         for line in lines {
             if line.contains("### 1.1 Executed Tasks") {
                 in_executed_section = true;
@@ -801,7 +836,7 @@ impl EnhancedWorkflowProcessor {
                 executed_tasks.push(line.to_string());
             }
         }
-        
+
         Ok(executed_tasks)
     }
 
@@ -810,7 +845,7 @@ impl EnhancedWorkflowProcessor {
         let lines: Vec<&str> = sot_content.lines().collect();
         let mut in_progress_tasks = Vec::new();
         let mut in_progress_section = false;
-        
+
         for line in lines {
             if line.contains("### 1.2 In-Progress Tasks") {
                 in_progress_section = true;
@@ -823,21 +858,24 @@ impl EnhancedWorkflowProcessor {
                 in_progress_tasks.push(line.to_string());
             }
         }
-        
+
         Ok(in_progress_tasks)
     }
 
     async fn extract_system_constraints(&self, sot_content: &str) -> Result<Vec<String>> {
         // Extract system constraints and metadata
         let mut constraints = Vec::new();
-        
+
         // Add standard constraints from production structure preference
-        constraints.push("Primary production codebase must reside in agentaskit-production directory".to_string());
+        constraints.push(
+            "Primary production codebase must reside in agentaskit-production directory"
+                .to_string(),
+        );
         constraints.push("All artifacts must be organized in ~/docs subdirectory".to_string());
         constraints.push("Only sot.md allowed at root level".to_string());
         constraints.push("Triple-verification protocol mandatory for all claims".to_string());
         constraints.push("Heal, Don't Harm principle must be followed".to_string());
-        
+
         Ok(constraints)
     }
 
@@ -849,11 +887,11 @@ impl EnhancedWorkflowProcessor {
 #[derive(Debug, Clone)]
 pub struct SOTAnalysis {
     pub executed_tasks: Vec<String>,
-    pub in_progress_tasks: Vec<String>,  
+    pub in_progress_tasks: Vec<String>,
     pub system_constraints: Vec<String>,
     pub last_updated: DateTime<Utc>,
     pub request_alignment: f32, // 0.0 to 1.0 score
 }
 
 // Re-export for external use (AgentMessage already imported at module level)
-pub use crate::agents::{Task, TaskStatus, AgentId};
+pub use crate::agents::{AgentId, Task, TaskStatus};

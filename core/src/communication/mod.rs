@@ -3,9 +3,9 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{RwLock, mpsc, broadcast};
+use tokio::sync::{broadcast, mpsc, RwLock};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use tracing::{info, warn, error, debug};
 
 /// Message types for inter-agent communication
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -124,7 +124,7 @@ impl Clone for MessageBroker {
 impl MessageBroker {
     pub async fn new() -> Result<Self> {
         let (broadcast_sender, _) = broadcast::channel(1000);
-        
+
         Ok(Self {
             agent_channels: Arc::new(RwLock::new(HashMap::new())),
             broadcast_sender,
@@ -135,12 +135,12 @@ impl MessageBroker {
 
     pub async fn start(&self) -> Result<()> {
         info!("Starting message broker");
-        
+
         *self.running.write().await = true;
-        
+
         // Start message processing loop
         self.start_message_processor().await?;
-        
+
         Ok(())
     }
 
@@ -152,7 +152,7 @@ impl MessageBroker {
 
         tokio::spawn(async move {
             info!("Message processor started");
-            
+
             while *running.read().await {
                 let messages_to_process = {
                     let mut queue = message_queue.write().await;
@@ -190,7 +190,7 @@ impl MessageBroker {
 
                 tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
             }
-            
+
             info!("Message processor stopped");
         });
 
@@ -199,12 +199,12 @@ impl MessageBroker {
 
     pub async fn register_agent(&self, agent_id: Uuid) -> Result<AgentChannel> {
         info!("Registering agent {} with message broker", agent_id);
-        
+
         let (sender, receiver) = mpsc::unbounded_channel();
         let broadcast_receiver = self.broadcast_sender.subscribe();
-        
+
         self.agent_channels.write().await.insert(agent_id, sender);
-        
+
         Ok(AgentChannel {
             agent_id,
             message_receiver: receiver,
@@ -214,23 +214,25 @@ impl MessageBroker {
 
     pub async fn unregister_agent(&self, agent_id: Uuid) -> Result<()> {
         info!("Unregistering agent {} from message broker", agent_id);
-        
+
         self.agent_channels.write().await.remove(&agent_id);
-        
+
         Ok(())
     }
 
     pub async fn send_message(&self, message: Message) -> Result<()> {
         debug!("Queuing message: {} -> {:?}", message.from, message.to);
-        
+
         // Validate message
         if message.to.is_none() && message.message_type != MessageType::Broadcast {
-            return Err(anyhow::anyhow!("Non-broadcast message must have a recipient"));
+            return Err(anyhow::anyhow!(
+                "Non-broadcast message must have a recipient"
+            ));
         }
 
         // Add to processing queue
         self.message_queue.write().await.push(message);
-        
+
         Ok(())
     }
 
@@ -250,7 +252,8 @@ impl MessageBroker {
             MessageType::Response,
             Priority::Normal,
             serde_json::json!({"status": "received"}),
-        ).as_response(&request);
+        )
+        .as_response(&request);
 
         Ok(response)
     }
@@ -261,11 +264,16 @@ impl MessageBroker {
         }
 
         debug!("Broadcasting message from agent {}", message.from);
-        
+
         self.send_message(message).await
     }
 
-    pub async fn send_alert(&self, from: Uuid, alert_level: Priority, payload: serde_json::Value) -> Result<()> {
+    pub async fn send_alert(
+        &self,
+        from: Uuid,
+        alert_level: Priority,
+        payload: serde_json::Value,
+    ) -> Result<()> {
         let alert = Message::new(
             from,
             None, // Broadcast to all
@@ -288,13 +296,13 @@ impl MessageBroker {
 
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down message broker");
-        
+
         *self.running.write().await = false;
-        
+
         // Clear all channels
         self.agent_channels.write().await.clear();
         self.message_queue.write().await.clear();
-        
+
         info!("Message broker shutdown complete");
         Ok(())
     }
@@ -317,7 +325,12 @@ pub mod message_utils {
         )
     }
 
-    pub fn create_task_assignment(from: Uuid, to: Uuid, task_id: Uuid, task_data: serde_json::Value) -> Message {
+    pub fn create_task_assignment(
+        from: Uuid,
+        to: Uuid,
+        task_id: Uuid,
+        task_data: serde_json::Value,
+    ) -> Message {
         Message::new(
             from,
             Some(to),
@@ -328,10 +341,16 @@ pub mod message_utils {
                 "task_id": task_id,
                 "task_data": task_data
             }),
-        ).with_timeout(300) // 5 minute timeout
+        )
+        .with_timeout(300) // 5 minute timeout
     }
 
-    pub fn create_task_completion(from: Uuid, to: Uuid, task_id: Uuid, result: serde_json::Value) -> Message {
+    pub fn create_task_completion(
+        from: Uuid,
+        to: Uuid,
+        task_id: Uuid,
+        result: serde_json::Value,
+    ) -> Message {
         Message::new(
             from,
             Some(to),
@@ -345,7 +364,12 @@ pub mod message_utils {
         )
     }
 
-    pub fn create_escalation(from: Uuid, to: Uuid, issue: String, context: serde_json::Value) -> Message {
+    pub fn create_escalation(
+        from: Uuid,
+        to: Uuid,
+        issue: String,
+        context: serde_json::Value,
+    ) -> Message {
         Message::new(
             from,
             Some(to),
@@ -356,10 +380,16 @@ pub mod message_utils {
                 "issue": issue,
                 "context": context
             }),
-        ).with_timeout(60) // 1 minute timeout for escalations
+        )
+        .with_timeout(60) // 1 minute timeout for escalations
     }
 
-    pub fn create_system_alert(from: Uuid, level: Priority, message: String, details: serde_json::Value) -> Message {
+    pub fn create_system_alert(
+        from: Uuid,
+        level: Priority,
+        message: String,
+        details: serde_json::Value,
+    ) -> Message {
         Message::new(
             from,
             None,
