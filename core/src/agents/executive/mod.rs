@@ -99,10 +99,18 @@ pub async fn coordinate_resource_reallocation(
         id: Uuid::new_v4(),
         name: "resource-reallocation".to_string(),
         description: "Coordinate system-wide resource reallocation".to_string(),
-        parameters: reallocation_request,
-        required_capabilities: vec!["resource-allocation".to_string()],
-        deadline: Some(std::time::Instant::now() + Duration::from_secs(300)),
+        task_type: "resource-allocation".to_string(),
+        priority: Priority::High,
+        status: TaskStatus::Pending,
+        assigned_agent: Some(AgentId::from_name("resource-allocator")),
         dependencies: Vec::new(),
+        input_data: serde_json::to_value(reallocation_request).unwrap_or(serde_json::json!({})),
+        output_data: None,
+        created_at: chrono::Utc::now(),
+        started_at: None,
+        completed_at: None,
+        timeout: Some(chrono::Utc::now() + chrono::Duration::seconds(300)),
+        retry_count: 0,
     };
 
     let resource_allocator_id = AgentId::from_name("resource-allocator");
