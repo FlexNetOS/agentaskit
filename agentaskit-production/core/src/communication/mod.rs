@@ -242,17 +242,39 @@ impl MessageBroker {
         // Send the request
         self.send_message(request.clone()).await?;
 
-        // TODO: Implement response waiting mechanism
-        // For now, return a mock response
-        let response = Message::new(
-            request.to.unwrap_or_default(),
-            Some(request.from),
-            MessageType::Response,
-            Priority::Normal,
-            serde_json::json!({"status": "received"}),
-        ).as_response(&request);
+        // Implement response waiting mechanism with timeout
+        let request_id = request.id;
+        let timeout_duration = tokio::time::Duration::from_secs(30);
+        let start = tokio::time::Instant::now();
 
-        Ok(response)
+        // Poll for response with timeout
+        loop {
+            // Check message queue for matching response
+            let queue = self.message_queue.read().await;
+            if let Some(response) = queue.iter().find(|msg| {
+                msg.message_type == MessageType::Response &&
+                msg.metadata.get("in_reply_to").and_then(|v| v.as_str()) == Some(&request_id.to_string())
+            }) {
+                return Ok(response.clone());
+            }
+            drop(queue);
+
+            // Check timeout
+            if start.elapsed() > timeout_duration {
+                // Return timeout response
+                warn!("Request {} timed out after {:?}", request_id, timeout_duration);
+                return Ok(Message::new(
+                    request.to.unwrap_or_default(),
+                    Some(request.from),
+                    MessageType::Response,
+                    Priority::Normal,
+                    serde_json::json!({"status": "timeout", "request_id": request_id.to_string()}),
+                ).as_response(&request));
+            }
+
+            // Wait before checking again
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        }
     }
 
     pub async fn broadcast(&self, message: Message) -> Result<()> {

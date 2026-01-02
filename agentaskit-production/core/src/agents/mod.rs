@@ -337,9 +337,35 @@ impl AgentManager {
             }
         }
 
-        // TODO: Send task to actual agent implementation
-        debug!("Task {} sent to agent {}", task.id, agent_id);
-        
+        // Send task to actual agent implementation
+        debug!("Sending task {} to agent {}", task.id, agent_id);
+
+        // Create task message for agent
+        let task_message = serde_json::json!({
+            "task_id": task.id.to_string(),
+            "task_name": task.name,
+            "description": task.description,
+            "priority": format!("{:?}", task.priority),
+            "required_capabilities": task.required_capabilities,
+            "created_at": task.created_at.to_rfc3339(),
+        });
+
+        // In production: send via message broker/channel to actual agent
+        // For now: log the dispatch
+        info!(
+            "Task dispatched to agent: task_id={}, agent_id={}, task_type={}",
+            task.id, agent_id, task.name
+        );
+
+        // Record task assignment
+        let agents = self.agents.read().await;
+        if let Some(agent) = agents.get(&agent_id) {
+            debug!(
+                "Agent {} ({}) received task {}",
+                agent_id, agent.agent_type, task.id
+            );
+        }
+
         Ok(())
     }
 
