@@ -1,0 +1,59 @@
+# Chezmoi configuration template for AgentAskit developers
+# REF: ADR-0005 Modern Tooling Strategy
+#
+# Installation:
+#   mkdir -p ~/.config/chezmoi
+#   cp this-file ~/.config/chezmoi/chezmoi.toml
+#
+# Or with chezmoi:
+#   chezmoi init --apply
+
+# Source directory (your dotfiles repo)
+# sourceDir = "~/.local/share/chezmoi"
+
+# Destination (usually your home directory)
+# destDir = "~"
+
+[data]
+    # Project-specific data available in templates
+    project = "agentaskit"
+
+    # Set these for your environment
+    # email = "you@example.com"
+    # name = "Your Name"
+
+[git]
+    # Don't auto-commit/push by default (safety)
+    autoCommit = false
+    autoPush = false
+
+[diff]
+    # Use delta for nice diffs (if installed)
+    # command = "delta"
+    # pager = "delta"
+    exclude = ["scripts"]
+
+[edit]
+    # Default editor
+    # command = "code"
+    # args = ["--wait"]
+
+[merge]
+    # Merge tool
+    # command = "code"
+    # args = ["--wait", "--merge"]
+
+# Template settings
+[template]
+    # Options for text/template
+    # leftDelimiter = "{{"
+    # rightDelimiter = "}}"
+
+# Interpreters for script templates
+[interpreters.nu]
+    command = "nu"
+    args = []
+
+[interpreters.py]
+    command = "python3"
+    args = []

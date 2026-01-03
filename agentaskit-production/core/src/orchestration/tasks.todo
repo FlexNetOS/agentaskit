@@ -473,9 +473,15 @@
 #### Subtasks (auto-generated)
 <!-- AUTO:WORKFLOW-009:SUBTASKS:BEGIN -->
 - [ ] Review basenames present outside production (top sample):
+  - [ ] .aider.conf.yml
+  - [ ] .aiderignore
+  - [ ] .clippy.toml
+  - [ ] .editorconfig
+  - [ ] .envrc
   - [ ] .gitattributes
   - [ ] .gitignore
   - [ ] .gitmodules
+  - [ ] .mise.toml
   - [ ] .qoderignore
   - [ ] a2a.rs
   - [ ] a2a_tests.rs
@@ -496,6 +502,8 @@
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
   - [ ] auth.rs
   - [ ] auth_tests.rs
+  - [ ] bootstrap.ps1
+  - [ ] bootstrap.sh
   - [ ] capsule.schema.v2_20251005-081849.json
   - [ ] capsule.schema_20251005-081849.json
   - [ ] cargo_audit_agent.rs
@@ -503,8 +511,10 @@
   - [ ] cargo_license_agent.rs
   - [ ] check_errors.txt
   - [ ] check_errors_2.txt
+  - [ ] chezmoi.toml
   - [ ] compilation_fix_complete.md
   - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] config.nu
   - [ ] config.rs
   - [ ] config_tests.rs
   - [ ] crosscheck_report.md
@@ -513,16 +523,6 @@
   - [ ] csv_schema_v2_20251005-081849.md
   - [ ] csv_schema_v3_20251005-081849.md
   - [ ] data.csv
-  - [ ] dependency_analysis.md
-  - [ ] dispatch_run_todo.ps1
-  - [ ] enhanced_workflow_components_report.md
-  - [ ] enhanced_workflow_implementation.md
-  - [ ] enhanced_workflow_tests.rs
-  - [ ] final_report.md
-  - [ ] final_summary.md
-  - [ ] fitness-report.json
-  - [ ] gateway.rs
-  - [ ] generator.rs
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---

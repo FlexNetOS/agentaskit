@@ -1,0 +1,36 @@
+# Aider configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# https://aider.chat/docs/config.html
+
+# Model settings - uses environment variable ANTHROPIC_API_KEY
+# model: claude-sonnet-4-20250514
+
+# Git integration
+auto-commits: true
+dirty-commits: false
+attribute-author: true
+attribute-committer: false
+commit-prompt: |
+  Write a concise commit message for these changes.
+  Focus on the "why" not the "what".
+  Use conventional commit format: type(scope): description
+
+# File handling
+gitignore: true
+aiderignore: .aiderignore
+
+# Editor settings
+edit-format: diff
+stream: true
+
+# Output formatting
+dark-mode: true
+pretty: true
+show-diffs: true
+
+# Lint and test commands (project-specific)
+lint-cmd: cargo clippy --all-targets -- -D warnings
+test-cmd: cargo test --all
+
+# Files to watch for auto-reload
+watch-files: true
