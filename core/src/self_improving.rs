@@ -689,10 +689,10 @@ impl SelfImprovingOrchestrator {
         // - Refine pattern recognition algorithms
         // - Improve model selection strategies
 
-        if improvement.expected_improvement > 0.15 {
+        if improvement.performance_impact > 0.15 {
             // Significant improvement, update learning rate
             learning_engine.learning_metrics.model_accuracy +=
-                improvement.expected_improvement * 0.1;
+                improvement.performance_impact * 0.1;
             info!(
                 "Learning model accuracy improved to {:.2}%",
                 learning_engine.learning_metrics.model_accuracy * 100.0
