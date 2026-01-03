@@ -53,8 +53,9 @@ pub enum RequestPriority {
 
 /// Task subject with 4D method application
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Task subject with type-safe ID
 pub struct TaskSubject {
-    pub id: Uuid,
+    pub id: TaskId,
     pub title: String,
     pub description: String,
     pub deconstruct: DeconstructPhase,
@@ -256,8 +257,9 @@ pub struct TruthGateRequirements {
 
 /// Deliverable specification with target location
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Deliverable with type-safe IDs
 pub struct Deliverable {
-    pub id: Uuid,
+    pub id: TaskId,
     pub name: String,
     pub description: String,
     pub deliverable_type: DeliverableType,
@@ -265,7 +267,7 @@ pub struct Deliverable {
     pub file_specifications: Vec<FileSpecification>,
     pub quality_requirements: Vec<String>,
     pub acceptance_criteria: Vec<String>,
-    pub dependencies: Vec<Uuid>,
+    pub dependencies: Vec<TaskId>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
