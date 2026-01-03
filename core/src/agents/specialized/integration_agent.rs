@@ -3,6 +3,9 @@
 // workflow orchestration, and external system connectivity capabilities
 
 use crate::agents::{Agent, AgentResult, MessageId};
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
