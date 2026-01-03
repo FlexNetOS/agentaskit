@@ -660,14 +660,34 @@ impl PriorityManager {
             return Err(anyhow::anyhow!("Task queue full"));
         }
         
+        // Extract deadline from task metadata if present
+        let deadline = task.parameters.get("deadline")
+            .and_then(|v| v.as_str())
+            .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+            .map(|dt| dt.with_timezone(&chrono::Utc));
+
+        // Extract dependencies from task parameters
+        let dependencies = task.parameters.get("dependencies")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter()
+                .filter_map(|v| v.as_str())
+                .filter_map(|s| uuid::Uuid::parse_str(s).ok())
+                .collect())
+            .unwrap_or_default();
+
+        // Extract target agent if specified
+        let target_agent = task.parameters.get("target_agent")
+            .and_then(|v| v.as_str())
+            .map(AgentId::from_name);
+
         let prioritized_task = PrioritizedTask {
             task,
             priority,
-            deadline: None, // TODO: Extract from task metadata
+            deadline,
             queued_at: Instant::now(),
             attempts: 0,
-            dependencies: Vec::new(),
-            target_agent: None,
+            dependencies,
+            target_agent,
         };
         
         scheduler.task_queue.push(prioritized_task);
