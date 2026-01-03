@@ -72,6 +72,35 @@ impl Default for TaskId {
     }
 }
 
+/// Enhanced: Common message identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Universal agent status enumeration
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum AgentStatus {
@@ -243,15 +272,16 @@ pub struct ScalingPolicy {
 
 /// Message structure for inter-agent communication
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Agent message with type-safe IDs
 pub struct AgentMessage {
-    pub message_id: Uuid,
+    pub message_id: MessageId,
     pub from_agent: AgentId,
     pub to_agent: AgentId,
     pub message_type: String,
     pub priority: Priority,
     pub timestamp: DateTime<Utc>,
     pub payload: serde_json::Value,
-    pub correlation_id: Option<Uuid>,
+    pub correlation_id: Option<TaskId>,
     pub reply_to: Option<AgentId>,
     pub ttl: Option<DateTime<Utc>>,
 }

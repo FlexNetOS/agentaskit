@@ -17,7 +17,7 @@ use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
 // Enhanced: Re-export unified types from shared with type-safe IDs
-pub use agentaskit_shared::{Priority, Task, TaskId, TaskResult, TaskStatus};
+pub use agentaskit_shared::{AgentId, Priority, Task, TaskId, TaskResult, TaskStatus};
 
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
@@ -67,7 +67,8 @@ impl TaskQueue {
         self.pending_tasks.pop()
     }
 
-    pub fn assign_task(&mut self, task_id: Uuid, agent_id: Uuid) -> Result<()> {
+    /// Enhanced: Assign task with type-safe IDs
+    pub fn assign_task(&mut self, task_id: TaskId, agent_id: AgentId) -> Result<()> {
         if let Some(mut task) = self
             .pending_tasks
             .iter()
@@ -83,7 +84,8 @@ impl TaskQueue {
         }
     }
 
-    pub fn complete_task(&mut self, task_id: Uuid, success: bool) -> Result<()> {
+    /// Enhanced: Complete task with type-safe ID
+    pub fn complete_task(&mut self, task_id: TaskId, success: bool) -> Result<()> {
         if let Some(mut task) = self.active_tasks.remove(&task_id) {
             task.status = if success {
                 TaskStatus::Completed
@@ -364,7 +366,8 @@ impl OrchestratorEngine {
         Ok(task_id)
     }
 
-    pub async fn get_task_status(&self, task_id: Uuid) -> Result<TaskStatus> {
+    /// Enhanced: Get task status with type-safe ID
+    pub async fn get_task_status(&self, task_id: TaskId) -> Result<TaskStatus> {
         let queue = self.task_queue.read().await;
 
         // Check pending tasks

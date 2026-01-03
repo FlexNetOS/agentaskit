@@ -149,8 +149,9 @@ pub struct DeliverPhase {
 
 /// Execution step with verification
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Execution step with type-safe task ID
 pub struct ExecutionStep {
-    pub step_id: Uuid,
+    pub step_id: TaskId,
     pub name: String,
     pub description: String,
     pub dependencies: Vec<Uuid>,
@@ -772,12 +773,12 @@ impl EnhancedWorkflowProcessor {
             // Submit task for orchestration
             let task_id = self.task_protocol.submit_task(shared_task.clone()).await?;
 
-            // Send notification to communication protocol
-            let system_agent = Uuid::new_v4(); // System agent ID
-            let orchestrator_agent = Uuid::new_v4(); // Orchestrator agent ID
+            // Enhanced: Send notification with type-safe IDs
+            let system_agent = AgentId::new(); // System agent ID
+            let orchestrator_agent = AgentId::new(); // Orchestrator agent ID
 
             let message = agentaskit_shared::AgentMessage {
-                message_id: Uuid::new_v4(),
+                message_id: agentaskit_shared::MessageId::new(),
                 from_agent: system_agent,
                 to_agent: orchestrator_agent,
                 message_type: "task_submission".to_string(),
