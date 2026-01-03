@@ -27,12 +27,13 @@ XDG_STATE_HOME = "{{env.HOME}}/.local/state"
 CARGO_HOME = "{{env.XDG_DATA_HOME}}/cargo"
 RUSTUP_HOME = "{{env.XDG_DATA_HOME}}/rustup"
 
-# Tool paths
+# Tool paths - unified bin directory first, then fallbacks
 PATH = [
-  "{{cwd}}/tools/external/pixi/target/release",
+  "{{cwd}}/tools/bin",
   "{{cwd}}/tools/external/nushell/target/release",
   "{{cwd}}/tools/external/coreutils/target/release",
   "{{cwd}}/tools/external/rusty-tags/target/release",
+  "{{env.HOME}}/.local/bin",
   "{{env.PATH}}"
 ]
 
@@ -70,3 +71,11 @@ run = "xdg-ninja --json > tools/analysis/xdg_audit.json"
 description = "Validate .todo file schema"
 run = "scripts/validate_sot.sh"
 dir = "{{cwd}}/agentaskit-production"
+
+[tasks.bootstrap]
+description = "Bootstrap development environment"
+run = "bash tools/bootstrap.sh"
+
+[tasks.aider]
+description = "Start aider AI pair programming session"
+run = "aider --config .aider.conf.yml"

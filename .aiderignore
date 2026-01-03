@@ -1,0 +1,46 @@
+# Aider ignore patterns for AgentAskit
+# Files and directories to exclude from AI context
+
+# External cloned tools (too large, not our code)
+tools/external/
+
+# Build artifacts
+target/
+*.lock
+
+# Version control
+.git/
+
+# Node modules (if any)
+node_modules/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# Environment files (may contain secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large generated files
+*.log
+*.bak
+
+# Documentation that shouldn't be modified
+docs/archive/
+archive/
