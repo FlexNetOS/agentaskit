@@ -1,0 +1,83 @@
+# Cargo configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# Cross-platform build settings
+
+[build]
+# Use sccache if available for faster builds
+# Install: cargo install sccache
+# rustc-wrapper = "sccache"
+
+# Number of parallel jobs (0 = auto-detect)
+jobs = 0
+
+# Incremental compilation (faster dev builds)
+incremental = true
+
+# Build directory - uses default 'target/' which is standard for Rust
+# To use a different directory: target-dir = ".build"
+
+[target.x86_64-unknown-linux-gnu]
+# Linux-specific settings
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.x86_64-apple-darwin]
+# macOS Intel settings
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.aarch64-apple-darwin]
+# macOS Apple Silicon settings
+# rustflags = []
+
+[target.x86_64-pc-windows-msvc]
+# Windows MSVC settings
+# rustflags = []
+
+[target.x86_64-pc-windows-gnu]
+# Windows GNU settings
+# rustflags = []
+
+# Cross-compilation targets (install with: rustup target add <target>)
+# Common targets:
+#   x86_64-unknown-linux-musl    - Static Linux binaries
+#   wasm32-unknown-unknown       - WebAssembly
+#   aarch64-unknown-linux-gnu    - ARM64 Linux
+
+[alias]
+# Common command aliases
+b = "build"
+br = "build --release"
+t = "test"
+c = "check"
+cl = "clippy --all-targets --all-features -- -D warnings"
+fmt = "fmt --all"
+doc = "doc --no-deps --document-private-items"
+
+# Build all workspace members
+ba = "build --all"
+bar = "build --all --release"
+
+# Test with output
+tv = "test -- --nocapture"
+
+# Run benchmarks
+bench = "bench --all"
+
+[env]
+# Environment variables for builds
+# RUST_BACKTRACE = "1"
+# RUST_LOG = "debug"
+
+[net]
+# Network settings for crates.io
+retry = 3
+git-fetch-with-cli = true
+
+[registries.crates-io]
+protocol = "sparse"
+
+[term]
+# Terminal output settings
+verbose = false
+color = "auto"
+progress.when = "auto"
