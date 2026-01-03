@@ -858,20 +858,24 @@ struct OrchestrationMetrics {
 impl TestingAgent {
     pub fn new(config: Option<TestingConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Testing Agent".to_string();
+        let capabilities = vec![
+            "test-execution".to_string(),
+            "test-generation".to_string(),
+            "coverage-analysis".to_string(),
+            "performance-testing".to_string(),
+            "security-testing".to_string(),
+            "test-orchestration".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("testing-agent"),
-            name: "Testing Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "test-execution".to_string(),
-                "test-generation".to_string(),
-                "coverage-analysis".to_string(),
-                "performance-testing".to_string(),
-                "security-testing".to_string(),
-                "test-orchestration".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 min_cpu: 2.0,
                 min_memory: 4 * 1024 * 1024 * 1024,  // 4GB
@@ -880,10 +884,15 @@ impl TestingAgent {
                 max_memory: 32 * 1024 * 1024 * 1024,   // 32GB
                 max_storage: 100 * 1024 * 1024 * 1024, // 100GB
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [("testing".to_string(), "testing".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -989,29 +998,7 @@ impl Agent for TestingAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Testing Agent");
-
-        // Initialize test runners
-        let mut test_engine = self.test_engine.write().await;
-        self.initialize_test_runners(&mut test_engine).await?;
-
-        // Initialize coverage tools
-        let mut coverage_analyzer = self.coverage_analyzer.write().await;
-        self.initialize_coverage_tools(&mut coverage_analyzer)
-            .await?;
-
-        // Initialize test generators
-        let mut test_generator = self.test_generator.write().await;
-        self.initialize_test_generators(&mut test_generator).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Testing Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Testing Agent");
 
         // Start continuous testing if enabled
@@ -1033,7 +1020,7 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Testing Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1042,13 +1029,13 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1059,7 +1046,7 @@ impl Agent for TestingAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1134,7 +1121,7 @@ impl Agent for TestingAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let test_engine = self.test_engine.read().await;
 
@@ -1151,13 +1138,13 @@ impl Agent for TestingAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Testing Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.capabilities
     }
 }
 

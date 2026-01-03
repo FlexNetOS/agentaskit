@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -23,6 +23,9 @@ use agentaskit_shared::{
 /// - Health monitoring and reporting
 /// - SLA monitoring and compliance
 pub struct MonitoringAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -998,20 +1001,24 @@ struct HealthStats {
 impl MonitoringAgent {
     pub fn new(config: Option<MonitoringConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Monitoring Agent".to_string();
+        let capabilities = vec![
+            "metrics-collection".to_string(),
+            "alert-management".to_string(),
+            "log-analysis".to_string(),
+            "health-monitoring".to_string(),
+            "performance-monitoring".to_string(),
+            "observability".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("monitoring-agent"),
-            name: "Monitoring Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "metrics-collection".to_string(),
-                "alert-management".to_string(),
-                "log-analysis".to_string(),
-                "health-monitoring".to_string(),
-                "performance-monitoring".to_string(),
-                "observability".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 min_cpu: 1.0,
                 min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
@@ -1020,10 +1027,15 @@ impl MonitoringAgent {
                 max_memory: 32 * 1024 * 1024 * 1024,    // 32GB
                 max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [("monitoring".to_string(), "monitoring".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1120,33 +1132,7 @@ impl Agent for MonitoringAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Monitoring Agent");
-
-        // Initialize metrics collection
-        let mut metrics_collector = self.metrics_collector.write().await;
-        self.initialize_metrics_collection(&mut metrics_collector)
-            .await?;
-
-        // Initialize alert rules
-        let mut alert_manager = self.alert_manager.write().await;
-        self.initialize_alert_rules(&mut alert_manager).await?;
-
-        // Initialize log processing
-        let mut log_analyzer = self.log_analyzer.write().await;
-        self.initialize_log_processing(&mut log_analyzer).await?;
-
-        // Initialize health checks
-        let mut health_monitor = self.health_monitor.write().await;
-        self.initialize_health_checks(&mut health_monitor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Monitoring Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Monitoring Agent");
 
         // Start metrics collection
@@ -1195,7 +1181,7 @@ impl Agent for MonitoringAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Monitoring Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1204,13 +1190,13 @@ impl Agent for MonitoringAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1221,7 +1207,7 @@ impl Agent for MonitoringAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1274,7 +1260,7 @@ impl Agent for MonitoringAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let metrics_collector = self.metrics_collector.read().await;
 
@@ -1291,13 +1277,13 @@ impl Agent for MonitoringAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Monitoring Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.capabilities
     }
 }
 
