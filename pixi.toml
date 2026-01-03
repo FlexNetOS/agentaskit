@@ -1,6 +1,6 @@
 # Pixi configuration for AgentAskit
 # REF: ADR-0005 Modern Tooling Strategy
-# Manages conda packages and integrates with mise
+# All scripts use Nushell for cross-platform compatibility
 
 [project]
 name = "agentaskit"
@@ -13,6 +13,9 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 # Core development tools
 python = ">=3.11"
 rust = ">=1.70"
+
+# Nushell - cross-platform shell (the ONLY shell we use)
+nushell = ">=0.90"
 
 # Build acceleration (faster rebuilds)
 sccache = "*"
@@ -27,26 +30,34 @@ pkg-config = "*"
 numpy = ">=1.24"
 pandas = ">=2.0"
 
-# Note: cmake removed - this is a pure Rust project
-# cmake was only used by external tool examples (pixi/examples)
-
 [tasks]
-# Core build tasks
+# Bootstrap - single cross-platform script
+bootstrap = "nu tools/bootstrap.nu"
+
+# Core build tasks (simple commands work directly)
 build = "cargo build --release"
 build-dev = "cargo build"
 test = "cargo test --all"
-lint = "cargo clippy --all-targets --all-features -- -D warnings && cargo fmt --check"
 fmt = "cargo fmt --all"
 check = "cargo check --all"
+
+# Lint with nushell for cross-platform &&
+lint = { cmd = "nu -c 'cargo clippy --all-targets --all-features -- -D warnings; cargo fmt --check'" }
 
 # Documentation
 doc = "cargo doc --no-deps --document-private-items"
 
-# Clean build artifacts
-clean = "cargo clean"
+# Clean all build artifacts (nushell for glob)
+clean = { cmd = "nu -c 'cargo clean; glob tools/external/*/target | each { rm -rf $in }'" }
 
-# Build with sccache (faster rebuilds)
+# Build with sccache
 build-cached = { cmd = "cargo build --release", env = { RUSTC_WRAPPER = "sccache" } }
+
+# Build external tools
+build-tools = { cmd = "nu -c 'for tool in [nushell coreutils rusty-tags] { cd $\"tools/external/($tool)\"; cargo build --release }'" }
+
+# Aider AI pair programming
+aider = "aider --config .aider.conf.yml"
 
 [feature.dev.dependencies]
 # Development-only dependencies
@@ -55,16 +66,10 @@ black = "*"
 ruff = "*"
 pre-commit = "*"
 
-[feature.ml.dependencies]
-# Machine learning dependencies (optional)
-# pytorch = ">=2.0"
-# transformers = "*"
-
 [environments]
 default = { features = [], solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
-# ml = { features = ["ml"], solve-group = "ml" }
 
-[activation]
-# Environment activation scripts
-scripts = [".envrc"]
+# No activation scripts - use nushell config instead
+# [activation]
+# scripts = [".envrc"]  # Removed - use nushell
