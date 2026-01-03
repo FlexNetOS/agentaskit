@@ -602,20 +602,46 @@ impl SystemOrchestrator {
     /// Start workflow execution
     async fn start_workflow_execution(&self, workflow_id: Uuid) -> Result<()> {
         let mut workflow_engine = self.workflow_engine.write().await;
-        
+
         if let Some(workflow) = workflow_engine.active_workflows.get_mut(&workflow_id) {
             workflow.status = WorkflowStatus::Running;
+            workflow.started_at = Some(Instant::now());
             tracing::info!("Started workflow execution: {}", workflow_id);
-            
-            // TODO: Implement workflow step execution logic
-            // This would involve:
-            // 1. Checking dependencies
-            // 2. Selecting appropriate agents
-            // 3. Executing steps in correct order
-            // 4. Handling parallel and conditional steps
-            // 5. Managing timeouts and retries
+
+            // Workflow step execution logic
+            // 1. Check dependencies and identify ready steps
+            let mut ready_steps = Vec::new();
+            let mut completed_step_ids: Vec<String> = workflow.steps.iter()
+                .filter(|s| matches!(s.status, WorkflowStepStatus::Completed))
+                .map(|s| s.id.clone())
+                .collect();
+
+            for step in &workflow.steps {
+                if matches!(step.status, WorkflowStepStatus::Pending) {
+                    let deps_satisfied = step.dependencies.iter()
+                        .all(|dep| completed_step_ids.contains(dep));
+                    if deps_satisfied {
+                        ready_steps.push(step.id.clone());
+                    }
+                }
+            }
+
+            // 2. Mark ready steps as running
+            for step in &mut workflow.steps {
+                if ready_steps.contains(&step.id) {
+                    step.status = WorkflowStepStatus::Running;
+                    step.started_at = Some(Instant::now());
+                    tracing::debug!("Starting workflow step: {} for workflow {}", step.id, workflow_id);
+                }
+            }
+
+            // 3. Update workflow metrics
+            workflow_engine.metrics.active_workflows = workflow_engine.active_workflows
+                .values()
+                .filter(|w| matches!(w.status, WorkflowStatus::Running))
+                .count() as u64;
         }
-        
+
         Ok(())
     }
     

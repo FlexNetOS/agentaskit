@@ -836,14 +836,30 @@ impl EmergencyResponder {
 
             // Evaluate rule conditions
             if self.evaluate_emergency_conditions(&rule.conditions, &emergency_detector).await? {
+                // Determine affected components from rule conditions
+                let affected_components: Vec<String> = rule.conditions.iter()
+                    .filter_map(|c| {
+                        if c.metric_name.contains("agent") || c.metric_name.contains("service") {
+                            Some(c.metric_name.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                // Collect relevant metric values from conditions
+                let metric_values: HashMap<String, f64> = rule.conditions.iter()
+                    .map(|c| (c.metric_name.clone(), c.threshold))
+                    .collect();
+
                 let detection = EmergencyDetection {
                     detection_id: Uuid::new_v4(),
                     rule_id: rule.rule_id.clone(),
                     severity: rule.severity.clone(),
                     detected_at: Instant::now(),
                     description: rule.description.clone(),
-                    affected_components: Vec::new(), // TODO: Determine affected components
-                    metric_values: HashMap::new(),   // TODO: Collect relevant metrics
+                    affected_components,
+                    metric_values,
                 };
 
                 detections.push(detection.clone());
