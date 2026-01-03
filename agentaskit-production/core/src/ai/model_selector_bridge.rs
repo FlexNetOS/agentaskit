@@ -3,7 +3,7 @@
 //! Provides a Rust interface to local LLM inference via llama.cpp.
 //! This module is gated behind the `llama-cpp` feature flag.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Model requirements for selection
 #[derive(Debug, Clone)]
@@ -69,7 +69,7 @@ impl ModelSelectorBridge {
     }
 
     /// Parse model metadata from filename and file
-    fn parse_model_metadata(&self, path: &PathBuf) -> Option<LocalModel> {
+    fn parse_model_metadata(&self, path: &Path) -> Option<LocalModel> {
         let filename = path.file_stem()?.to_string_lossy().to_string();
 
         // Parse quantization from filename (e.g., "model-q4_0.gguf")
