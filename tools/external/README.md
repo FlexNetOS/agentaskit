@@ -1,6 +1,6 @@
 # External Tools
 
-This directory contains cloned external tool repositories for AgentAskit development.
+This directory contains cloned external tool repositories for AgentAsKit development.
 
 ## Repositories
 
