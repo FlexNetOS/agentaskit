@@ -102,6 +102,7 @@ jobs:
 
               # Try to parse the script (syntax check)
               try {
+                # Use `--ide-check 100` to run a non-executing, LSP-style analysis as a fast syntax/validation check in CI
                 nu --ide-check 100 $script | ignore
                 print $"  ✓ ($script) - syntax OK"
               } catch {
