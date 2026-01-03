@@ -806,7 +806,7 @@ impl FinanceBoardAgent {
         let metadata = AgentMetadata {
             id: AgentId::from_name("finance-board-agent"),
             name: "Finance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "financial-planning".to_string(),
                 "budget-management".to_string(),
@@ -816,16 +816,19 @@ impl FinanceBoardAgent {
                 "financial-reporting".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024,  // 512MB
-                min_storage: 100 * 1024 * 1024, // 100MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                max_storage: 5 * 1024 * 1024 * 1024, // 5GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {

@@ -1132,12 +1132,12 @@ impl LearningAgent {
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 4.0,
-                min_memory: 8 * 1024 * 1024 * 1024,    // 8GB
-                min_storage: 100 * 1024 * 1024 * 1024, // 100GB
-                max_cpu: 32.0,
-                max_memory: 128 * 1024 * 1024 * 1024, // 128GB
-                max_storage: 10 * 1024 * 1024 * 1024 * 1024, // 10TB
+                cpu_cores: Some(8),
+                memory_mb: Some(16384),
+                storage_mb: Some(102400),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: true,
+                special_capabilities: vec!["gpu".to_string(), "ml-framework".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),

@@ -43,7 +43,7 @@ pub struct ChatRequest {
     pub priority: RequestPriority,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum RequestPriority {
     Low,
     Medium,
@@ -431,11 +431,22 @@ impl EnhancedWorkflowProcessor {
         let sop_document = sop_parser::parse_sop(sot_content)?;
 
         // Analyze using AI SOP interface
-        let ai_analyzer = ai_sop_interface::AISopAnalyzer::new(sop_document.clone());
-        let content_analysis = ai_analyzer.analyze_content().await?;
+        let ai_analyzer = ai_sop_interface::AISopAnalyzer::new("default-model".to_string());
+        let content_analysis = ai_analyzer.analyze_content(&sop_document).await?;
 
-        // Validate request against SOP procedures
-        let validation = ai_analyzer.validate_procedure(&request.message).await?;
+        // Validate request against SOP procedures - use first procedure if available
+        let validation = if let Some(first_proc) = sop_document.procedures.first() {
+            ai_analyzer.validate_procedure(first_proc, &request.message).await?
+        } else {
+            // Default validation if no procedures exist
+            ProcedureValidation {
+                is_aligned: true,
+                alignment_score: 0.5,
+                relevant_steps: vec![],
+                gaps: vec![],
+                required_steps: vec![],
+            }
+        };
 
         // Extract task information from SOT
         let executed_tasks = self.extract_executed_tasks(sot_content).await?;
@@ -443,7 +454,7 @@ impl EnhancedWorkflowProcessor {
         let system_constraints = self.extract_system_constraints(sot_content).await?;
 
         // Enhanced alignment assessment using AI analysis
-        let request_alignment = if validation.is_valid {
+        let request_alignment = if validation.is_aligned {
             content_analysis.completeness_score
         } else {
             content_analysis.completeness_score * 0.5 // Penalize invalid procedures
@@ -499,20 +510,16 @@ impl EnhancedWorkflowProcessor {
 
         // Apply methodology engine for comprehensive scoring and validation
         let methodology = methodology_engine::MethodologyEngine::new();
-        let scores = methodology.score_all(&task_subject)?;
+        let scores = methodology.score_all(&deconstruct, &diagnose, &develop, &deliver);
 
         // Generate quality report
-        let quality_report = methodology.generate_quality_report(&scores)?;
+        let quality_report = methodology.generate_quality_report(&scores);
 
         // Check quality gates
         if !scores.quality_gate_passed {
             // Log warning but continue - allow manual override for critical tasks
             eprintln!("Warning: Quality gates not passed. Scores: {:?}", scores);
             eprintln!("Quality Report:\n{}", quality_report);
-
-            // Generate recommendations for improvement
-            let recommendations = methodology.generate_recommendations(&scores)?;
-            eprintln!("Recommendations:\n{}", recommendations.join("\n"));
         }
 
         Ok(task_subject)
@@ -628,7 +635,7 @@ impl EnhancedWorkflowProcessor {
         use agentaskit_shared::Priority as P;
         Ok(match priority {
             RequestPriority::Low => P::Low,
-            RequestPriority::Medium => P::Medium,
+            RequestPriority::Medium => P::Normal,
             RequestPriority::High => P::High,
             RequestPriority::Critical => P::Critical,
         })
@@ -675,10 +682,10 @@ impl EnhancedWorkflowProcessor {
             id: Uuid::new_v4(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
-            deliverable_type,
+            deliverable_type: deliverable_type.clone(),
             target_location,
             file_specifications: self
-                .generate_file_specifications(output_requirement)
+                .generate_file_specifications(&deliverable_type)
                 .await?,
             quality_requirements: self.generate_quality_requirements(request_type).await?,
             acceptance_criteria: self
@@ -715,27 +722,37 @@ impl EnhancedWorkflowProcessor {
             LocationType::TempDirectory => PathBuf::from("temp"),
         };
 
+        let org_rules = self.get_organization_rules(&location_type).await?;
+        let backup_locs = self.get_backup_locations(&location_type).await?;
+
         Ok(TargetLocation {
             location_type,
             base_path,
             relative_path: self.generate_relative_path(deliverable_type).await?,
             filename_pattern: self.generate_filename_pattern(deliverable_type).await?,
-            organization_rules: self.get_organization_rules(&location_type).await?,
-            backup_locations: self.get_backup_locations(&location_type).await?,
+            organization_rules: org_rules,
+            backup_locations: backup_locs,
         })
     }
 
     /// Initiate agent orchestration for task execution
     async fn initiate_agent_orchestration(&self, task_subject: &TaskSubject) -> Result<()> {
+        use agentaskit_shared::{Task as SharedTask, Priority as SharedPriority};
+
         // Create orchestration tasks for each execution step
         for step in &task_subject.deliver.execution_plan {
-            let task = Task {
+            let shared_task = SharedTask {
                 id: step.step_id,
                 name: step.name.clone(),
                 description: step.description.clone(),
-                task_type: self.determine_task_type(&step.name).await?,
-                priority: self.convert_priority(&task_subject.priority).await?,
-                status: TaskStatus::Pending,
+                task_type: "implementation".to_string(),
+                priority: match task_subject.priority {
+                    RequestPriority::Low => SharedPriority::Low,
+                    RequestPriority::Medium => SharedPriority::Normal,
+                    RequestPriority::High => SharedPriority::High,
+                    RequestPriority::Critical => SharedPriority::Critical,
+                },
+                status: agentaskit_shared::TaskStatus::Pending,
                 assigned_agent: None,
                 dependencies: Vec::new(),
                 input_data: self.generate_task_parameters(step).await?,
@@ -745,20 +762,30 @@ impl EnhancedWorkflowProcessor {
                 completed_at: None,
                 timeout: Some(Utc::now() + step.estimated_duration),
                 retry_count: 0,
+                max_retries: 3,
+                error_message: None,
+                tags: HashMap::new(),
+                required_capabilities: vec![],
             };
 
             // Submit task for orchestration
-            let task_id = self.task_protocol.submit_task(task.clone()).await?;
+            let task_id = self.task_protocol.submit_task(shared_task.clone()).await?;
 
             // Send notification to communication protocol
-            let priority = task.priority.clone();
-            let message = AgentMessage::Request {
-                id: uuid::Uuid::new_v4(),
-                from: AgentId::new(), // System agent
-                to: AgentId::new(),   // Will be assigned by orchestrator
-                task: task,
-                priority: priority,
-                timeout: Some(step.estimated_duration),
+            let system_agent = Uuid::new_v4(); // System agent ID
+            let orchestrator_agent = Uuid::new_v4(); // Orchestrator agent ID
+
+            let message = agentaskit_shared::AgentMessage {
+                message_id: Uuid::new_v4(),
+                from_agent: system_agent,
+                to_agent: orchestrator_agent,
+                message_type: "task_submission".to_string(),
+                priority: shared_task.priority.clone(),
+                timestamp: Utc::now(),
+                payload: serde_json::to_value(&shared_task)?,
+                correlation_id: Some(task_id),
+                reply_to: Some(system_agent),
+                ttl: shared_task.timeout,
             };
 
             self.communication_protocol.send_message(message).await?;
@@ -830,8 +857,243 @@ impl EnhancedWorkflowProcessor {
         Ok(constraints)
     }
 
-    // Additional helper method implementations would continue here...
-    // [Implementation continues with remaining helper methods]
+    // 4D Method Phase Implementations
+    async fn deconstruct_request(
+        &self,
+        request: &ChatRequest,
+        sot_analysis: &SOTAnalysis,
+    ) -> Result<DeconstructPhase> {
+        Ok(DeconstructPhase {
+            core_intent: request.message.clone(),
+            key_entities: vec![],
+            context_analysis: format!("Request alignment: {}", sot_analysis.request_alignment),
+            output_requirements: vec!["Implementation".to_string()],
+            constraints: sot_analysis.system_constraints.clone(),
+            provided_vs_missing: HashMap::new(),
+        })
+    }
+
+    async fn diagnose_requirements(
+        &self,
+        _deconstruct: &DeconstructPhase,
+        _request: &ChatRequest,
+    ) -> Result<DiagnosePhase> {
+        Ok(DiagnosePhase {
+            clarity_gaps: vec![],
+            ambiguity_points: vec![],
+            specificity_level: SpecificityLevel::Moderate,
+            completeness_score: 0.8,
+            structure_needs: vec![],
+            complexity_assessment: ComplexityLevel::Moderate,
+        })
+    }
+
+    async fn develop_approach(
+        &self,
+        _diagnose: &DiagnosePhase,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<DevelopPhase> {
+        Ok(DevelopPhase {
+            request_type: RequestType::Technical,
+            selected_techniques: vec![OptimizationTechnique::SystematicFrameworks],
+            ai_role_assignment: "Implementation assistant".to_string(),
+            context_enhancement: "Enhanced with SOT context".to_string(),
+            logical_structure: "Structured implementation plan".to_string(),
+        })
+    }
+
+    async fn design_delivery(
+        &self,
+        _develop: &DevelopPhase,
+        _diagnose: &DiagnosePhase,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<DeliverPhase> {
+        Ok(DeliverPhase {
+            execution_plan: vec![],
+            verification_protocol: self.create_default_verification_protocol(),
+            deliverable_specifications: vec![],
+            target_locations: vec![],
+            timeline: ExecutionTimeline {
+                start_time: Utc::now(),
+                estimated_end_time: Utc::now() + chrono::Duration::hours(1),
+                milestones: vec![],
+                critical_path: vec![],
+            },
+        })
+    }
+
+    fn create_default_verification_protocol(&self) -> VerificationProtocol {
+        VerificationProtocol {
+            pass_a_self_check: VerificationPass {
+                name: "Pass A: Self-Check".to_string(),
+                criteria: vec!["Code compiles".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            pass_b_independent: VerificationPass {
+                name: "Pass B: Independent Verification".to_string(),
+                criteria: vec!["Tests pass".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            pass_c_adversarial: VerificationPass {
+                name: "Pass C: Adversarial Review".to_string(),
+                criteria: vec!["Security review".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            evidence_ledger: EvidenceLedger {
+                files: HashMap::new(),
+                data_sources: vec![],
+                external_references: vec![],
+                mathematics: vec![],
+                tests: vec![],
+                verification_results: vec![],
+            },
+            truth_gate_requirements: TruthGateRequirements {
+                artifact_presence: false,
+                smoke_test_passed: false,
+                spec_match_verified: false,
+                limits_documented: false,
+                hashes_provided: false,
+                gap_scan_complete: false,
+                triple_verification_complete: false,
+            },
+        }
+    }
+
+    async fn generate_task_title(
+        &self,
+        request: &ChatRequest,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<String> {
+        Ok(format!("Task: {}", request.message.chars().take(50).collect::<String>()))
+    }
+
+    async fn generate_task_description(
+        &self,
+        request: &ChatRequest,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<String> {
+        Ok(request.message.clone())
+    }
+
+    async fn generate_todo_entry(&self, task_subject: &TaskSubject) -> Result<String> {
+        Ok(format!(
+            "## {}\n\n- [ ] {}\n\nPriority: {:?}\nStatus: {:?}\n",
+            task_subject.title, task_subject.description, task_subject.priority, task_subject.status
+        ))
+    }
+
+    async fn generate_deliverable_name(&self, output_req: &str) -> Result<String> {
+        Ok(format!("Deliverable: {}", output_req))
+    }
+
+    async fn determine_deliverable_type(&self, output_req: &str) -> Result<DeliverableType> {
+        let req_lower = output_req.to_lowercase();
+        if req_lower.contains("code") || req_lower.contains("implement") {
+            Ok(DeliverableType::SourceCode)
+        } else if req_lower.contains("doc") {
+            Ok(DeliverableType::Documentation)
+        } else if req_lower.contains("test") {
+            Ok(DeliverableType::TestSuite)
+        } else if req_lower.contains("config") {
+            Ok(DeliverableType::Configuration)
+        } else {
+            Ok(DeliverableType::Report)
+        }
+    }
+
+    async fn generate_quality_requirements(
+        &self,
+        _request_type: &RequestType,
+    ) -> Result<Vec<String>> {
+        Ok(vec![
+            "Code must compile without errors".to_string(),
+            "All tests must pass".to_string(),
+            "Documentation must be complete".to_string(),
+        ])
+    }
+
+    async fn generate_acceptance_criteria(&self, _output_req: &str) -> Result<Vec<String>> {
+        Ok(vec![
+            "Functionality implemented as specified".to_string(),
+            "Tests passing".to_string(),
+            "Documentation updated".to_string(),
+        ])
+    }
+
+    async fn create_standard_deliverables(
+        &self,
+        _task_subject: &TaskSubject,
+    ) -> Result<Vec<Deliverable>> {
+        Ok(vec![])
+    }
+
+    async fn generate_file_specifications(
+        &self,
+        _deliverable_type: &DeliverableType,
+    ) -> Result<Vec<FileSpecification>> {
+        Ok(vec![])
+    }
+
+    async fn generate_relative_path(&self, deliverable_type: &DeliverableType) -> Result<String> {
+        Ok(match deliverable_type {
+            DeliverableType::SourceCode => "src/".to_string(),
+            DeliverableType::Documentation => "docs/".to_string(),
+            DeliverableType::TestSuite => "tests/".to_string(),
+            DeliverableType::Configuration => "config/".to_string(),
+            _ => "output/".to_string(),
+        })
+    }
+
+    async fn generate_filename_pattern(
+        &self,
+        _deliverable_type: &DeliverableType,
+    ) -> Result<Option<String>> {
+        Ok(None)
+    }
+
+    async fn get_organization_rules(&self, _location_type: &LocationType) -> Result<Vec<String>> {
+        Ok(vec!["Follow project structure".to_string()])
+    }
+
+    async fn get_backup_locations(&self, _location_type: &LocationType) -> Result<Vec<PathBuf>> {
+        Ok(vec![])
+    }
+
+    async fn determine_task_type(&self, step_name: &str) -> Result<String> {
+        Ok(if step_name.contains("analyz") {
+            "analysis".to_string()
+        } else if step_name.contains("test") {
+            "testing".to_string()
+        } else {
+            "implementation".to_string()
+        })
+    }
+
+    async fn convert_priority(
+        &self,
+        priority: &RequestPriority,
+    ) -> Result<crate::orchestration::Priority> {
+        use crate::orchestration::Priority as P;
+        Ok(match priority {
+            RequestPriority::Low => P::Low,
+            RequestPriority::Medium => P::Medium,
+            RequestPriority::High => P::High,
+            RequestPriority::Critical => P::Critical,
+        })
+    }
+
+    async fn generate_task_parameters(&self, _step: &ExecutionStep) -> Result<serde_json::Value> {
+        Ok(serde_json::json!({}))
+    }
 }
 
 // Supporting structures and traits

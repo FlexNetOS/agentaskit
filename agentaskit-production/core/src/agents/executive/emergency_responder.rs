@@ -12,6 +12,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// Emergency Responder Agent - Crisis management and system recovery
 /// 
 /// The Emergency Responder is responsible for:
@@ -768,10 +770,14 @@ enum ResolutionSource {
 
 impl EmergencyResponder {
     pub fn new(config: EmergencyResponderConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("emergency-responder"),
             name: "Emergency Responder".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "Executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "emergency-detection".to_string(),
                 "crisis-management".to_string(),
@@ -780,17 +786,19 @@ impl EmergencyResponder {
                 "incident-coordination".to_string(),
                 "disaster-recovery".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.4,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 20 * 1024 * 1024,  // 20MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 1024 * 1024 * 1024,     // 1GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096), // 4GB
+                storage_mb: Some(1024), // 1GB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(15), // More frequent for emergency responder
+            tags,
         };
 
         Self {

@@ -472,7 +472,7 @@ impl StrategyBoardAgent {
         let metadata = AgentMetadata {
             id: AgentId::from_name("strategy-board-agent"),
             name: "Strategy Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "strategic-planning".to_string(),
                 "market-analysis".to_string(),
@@ -482,16 +482,19 @@ impl StrategyBoardAgent {
                 "stakeholder-alignment".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 50 * 1024 * 1024, // 50MB
-                max_cpu: 1.5,
-                max_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                max_storage: 2 * 1024 * 1024 * 1024, // 2GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(2048),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {

@@ -14,6 +14,8 @@ use crate::agents::{
     specialized::integration_agent::MessageBroker,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA
 /// 
 /// The NOA Commander is the highest-level autonomous agent responsible for:
@@ -752,10 +754,14 @@ enum BenchmarkTrend {
 
 impl NoaCommander {
     pub fn new(config: CommanderConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("noa-commander"),
             name: "NOA Commander".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "Executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "strategic-planning".to_string(),
                 "resource-allocation".to_string(),
@@ -766,17 +772,19 @@ impl NoaCommander {
                 "performance-optimization".to_string(),
                 "risk-management".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 10 * 1024 * 1024,  // 10MB
-                max_cpu: 4.0,
-                max_memory: 8 * 1024 * 1024 * 1024, // 8GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192), // 8GB
+                storage_mb: Some(1024), // 1GB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: config.health_check_interval,
+            tags,
         };
 
         Self {
