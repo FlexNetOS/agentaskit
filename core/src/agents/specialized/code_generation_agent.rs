@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Code Generation Agent - Specialized code generation and optimization
@@ -738,7 +738,13 @@ impl CodeGenerationAgent {
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("code-generation".to_string(), "code-generation".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: [
+                ("code-generation".to_string(), "code-generation".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
@@ -927,14 +933,14 @@ impl Agent for CodeGenerationAgent {
         match task.name.as_str() {
             "generate-code" => {
                 let title = task
-                    .parameters
+                    .input_data
                     .get("title")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Generated Code")
                     .to_string();
 
                 let language = task
-                    .parameters
+                    .input_data
                     .get("language")
                     .and_then(|v| v.as_str())
                     .unwrap_or("rust")
@@ -989,7 +995,7 @@ impl Agent for CodeGenerationAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Code generation failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

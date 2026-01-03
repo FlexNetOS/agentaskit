@@ -2,14 +2,14 @@
 // Tests the full coordination between Executive → Board → Specialized layers
 
 use super::*;
-use crate::agents::Agent;
 use crate::agents::specialized::SpecializedLayer;
-use agentaskit_shared::{Task, TaskStatus, Priority, TaskId};
-use uuid::Uuid;
+use crate::agents::Agent;
+use agentaskit_shared::{Priority, Task, TaskId, TaskStatus};
 use chrono::{DateTime, Utc};
 use std::time::Duration;
 use tokio::time::timeout;
 use tracing::{error, info};
+use uuid::Uuid;
 
 /// Comprehensive integration test suite for Phase 4 Agent Framework
 pub struct Phase4IntegrationTest {
@@ -175,6 +175,7 @@ impl Phase4IntegrationTest {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: None,
             retry_count: 0,
             max_retries: 3,
@@ -220,6 +221,7 @@ impl Phase4IntegrationTest {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: None,
             retry_count: 0,
             max_retries: 3,
@@ -383,6 +385,7 @@ impl Phase4IntegrationTest {
                 created_at: Utc::now(),
                 started_at: None,
                 completed_at: None,
+            deadline: None,
                 timeout: Some(Utc::now() + chrono::Duration::seconds(30)),
                 retry_count: 0,
                 max_retries: 3,
@@ -444,6 +447,7 @@ impl Phase4IntegrationTest {
                 created_at: Utc::now(),
                 started_at: None,
                 completed_at: None,
+            deadline: None,
                 timeout: None,
                 retry_count: 0,
                 max_retries: 3,
@@ -631,6 +635,7 @@ mod tests {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: None,
             retry_count: 0,
             max_retries: 3,
@@ -672,6 +677,7 @@ pub mod test_utils {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: Some(Utc::now() + chrono::Duration::seconds(60)),
             retry_count: 0,
             max_retries: 3,
@@ -722,6 +728,7 @@ pub mod test_utils {
                 created_at: Utc::now(),
                 started_at: None,
                 completed_at: None,
+            deadline: None,
                 timeout: Some(Utc::now() + chrono::Duration::seconds(30)),
                 retry_count: 0,
                 max_retries: 3,

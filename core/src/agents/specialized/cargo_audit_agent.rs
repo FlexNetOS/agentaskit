@@ -5,8 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -84,7 +83,7 @@ impl CargoAuditAgent {
     pub fn new(config: Option<CargoAuditConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "cargo_audit".to_string(),
             "vulnerability_scanning".to_string(),
@@ -156,7 +155,10 @@ impl Agent for CargoAuditAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        _message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         Ok(None)
     }
 
@@ -165,7 +167,8 @@ impl Agent for CargoAuditAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        let workspace_path = task.parameters
+        let workspace_path = task
+            .input_data
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

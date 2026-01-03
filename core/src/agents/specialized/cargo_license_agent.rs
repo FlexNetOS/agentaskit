@@ -5,8 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -79,7 +78,7 @@ impl CargoLicenseAgent {
     pub fn new(config: Option<CargoLicenseConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "license_scanning".to_string(),
             "license_validation".to_string(),
@@ -148,7 +147,10 @@ impl Agent for CargoLicenseAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        _message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         Ok(None)
     }
 
@@ -157,7 +159,8 @@ impl Agent for CargoLicenseAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        let workspace_path = task.parameters
+        let workspace_path = task
+            .input_data
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

@@ -104,3 +104,26 @@ serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 anyhow.workspace = true
+
+# Profile optimizations for production-ready builds
+[profile.release]
+opt-level = 3              # Maximum optimizations
+lto = "thin"               # Thin Link Time Optimization for faster builds
+codegen-units = 1          # Better optimization, slower compile
+strip = true               # Strip symbols for smaller binary
+panic = "abort"            # Smaller binary, faster panic handling
+
+[profile.dev]
+opt-level = 0              # No optimization for faster compilation
+debug = true               # Full debug info
+incremental = true         # Incremental compilation
+
+[profile.release-lto]
+inherits = "release"
+lto = "fat"                # Full LTO for maximum performance
+codegen-units = 1
+strip = true
+
+[profile.bench]
+inherits = "release"
+debug = true               # Keep debug info for profiling

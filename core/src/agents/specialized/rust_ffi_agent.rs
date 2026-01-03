@@ -5,8 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -77,7 +76,7 @@ impl RustFFIAgent {
     pub fn new(config: Option<RustFFIConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "bindgen_integration".to_string(),
             "cbindgen_integration".to_string(),
@@ -118,7 +117,10 @@ impl RustFFIAgent {
     }
 
     pub async fn generate_bindings(&self, workspace_path: &Path) -> Result<FFIResult> {
-        info!("Generating FFI bindings for workspace at: {:?}", workspace_path);
+        info!(
+            "Generating FFI bindings for workspace at: {:?}",
+            workspace_path
+        );
 
         let result = FFIResult {
             bindings_generated: vec![],
@@ -147,7 +149,10 @@ impl Agent for RustFFIAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        _message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         Ok(None)
     }
 
@@ -156,7 +161,8 @@ impl Agent for RustFFIAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        let workspace_path = task.parameters
+        let workspace_path = task
+            .input_data
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

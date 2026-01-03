@@ -470,7 +470,7 @@ struct AlignmentAssessment {
 impl StrategyBoardAgent {
     pub fn new(config: StrategyBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("strategy-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("strategy-board-agent"),
             name: "Strategy Board Agent".to_string(),
             agent_type: "board".to_string(),
             capabilities: vec![
@@ -766,7 +766,7 @@ impl Agent for StrategyBoardAgent {
         match task.name.as_str() {
             "create-strategic-plan" => {
                 let vision = task
-                    .parameters
+                    .input_data
                     .get("vision")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Default vision")
@@ -791,7 +791,7 @@ impl Agent for StrategyBoardAgent {
             }
             "conduct-market-analysis" => {
                 let market_segment = task
-                    .parameters
+                    .input_data
                     .get("market_segment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("general")
@@ -830,7 +830,7 @@ impl Agent for StrategyBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Strategy planning failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

@@ -3,13 +3,13 @@
 // and business intelligence capabilities for data-driven insights
 
 use crate::agents::{Agent, AgentResult, MessageId};
-use anyhow::Result;
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -1088,7 +1088,7 @@ impl Agent for DataAnalyticsAgent {
             "data_processing" => {
                 // Parse dataset from parameters
                 let dataset_data = task
-                    .parameters
+                    .input_data
                     .get("dataset")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset"))?;
 
@@ -1098,17 +1098,17 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "data_analysis" => {
                 let dataset_id = task
-                    .parameters
+                    .input_data
                     .get("dataset_id")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset_id"))?;
                 let analysis_type_str = task
-                    .parameters
+                    .input_data
                     .get("analysis_type")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: analysis_type"))?;
 
@@ -1118,14 +1118,14 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data analysis failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "model_training" => {
                 // Parse training request from parameters
                 let training_data = task
-                    .parameters
+                    .input_data
                     .get("training_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: training_request"))?;
 
@@ -1135,14 +1135,14 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Model training failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "visualization" => {
                 // Parse visualization request from parameters
                 let viz_data = task
-                    .parameters
+                    .input_data
                     .get("visualization_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: visualization_request"))?;
 
@@ -1152,14 +1152,14 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Visualization creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "report_generation" => {
                 // Parse report request from parameters
                 let report_data = task
-                    .parameters
+                    .input_data
                     .get("report_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: report_request"))?;
 
@@ -1169,14 +1169,14 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Report generation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "query_execution" => {
                 // Parse query from parameters
                 let query_data = task
-                    .parameters
+                    .input_data
                     .get("query")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: query"))?;
 
@@ -1186,14 +1186,14 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Query execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "stream_processing" => {
                 // Parse stream config from parameters
                 let stream_data = task
-                    .parameters
+                    .input_data
                     .get("stream_config")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: stream_config"))?;
 
@@ -1203,7 +1203,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Stream processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1211,12 +1211,12 @@ impl Agent for DataAnalyticsAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Analytics status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 

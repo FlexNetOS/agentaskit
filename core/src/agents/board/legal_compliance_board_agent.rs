@@ -10,8 +10,8 @@ use uuid::Uuid;
 use crate::agents::Agent;
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Legal Compliance Board Agent - Legal oversight and regulatory compliance
@@ -899,7 +899,7 @@ struct PolicyMetrics {
 impl LegalComplianceBoardAgent {
     pub fn new(config: LegalComplianceBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("legal-compliance-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("legal-compliance-board-agent"),
             name: "Legal Compliance Board Agent".to_string(),
             agent_type: "board".to_string(),
             capabilities: vec![
@@ -1102,7 +1102,7 @@ impl Agent for LegalComplianceBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Legal compliance check failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

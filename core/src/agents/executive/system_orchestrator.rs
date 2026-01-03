@@ -10,8 +10,8 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentResult};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// System Orchestrator Agent - Operational workflow management
@@ -476,7 +476,7 @@ impl Default for PerformanceThresholds {
 impl SystemOrchestrator {
     pub fn new(config: OrchestratorConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("system-orchestrator"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

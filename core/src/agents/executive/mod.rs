@@ -14,9 +14,9 @@ pub use priority_manager::{PriorityManager, PriorityManagerConfig};
 pub use resource_allocator::{ResourceAllocator, ResourceAllocatorConfig};
 pub use system_orchestrator::{OrchestratorConfig, SystemOrchestrator};
 
+use crate::agents::communication::CommunicationManager;
 use crate::agents::Agent;
 use crate::agents::MessageId;
-use crate::agents::communication::CommunicationManager;
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -33,12 +33,12 @@ pub async fn coordinate_strategic_decision(
     tracing::info!("Coordinating strategic decision: {}", decision_task.name);
 
     // Send task to NOA Commander for strategic decision-making
-    let commander_id = AgentId::from_name("noa-commander");
+    let commander_id = agentaskit_shared::agent_utils::agent_id_from_name("noa-commander");
     let message_id = MessageId::new();
 
     let request = AgentMessage::Request {
         id: message_id,
-        from: AgentId::from_name("executive-layer-coordinator"),
+        from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
         to: commander_id,
         task: decision_task,
         priority: Priority::High,
@@ -67,7 +67,7 @@ pub async fn broadcast_emergency_alert(
 
     let alert = AgentMessage::Alert {
         id: MessageId::new(),
-        from: AgentId::from_name("executive-layer-coordinator"),
+        from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
         severity: crate::agents::AlertSeverity::Emergency,
         message: alert_message,
         context,
@@ -78,7 +78,7 @@ pub async fn broadcast_emergency_alert(
     communication_manager
         .send_message(AgentMessage::Broadcast {
             id: MessageId::new(),
-            from: AgentId::from_name("executive-layer-coordinator"),
+            from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
             topic: "emergency-alert".to_string(),
             payload: serde_json::to_value(alert)?,
             scope: crate::agents::BroadcastScope::Role(AgentRole::Executive),
@@ -103,21 +103,26 @@ pub async fn coordinate_resource_reallocation(
         task_type: "resource-allocation".to_string(),
         priority: Priority::High,
         status: TaskStatus::Pending,
-        assigned_agent: Some(AgentId::from_name("resource-allocator")),
+        assigned_agent: None, // Will be assigned by orchestrator
         dependencies: Vec::new(),
         input_data: serde_json::to_value(reallocation_request).unwrap_or(serde_json::json!({})),
         output_data: None,
         created_at: chrono::Utc::now(),
         started_at: None,
         completed_at: None,
+        deadline: None,
         timeout: Some(chrono::Utc::now() + chrono::Duration::seconds(300)),
         retry_count: 0,
+        max_retries: 3,
+        error_message: None,
+        tags: std::collections::HashMap::new(),
+        required_capabilities: vec!["resource-management".to_string()],
     };
 
-    let resource_allocator_id = AgentId::from_name("resource-allocator");
+    let resource_allocator_id = agentaskit_shared::agent_utils::agent_id_from_name("resource-allocator");
     let message = AgentMessage::Request {
         id: MessageId::new(),
-        from: AgentId::from_name("executive-layer-coordinator"),
+        from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
         to: resource_allocator_id,
         task,
         priority: Priority::High,

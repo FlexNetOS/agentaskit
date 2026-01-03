@@ -8,8 +8,8 @@ pub mod communication;
 pub mod integration_tests;
 
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, TaskResult,
+    TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;

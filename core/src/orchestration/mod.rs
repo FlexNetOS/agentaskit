@@ -16,6 +16,9 @@ use crate::agents::AgentManager;
 use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
+// Re-export unified types from shared for consistency across codebase
+pub use agentaskit_shared::{Priority, Task, TaskResult, TaskStatus};
+
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
     agent_manager: Arc<AgentManager>,
@@ -25,22 +28,7 @@ pub struct OrchestratorEngine {
     running: Arc<RwLock<bool>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Task {
-    pub id: Uuid,
-    pub name: String,
-    pub description: String,
-    pub task_type: TaskType,
-    pub priority: Priority,
-    pub required_capabilities: Vec<String>,
-    pub parameters: serde_json::Value,
-    pub dependencies: Vec<Uuid>,
-    pub deadline: Option<chrono::DateTime<chrono::Utc>>,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub status: TaskStatus,
-    pub assigned_agent: Option<Uuid>,
-}
-
+/// Task type classification (orchestration-specific)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TaskType {
     Analysis,
@@ -50,27 +38,6 @@ pub enum TaskType {
     Deployment,
     Maintenance,
     Emergency,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Priority {
-    Emergency = 0,
-    Critical = 1,
-    High = 2,
-    Medium = 3,
-    Normal = 4,
-    Low = 5,
-    Maintenance = 6,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum TaskStatus {
-    Pending,
-    Assigned,
-    InProgress,
-    Completed,
-    Failed,
-    Cancelled,
 }
 
 pub struct TaskQueue {
