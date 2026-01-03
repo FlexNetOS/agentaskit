@@ -549,7 +549,7 @@ struct SLAViolation {
 }
 
 /// SLA violation severity
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum ViolationSeverity {
     Minor,
     Major,

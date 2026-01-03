@@ -149,7 +149,7 @@ struct WorkflowStep {
 }
 
 /// Workflow step types
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum WorkflowStepType {
     Task,            // Execute a specific task
     Decision,        // Make a decision based on input
@@ -404,7 +404,7 @@ enum DependencyNodeType {
 }
 
 /// Deadlock detection result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct DeadlockDetection {
     pub detection_time: Instant,
     pub deadlock_found: bool,

@@ -576,6 +576,7 @@ impl SecuritySpecialistAgent {
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
@@ -684,7 +685,7 @@ impl SecuritySpecialistAgent {
             scan_id,
             scan_type: "vulnerability".to_string(),
             target: target.to_string(),
-            findings: scan_result.findings.len() as u64,
+            findings: scan_result.total_findings as u64,
             severity_breakdown: scan_result.findings_by_severity,
             recommendations: scan_result.recommendations,
             scan_duration: 0, // Would be calculated from actual scan time
