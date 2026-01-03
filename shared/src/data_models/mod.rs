@@ -18,6 +18,7 @@ pub enum AgentStatus {
     Busy,
     Error,
     Maintenance,
+    Terminating,
     Shutdown,
 }
 

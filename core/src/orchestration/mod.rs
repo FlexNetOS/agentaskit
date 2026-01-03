@@ -16,6 +16,9 @@ use crate::agents::AgentManager;
 use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
+// Re-export TaskResult from shared for compatibility
+pub use agentaskit_shared::TaskResult;
+
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
     agent_manager: Arc<AgentManager>,
