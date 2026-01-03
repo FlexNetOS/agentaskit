@@ -112,7 +112,7 @@ impl AgentMessageQueue {
 
     fn enqueue(&mut self, message: AgentMessage) -> Result<()> {
         let priority = match &message {
-            AgentMessage::Request { priority, .. } => *priority as usize,
+            AgentMessage::Request { priority, .. } => priority.clone() as usize,
             AgentMessage::Alert { severity, .. } => match severity {
                 super::AlertSeverity::Emergency => 0,
                 super::AlertSeverity::Critical => 1,

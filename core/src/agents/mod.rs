@@ -9,7 +9,7 @@ pub mod integration_tests;
 
 use agentaskit_shared::{
     AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    Task as SharedTask, TaskResult, TaskStatus,
+    TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,6 +19,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
+
+use crate::orchestration::Task;
+use crate::security::SecurityManager;
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 pub type MessageId = Uuid;
@@ -122,12 +125,9 @@ pub enum RegistrationAction {
     Update,
 }
 
-use crate::orchestration::Task;
-use crate::security::SecurityManager;
-
 /// Agent trait for all agents in the system
 #[async_trait]
-pub trait Agent {
+pub trait Agent: Send + Sync {
     /// Start the agent
     async fn start(&mut self) -> AgentResult<()>;
 

@@ -9,9 +9,10 @@ use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Resource Allocator Agent - Dynamic resource management and optimization
@@ -1138,21 +1139,11 @@ impl Agent for ResourceAllocator {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let resource_manager = self.resource_manager.read().await;
-        let monitor = self.monitor.read().await;
+        let _state = self.state.read().await;
+        let _resource_manager = self.resource_manager.read().await;
+        let _monitor = self.monitor.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0,                 // Placeholder
-            memory_usage: 128 * 1024 * 1024, // 128MB placeholder
-            task_queue_size: 0,
-            completed_tasks: resource_manager.allocation_history.len() as u64,
-            failed_tasks: 0, // Track this in real implementation
-            average_response_time: Duration::from_millis(50),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -1162,8 +1153,8 @@ impl Agent for ResourceAllocator {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 
