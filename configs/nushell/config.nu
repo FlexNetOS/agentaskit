@@ -62,7 +62,7 @@ def --env "mise-activate" [] {
 def "aa" [] {
     let root = ($env | get -i AGENTASKIT_ROOT | default "")
     if $root == "" {
-        print "error: AGENTASKIT_ROOT is not set. Run 'mise activate' or source .envrc first."
+        error make { msg: "AGENTASKIT_ROOT is not set. Run 'mise activate' or source .envrc first." }
     } else {
         cd $root
     }
