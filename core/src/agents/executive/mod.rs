@@ -16,6 +16,7 @@ pub use system_orchestrator::{OrchestratorConfig, SystemOrchestrator};
 
 use crate::agents::Agent;
 use crate::agents::MessageId;
+use crate::agents::communication::CommunicationManager;
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,

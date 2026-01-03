@@ -12,6 +12,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// Code Generation Agent - Specialized code generation and optimization
 /// 
 /// The Code Generation Agent is responsible for:
@@ -706,10 +708,14 @@ struct LanguageMetrics {
 impl CodeGenerationAgent {
     pub fn new(config: Option<CodeGenerationConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "specialized".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("code-generation-agent"),
             name: "Code Generation Agent".to_string(),
-            role: AgentRole::Specialized,
+            agent_type: "Specialized".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "code-generation".to_string(),
                 "code-refactoring".to_string(),
@@ -718,17 +724,19 @@ impl CodeGenerationAgent {
                 "multi-language-support".to_string(),
                 "pattern-recognition".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                min_storage: 1024 * 1024 * 1024,     // 1GB
-                max_cpu: 4.0,
-                max_memory: 16 * 1024 * 1024 * 1024, // 16GB
-                max_storage: 50 * 1024 * 1024 * 1024, // 50GB
+                cpu_cores: Some(4),
+                memory_mb: Some(16384), // 16GB
+                storage_mb: Some(51200), // 50GB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags,
         };
 
         Self {

@@ -12,6 +12,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// Legal Compliance Board Agent - Legal oversight and regulatory compliance
 /// 
 /// The Legal Compliance Board Agent is responsible for:
@@ -900,10 +902,14 @@ struct PolicyMetrics {
 
 impl LegalComplianceBoardAgent {
     pub fn new(config: LegalComplianceBoardConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("legal-compliance-board-agent"),
             name: "Legal Compliance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "Board".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "compliance-monitoring".to_string(),
                 "regulatory-tracking".to_string(),
@@ -912,17 +918,19 @@ impl LegalComplianceBoardAgent {
                 "audit-support".to_string(),
                 "legal-documentation".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.2,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 50 * 1024 * 1024,  // 50MB
-                max_cpu: 1.0,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024, // 1GB
+                cpu_cores: Some(1),
+                memory_mb: Some(2048), // 2GB
+                storage_mb: Some(1024), // 1GB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags,
         };
 
         Self {

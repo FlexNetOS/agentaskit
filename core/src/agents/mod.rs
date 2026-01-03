@@ -164,7 +164,7 @@ pub struct AgentCapability {
 }
 
 /// Agent hierarchy layers as defined in the design
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum AgentLayer {
     CECCA,      // Command, Executive, Control, Coordination, Authority (1-3 agents)
     Board,      // Governance & Policy (5-15 agents)

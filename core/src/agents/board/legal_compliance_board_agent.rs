@@ -901,7 +901,7 @@ impl LegalComplianceBoardAgent {
         let metadata = AgentMetadata {
             id: AgentId::from_name("legal-compliance-board-agent"),
             name: "Legal Compliance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "compliance-monitoring".to_string(),
                 "regulatory-tracking".to_string(),
@@ -911,16 +911,19 @@ impl LegalComplianceBoardAgent {
                 "legal-documentation".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.2,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 50 * 1024 * 1024, // 50MB
-                max_cpu: 1.0,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(1),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {

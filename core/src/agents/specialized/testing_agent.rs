@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -870,29 +870,27 @@ impl TestingAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
-            health_status: HealthStatus::Healthy,
+            health_status: HealthStatus::Unknown,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                min_storage: 2 * 1024 * 1024 * 1024, // 2GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024,   // 32GB
-                max_storage: 100 * 1024 * 1024 * 1024, // 100GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: vec!["test-framework".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("testing".to_string(), "testing".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
-            id,
-            name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1029,13 +1027,13 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
-                Ok(Some(AgentMessage::Response {
-                    id: MessageId::new(),
+                Ok(Some(crate::agents::AgentMessage::Response {
+                    id: crate::agents::MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1052,13 +1050,13 @@ impl Agent for TestingAgent {
         match task.name.as_str() {
             "run-tests" => {
                 let test_type = task
-                    .parameters
+                    .input_data
                     .get("test_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unit");
 
                 let environment = task
-                    .parameters
+                    .input_data
                     .get("environment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("local")
@@ -1144,7 +1142,13 @@ impl Agent for TestingAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
+    }
+
+    async fn initialize(&mut self) -> AgentResult<()> {
+        tracing::info!("Initializing Testing Agent");
+        *self.state.write().await = AgentStatus::Active;
+        Ok(())
     }
 }
 

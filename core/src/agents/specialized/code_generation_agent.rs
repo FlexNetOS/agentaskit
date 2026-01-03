@@ -729,12 +729,12 @@ impl CodeGenerationAgent {
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                min_storage: 1024 * 1024 * 1024,    // 1GB
-                max_cpu: 4.0,
-                max_memory: 16 * 1024 * 1024 * 1024,  // 16GB
-                max_storage: 50 * 1024 * 1024 * 1024, // 50GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: vec!["llm".to_string(), "code-analysis".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),

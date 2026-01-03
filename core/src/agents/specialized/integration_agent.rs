@@ -713,7 +713,14 @@ impl IntegrationAgent {
             health_status: HealthStatus::Unknown,
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            resource_requirements: ResourceRequirements::default(),
+            resource_requirements: ResourceRequirements {
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(512),
+                network_bandwidth_mbps: Some(200.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
+            },
             tags: std::collections::HashMap::new(),
         };
 
@@ -970,7 +977,7 @@ impl Agent for IntegrationAgent {
         if *active {
             AgentStatus::Active
         } else {
-            AgentStatus::Idle
+            AgentStatus::Inactive
         }
     }
 
@@ -983,7 +990,7 @@ impl Agent for IntegrationAgent {
 
         // Return appropriate health status based on agent state
         match state {
-            AgentStatus::Active | AgentStatus::Idle => Ok(HealthStatus::Healthy),
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
             AgentStatus::Busy => Ok(HealthStatus::Healthy),
             AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
             AgentStatus::Error => Ok(HealthStatus::Critical),

@@ -1381,12 +1381,12 @@ impl DeploymentAgent {
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
-                min_storage: 10 * 1024 * 1024 * 1024, // 10GB
-                max_cpu: 16.0,
-                max_memory: 64 * 1024 * 1024 * 1024,    // 64GB
-                max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(200.0),
+                gpu_required: false,
+                special_capabilities: vec!["kubernetes".to_string(), "docker".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
@@ -1559,14 +1559,14 @@ impl Agent for DeploymentAgent {
         match task.name.as_str() {
             "deploy" => {
                 let pipeline_name = task
-                    .parameters
+                    .input_data
                     .get("pipeline")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-pipeline")
                     .to_string();
 
                 let trigger_source = task
-                    .parameters
+                    .input_data
                     .get("trigger")
                     .and_then(|v| v.as_str())
                     .unwrap_or("manual")

@@ -12,6 +12,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// System Orchestrator Agent - Operational workflow management
 /// 
 /// The System Orchestrator is responsible for:
@@ -473,10 +475,14 @@ impl Default for PerformanceThresholds {
 
 impl SystemOrchestrator {
     pub fn new(config: OrchestratorConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "Executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "workflow-orchestration".to_string(),
                 "task-scheduling".to_string(),
@@ -485,17 +491,19 @@ impl SystemOrchestrator {
                 "performance-monitoring".to_string(),
                 "coordination".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 5 * 1024 * 1024,   // 5MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 500 * 1024 * 1024,     // 500MB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096), // 4GB
+                storage_mb: Some(500), // 500MB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags,
         };
 
         Self {
