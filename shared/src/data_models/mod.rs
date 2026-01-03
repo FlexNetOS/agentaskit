@@ -54,10 +54,63 @@ pub const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
 #[inline]
 pub fn agent_id_from_name(name: &str) -> AgentId {
     AgentId::from_name(name)
+/// Enhanced: Common task identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct TaskId(pub Uuid);
+
+impl TaskId {
+    /// Create a new random TaskId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a TaskId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
 }
 
-/// Common task identifier type
-pub type TaskId = Uuid;
+impl std::fmt::Display for TaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for TaskId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Enhanced: Message identifier with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// Enhanced: Common message identifier type with type safety
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

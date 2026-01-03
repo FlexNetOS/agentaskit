@@ -635,7 +635,7 @@ impl ResourceAllocator {
             tracing::warn!("Agent {} already has resource allocation", agent_id);
         }
 
-        // Find suitable resources
+        // Enhanced: Find suitable resources (not async - no await needed)
         let capacity = self.convert_requirements_to_capacity(&requirements);
         let suitable_pool_key = self
             .find_suitable_resource_pool(&resource_manager, &capacity)?;
