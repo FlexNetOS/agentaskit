@@ -296,7 +296,7 @@ struct AgentWorkload {
 impl Default for AgentWorkload {
     fn default() -> Self {
         Self {
-            agent_id: Uuid::new_v4(),
+            agent_id: AgentId::new(),
             current_tasks: 0,
             queued_tasks: 0,
             total_capacity: 100,
@@ -571,7 +571,7 @@ struct SLAMetrics {
 
 impl PriorityManager {
     pub fn new(config: PriorityManagerConfig) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let metadata = AgentMetadata {
             id,
             name: "Priority Manager".to_string(),

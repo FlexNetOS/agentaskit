@@ -5,7 +5,7 @@
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -20,7 +20,7 @@ use uuid::Uuid;
 /// Data Analytics Agent - Domain expert for data processing and analytics
 #[derive(Clone)]
 pub struct DataAnalyticsAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     config: DataAnalyticsConfig,
@@ -32,7 +32,7 @@ pub struct DataAnalyticsAgent {
     data_warehouse: Arc<RwLock<DataWarehouse>>,
     stream_processor: Arc<StreamProcessor>,
     query_optimizer: Arc<QueryOptimizer>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
@@ -661,7 +661,7 @@ impl Default for DataAnalyticsConfig {
 impl DataAnalyticsAgent {
     pub fn new(config: Option<DataAnalyticsConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
 
         let data_processor = Arc::new(DataProcessor::new(config.processing_config.clone()));
         let analytics_engine = Arc::new(AnalyticsEngine::new(config.analytics_config.clone()));
@@ -733,10 +733,11 @@ impl DataAnalyticsAgent {
             dataset.name, dataset.record_count
         );
 
+        // Enhanced: Clone dataset.id to avoid partial move
         let processing_id = Uuid::new_v4();
         let job = ProcessingJob {
             job_id: processing_id,
-            dataset_id: dataset.id,
+            dataset_id: dataset.id.clone(),
             status: JobStatus::Running,
             started_at: chrono::Utc::now(),
             completed_at: None,
@@ -1838,7 +1839,7 @@ impl DataProcessor {
         // Implementation would execute actual data processing pipeline
         Ok(ProcessingResult {
             processing_id: Uuid::new_v4(),
-            dataset_id: dataset.id,
+            dataset_id: dataset.id.clone(),  // Clone to avoid partial move
             records_processed: dataset.record_count,
             records_failed: 0,
             processing_time_ms: 1000,

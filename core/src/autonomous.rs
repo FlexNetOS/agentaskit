@@ -7,6 +7,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
@@ -15,6 +16,7 @@ use crate::agents::AgentManager;
 use crate::verification::NoaVerificationSystem;
 
 /// Autonomous development pipeline orchestrator
+/// Enhanced: Autonomous pipeline with Arc-wrapped running flag for async tasks
 pub struct AutonomousPipeline {
     pipeline_id: Uuid,
     config: PipelineConfig,
@@ -23,7 +25,7 @@ pub struct AutonomousPipeline {
     verification_system: NoaVerificationSystem,
     agent_manager: Option<AgentManager>,
     metrics: PipelineMetrics,
-    running: RwLock<bool>,
+    running: Arc<RwLock<bool>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -193,7 +195,7 @@ impl AutonomousPipeline {
             verification_system,
             agent_manager: None,
             metrics: PipelineMetrics::default(),
-            running: RwLock::new(false),
+            running: Arc::new(RwLock::new(false)),
         })
     }
 

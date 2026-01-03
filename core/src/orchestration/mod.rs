@@ -356,7 +356,8 @@ impl OrchestratorEngine {
         Ok(())
     }
 
-    pub async fn submit_task(&self, task: Task) -> Result<Uuid> {
+    /// Enhanced: Submit task with type-safe TaskId return
+    pub async fn submit_task(&self, task: Task) -> Result<TaskId> {
         info!("Submitting task: {} ({})", task.name, task.id);
 
         let task_id = task.id;
@@ -414,17 +415,25 @@ pub fn create_task(
     parameters: serde_json::Value,
 ) -> Task {
     Task {
-        id: Uuid::new_v4(),
+        id: TaskId::new(),
         name,
         description,
-        task_type,
+        task_type: format!("{:?}", task_type),
         priority,
-        required_capabilities,
-        parameters,
-        dependencies: Vec::new(),
-        deadline: None,
-        created_at: chrono::Utc::now(),
         status: TaskStatus::Pending,
         assigned_agent: None,
+        dependencies: Vec::new(),
+        input_data: parameters,
+        output_data: None,
+        created_at: chrono::Utc::now(),
+        started_at: None,
+        completed_at: None,
+        deadline: None,
+        timeout: None,
+        retry_count: 0,
+        max_retries: 3,
+        error_message: None,
+        tags: HashMap::new(),
+        required_capabilities,
     }
 }

@@ -5,7 +5,7 @@
 
 use crate::agents::{Agent, AgentCapability};
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task, TaskId,
     TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Context, Result};
@@ -238,12 +238,12 @@ pub enum ViolationSeverity {
 
 /// Rust Crate Scanner Agent
 pub struct RustCrateScannerAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustCrateScannerConfig,
     metadata: AgentMetadata,
     scan_results: Arc<RwLock<HashMap<PathBuf, ScanResult>>>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
     last_scan: Arc<RwLock<Option<chrono::DateTime<chrono::Utc>>>>,
 }
@@ -251,7 +251,7 @@ pub struct RustCrateScannerAgent {
 impl RustCrateScannerAgent {
     /// Create a new Rust Crate Scanner Agent
     pub fn new(config: Option<RustCrateScannerConfig>) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let config = config.unwrap_or_default();
 
         let capabilities = vec![

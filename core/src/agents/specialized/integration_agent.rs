@@ -5,7 +5,7 @@
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,7 +19,7 @@ use uuid::Uuid;
 /// Integration Agent - Domain expert for system integration and API management
 #[derive(Clone)]
 pub struct IntegrationAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     config: IntegrationConfig,
@@ -31,7 +31,7 @@ pub struct IntegrationAgent {
     message_broker: Arc<MessageBroker>,
     protocol_handler: Arc<ProtocolHandler>,
     integration_monitor: Arc<IntegrationMonitor>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
@@ -689,7 +689,7 @@ impl Default for IntegrationConfig {
 impl IntegrationAgent {
     pub fn new(config: Option<IntegrationConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
 
         let capabilities = vec![
             "api-gateway".to_string(),

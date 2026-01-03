@@ -32,7 +32,7 @@ use crate::orchestration::{Task, TaskId, TaskStatus};
 use agentaskit_shared::{AgentCommunicationProtocol, AgentId, TaskOrchestrationProtocol};
 
 /// Enhanced chat request structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ChatRequest {
     pub id: Uuid,
     pub user_id: String,
@@ -52,7 +52,7 @@ pub enum RequestPriority {
 }
 
 /// Task subject with 4D method application
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 /// Enhanced: Task subject with type-safe ID
 pub struct TaskSubject {
     pub id: TaskId,
@@ -71,7 +71,7 @@ pub struct TaskSubject {
 }
 
 /// 4D Method Phase 1: Deconstruct
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DeconstructPhase {
     pub core_intent: String,
     pub key_entities: Vec<String>,
@@ -82,7 +82,7 @@ pub struct DeconstructPhase {
 }
 
 /// 4D Method Phase 2: Diagnose
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DiagnosePhase {
     pub clarity_gaps: Vec<String>,
     pub ambiguity_points: Vec<String>,
@@ -92,7 +92,7 @@ pub struct DiagnosePhase {
     pub complexity_assessment: ComplexityLevel,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum SpecificityLevel {
     Vague,
     Moderate,
@@ -100,7 +100,7 @@ pub enum SpecificityLevel {
     Precise,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ComplexityLevel {
     Simple,
     Moderate,
@@ -109,7 +109,7 @@ pub enum ComplexityLevel {
 }
 
 /// 4D Method Phase 3: Develop
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DevelopPhase {
     pub request_type: RequestType,
     pub selected_techniques: Vec<OptimizationTechnique>,
@@ -118,7 +118,7 @@ pub struct DevelopPhase {
     pub logical_structure: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum RequestType {
     Creative,
     Technical,
@@ -126,7 +126,7 @@ pub enum RequestType {
     Complex,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum OptimizationTechnique {
     MultiPerspective,
     ToneEmphasis,
@@ -139,7 +139,7 @@ pub enum OptimizationTechnique {
 }
 
 /// 4D Method Phase 4: Deliver
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DeliverPhase {
     pub execution_plan: Vec<ExecutionStep>,
     pub verification_protocol: VerificationProtocol,
@@ -149,7 +149,7 @@ pub struct DeliverPhase {
 }
 
 /// Execution step with verification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 /// Enhanced: Execution step with type-safe task ID
 pub struct ExecutionStep {
     pub step_id: TaskId,
@@ -162,8 +162,8 @@ pub struct ExecutionStep {
     pub artifacts: Vec<String>,
 }
 
-/// Triple-verification protocol implementation
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Triple-verification protocol implementation with comparison support
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerificationProtocol {
     pub pass_a_self_check: VerificationPass,
     pub pass_b_independent: VerificationPass,
@@ -172,7 +172,7 @@ pub struct VerificationProtocol {
     pub truth_gate_requirements: TruthGateRequirements,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerificationPass {
     pub name: String,
     pub criteria: Vec<String>,
@@ -182,7 +182,8 @@ pub struct VerificationPass {
     pub evidence: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Verification status with comparison support
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum VerificationStatus {
     Pending,
     InProgress,
@@ -192,7 +193,7 @@ pub enum VerificationStatus {
 }
 
 /// Evidence ledger for truth verification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct EvidenceLedger {
     pub files: HashMap<String, String>, // path -> SHA-256 hash
     pub data_sources: Vec<DataSource>,
@@ -202,7 +203,7 @@ pub struct EvidenceLedger {
     pub verification_results: Vec<VerificationResult>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DataSource {
     pub origin: String,
     pub timestamp: DateTime<Utc>,
@@ -210,7 +211,7 @@ pub struct DataSource {
     pub hash: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ExternalReference {
     pub author: String,
     pub title: String,
@@ -219,7 +220,7 @@ pub struct ExternalReference {
     pub verification_status: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct MathematicalProof {
     pub formula: String,
     pub inputs: Vec<String>,
@@ -227,7 +228,7 @@ pub struct MathematicalProof {
     pub result: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TestEvidence {
     pub command: String,
     pub full_log: String,
@@ -235,7 +236,7 @@ pub struct TestEvidence {
     pub timestamp: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerificationResult {
     pub pass_type: String,
     pub outcome: String,
@@ -244,7 +245,7 @@ pub struct VerificationResult {
 }
 
 /// Truth gate requirements checklist
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TruthGateRequirements {
     pub artifact_presence: bool,
     pub smoke_test_passed: bool,
@@ -256,7 +257,7 @@ pub struct TruthGateRequirements {
 }
 
 /// Deliverable specification with target location
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 /// Enhanced: Deliverable with type-safe IDs
 pub struct Deliverable {
     pub id: TaskId,
@@ -283,7 +284,7 @@ pub enum DeliverableType {
 }
 
 /// Target location specification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TargetLocation {
     pub location_type: LocationType,
     pub base_path: PathBuf,
@@ -305,7 +306,7 @@ pub enum LocationType {
 }
 
 /// File specification for deliverables
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FileSpecification {
     pub filename: String,
     pub file_type: String,
@@ -316,7 +317,7 @@ pub struct FileSpecification {
 }
 
 /// Execution timeline for task management
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ExecutionTimeline {
     pub start_time: DateTime<Utc>,
     pub estimated_end_time: DateTime<Utc>,
@@ -324,7 +325,7 @@ pub struct ExecutionTimeline {
     pub critical_path: Vec<Uuid>, // step IDs
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Milestone {
     pub id: Uuid,
     pub name: String,
@@ -334,12 +335,13 @@ pub struct Milestone {
 }
 
 /// Enhanced workflow processor
+/// Enhanced: Workflow processor with type-safe task IDs
 pub struct EnhancedWorkflowProcessor {
     sot_path: PathBuf,
     todo_path: PathBuf,
     communication_protocol: Arc<dyn AgentCommunicationProtocol + Send + Sync>,
     task_protocol: Arc<dyn TaskOrchestrationProtocol + Send + Sync>,
-    active_tasks: Arc<RwLock<HashMap<Uuid, TaskSubject>>>,
+    active_tasks: Arc<RwLock<HashMap<TaskId, TaskSubject>>>,
     pending_requests: Arc<RwLock<HashMap<Uuid, ChatRequest>>>,
 }
 

@@ -212,7 +212,8 @@ pub struct BasicAgent {
 }
 
 impl BasicAgent {
-    pub fn new(id: Uuid, name: String, layer: AgentLayer, capabilities: Vec<String>) -> Self {
+    /// Enhanced: Constructor with type-safe AgentId
+    pub fn new(id: AgentId, name: String, layer: AgentLayer, capabilities: Vec<String>) -> Self {
         let metadata = AgentMetadata {
             id,
             name,
@@ -238,30 +239,31 @@ impl BasicAgent {
 
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
+/// Enhanced: Managed agent with type-safe IDs
 pub struct ManagedAgent {
-    pub id: Uuid,
+    pub id: AgentId,
     pub name: String,
     pub layer: AgentLayer,
     pub capabilities: Vec<String>,
     pub status: Arc<RwLock<AgentStatus>>,
     pub resource_requirements: ResourceRequirements,
     pub performance_metrics: Arc<RwLock<PerformanceMetrics>>,
-    pub escalation_path: Option<Uuid>,
-    pub subordinates: Arc<RwLock<Vec<Uuid>>>,
+    pub escalation_path: Option<AgentId>,
+    pub subordinates: Arc<RwLock<Vec<AgentId>>>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub last_heartbeat: Arc<RwLock<Option<chrono::DateTime<chrono::Utc>>>>,
     pub metadata: AgentMetadata,
 }
 
 impl ManagedAgent {
-    /// Create a new managed agent
+    /// Enhanced: Create a new managed agent with type-safe ID
     pub fn new(
         name: String,
         layer: AgentLayer,
         capabilities: Vec<String>,
         resource_requirements: ResourceRequirements,
     ) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let now = chrono::Utc::now();
 
         let metadata = AgentMetadata {
@@ -390,15 +392,16 @@ impl Agent for ManagedAgent {
 }
 
 /// The agent management system that handles the six-layer hierarchy
+/// Enhanced: Agent manager with type-safe IDs
 pub struct AgentManager {
-    agents: Arc<RwLock<HashMap<Uuid, Arc<dyn Agent>>>>,
-    layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<Uuid>>>>,
+    agents: Arc<RwLock<HashMap<AgentId, Arc<dyn Agent>>>>,
+    layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<AgentId>>>>,
     security_manager: Arc<SecurityManager>,
     next_agent_number: Arc<RwLock<u32>>,
     // Store hierarchy relationships separately since they're not part of the Agent trait
-    escalation_paths: Arc<RwLock<HashMap<Uuid, Uuid>>>,
-    subordinates_map: Arc<RwLock<HashMap<Uuid, Vec<Uuid>>>>,
-    agent_layers: Arc<RwLock<HashMap<Uuid, AgentLayer>>>,
+    escalation_paths: Arc<RwLock<HashMap<AgentId, AgentId>>>,
+    subordinates_map: Arc<RwLock<HashMap<AgentId, Vec<AgentId>>>>,
+    agent_layers: Arc<RwLock<HashMap<AgentId, AgentLayer>>>,
 }
 
 impl AgentManager {
@@ -467,7 +470,8 @@ impl AgentManager {
         ]
     }
 
-    async fn create_agent(&self, layer: AgentLayer) -> Result<Uuid> {
+    /// Enhanced: Create agent with type-safe AgentId return
+    async fn create_agent(&self, layer: AgentLayer) -> Result<AgentId> {
         let agent_number = {
             let mut num = self.next_agent_number.write().await;
             let current = *num;
@@ -696,7 +700,8 @@ impl AgentManager {
         Ok(())
     }
 
-    pub async fn find_suitable_agent(&self, task: &Task) -> Result<Uuid> {
+    /// Enhanced: Find suitable agent with type-safe ID
+    pub async fn find_suitable_agent(&self, task: &Task) -> Result<AgentId> {
         let agents = self.agents.read().await;
 
         // Find agents with matching capabilities and available status
@@ -719,7 +724,8 @@ impl AgentManager {
         Err(anyhow::anyhow!("No suitable agent found for task"))
     }
 
-    pub async fn send_task_to_agent(&self, agent_id: Uuid, task: &Task) -> Result<()> {
+    /// Enhanced: Send task to agent with type-safe ID
+    pub async fn send_task_to_agent(&self, agent_id: AgentId, task: &Task) -> Result<()> {
         // Get the agent and execute the task
         let agents = self.agents.read().await;
         if let Some(agent) = agents.get(&agent_id) {
@@ -777,7 +783,8 @@ impl AgentManager {
         Ok(())
     }
 
-    pub async fn get_agent_status(&self, agent_id: Uuid) -> Result<AgentStatus> {
+    /// Enhanced: Get agent status with type-safe AgentId
+    pub async fn get_agent_status(&self, agent_id: AgentId) -> Result<AgentStatus> {
         let agents = self.agents.read().await;
         if let Some(agent) = agents.get(&agent_id) {
             Ok(agent.state().await)

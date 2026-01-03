@@ -580,7 +580,7 @@ enum ModelType {
 
 impl ResourceAllocator {
     pub fn new(config: ResourceAllocatorConfig) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let metadata = AgentMetadata {
             id,
             name: "Resource Allocator".to_string(),
@@ -635,11 +635,10 @@ impl ResourceAllocator {
             tracing::warn!("Agent {} already has resource allocation", agent_id);
         }
 
-        // Find suitable resources
+        // Enhanced: Find suitable resources (not async - no await needed)
         let capacity = self.convert_requirements_to_capacity(&requirements);
         let suitable_pool_key = self
-            .find_suitable_resource_pool(&resource_manager, &capacity)
-            .await?;
+            .find_suitable_resource_pool(&resource_manager, &capacity)?;
 
         // Create allocation
         let mut allocation = ResourceAllocation {
@@ -831,7 +830,7 @@ impl ResourceAllocator {
             cpu_cores: requirements.cpu_cores.unwrap_or(1) as f64,
             memory_bytes: requirements.memory_mb.unwrap_or(512) * 1024 * 1024,
             storage_bytes: requirements.storage_mb.unwrap_or(100) * 1024 * 1024,
-            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100),
+            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100) as f64,
             gpu_units: if requirements.gpu_required { 1 } else { 0 },
             custom_units: HashMap::new(),
         }

@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Testing Agent - Comprehensive automated testing and quality assurance
@@ -858,7 +858,7 @@ struct OrchestrationMetrics {
 impl TestingAgent {
     pub fn new(config: Option<TestingConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let name = "Testing Agent".to_string();
         let capabilities = vec![
             "test-execution".to_string(),
