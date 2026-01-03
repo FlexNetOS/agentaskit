@@ -1,0 +1,42 @@
+# Pixi configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# Manages conda packages and integrates with mise
+
+[project]
+name = "agentaskit"
+version = "0.1.0"
+description = "AgentAskit Production System"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+# Core development tools
+python = ">=3.11"
+rust = ">=1.70"
+
+# Build tools
+cmake = ">=3.20"
+pkg-config = "*"
+
+# Data science / AI (for agent workflows)
+numpy = ">=1.24"
+pandas = ">=2.0"
+
+# CLI tools to be installed globally
+# 0install for distribution feeds
+# Note: Install with: pixi global install 0install
+
+[tasks]
+build = "cargo build --release"
+test = "cargo test --all"
+lint = "cargo clippy && cargo fmt --check"
+
+[feature.dev.dependencies]
+# Development-only dependencies
+pytest = "*"
+black = "*"
+ruff = "*"
+
+[environments]
+default = { features = [], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
