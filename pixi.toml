@@ -17,6 +17,9 @@ rust = ">=1.70"
 # Nushell - cross-platform shell (the ONLY shell we use)
 nushell = ">=0.90"
 
+# Bash for CI compatibility (minimal use, prefer nushell)
+bash = "*"
+
 # Build acceleration (faster rebuilds)
 sccache = "*"
 

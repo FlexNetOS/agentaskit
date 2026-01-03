@@ -36,18 +36,18 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print $"=== Building on (sys host | get name) ==="
             cargo build --verbose
             print "Build successful ✓"
           '
 
       - name: Run tests
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Running tests ==="
             cargo test --verbose
             print "Tests passed ✓"
@@ -67,9 +67,9 @@ jobs:
           components: clippy
 
       - name: Clippy
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Running Clippy ==="
             cargo clippy --all-targets --all-features -- -D warnings
             print "Clippy passed ✓"
@@ -89,9 +89,9 @@ jobs:
           components: rustfmt
 
       - name: Format Check
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Checking format ==="
             cargo fmt --all -- --check
             print "Format check passed ✓"

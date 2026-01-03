@@ -18,9 +18,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Lint with Nushell
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "Checking repo structure..."
 
             # Verify required files exist
@@ -57,9 +57,9 @@ jobs:
         uses: dtolnay/rust-action@stable
 
       - name: Build with Nushell
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print $"Building on (sys host | get name)..."
             cargo build --verbose
             print "Build complete ✓"
@@ -78,9 +78,9 @@ jobs:
         uses: dtolnay/rust-action@stable
 
       - name: Test with Nushell
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "Running tests..."
             cargo test --verbose
             print "Tests complete ✓"
@@ -100,9 +100,9 @@ jobs:
           components: rustfmt, clippy
 
       - name: Format and Clippy Check
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "Checking formatting..."
             cargo fmt --all -- --check
 

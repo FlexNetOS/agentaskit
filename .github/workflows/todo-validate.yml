@@ -15,9 +15,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Validate .todo lines
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Validating .todo schema ==="
 
             let todo_file = "agentaskit-production/.todo"

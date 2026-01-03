@@ -18,9 +18,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Generate SBOM
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Generating SBOM ==="
 
             mkdir sbom

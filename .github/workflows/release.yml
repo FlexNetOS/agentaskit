@@ -18,9 +18,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Verify Release Gates
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Verifying Release Gates ==="
 
             mut gates_passed = 0
@@ -94,9 +94,9 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build Release
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print $"=== Building for ${{ matrix.target }} ==="
             cargo build --release --target ${{ matrix.target }}
             print "✓ Build complete"
