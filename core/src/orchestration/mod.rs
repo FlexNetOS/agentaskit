@@ -415,7 +415,7 @@ pub fn create_task(
     parameters: serde_json::Value,
 ) -> Task {
     Task {
-        id: TaskId::new(),
+        id: Uuid::new_v4(),
         name,
         description,
         task_type: format!("{:?}", task_type),

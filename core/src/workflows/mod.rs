@@ -498,7 +498,7 @@ impl EnhancedWorkflowProcessor {
 
         // Create initial task subject
         let task_subject = TaskSubject {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             title: self.generate_task_title(request, &deconstruct).await?,
             description: self
                 .generate_task_description(request, &deconstruct)
@@ -590,7 +590,7 @@ impl EnhancedWorkflowProcessor {
 
             // Convert to Deliverable structure
             let deliverable = Deliverable {
-                id: TaskId::new(),
+                id: Uuid::new_v4(),
                 name: planned.spec.name.clone(),
                 description: planned.spec.description.clone(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
@@ -686,7 +686,7 @@ impl EnhancedWorkflowProcessor {
             .await?;
 
         Ok(Deliverable {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
             deliverable_type: deliverable_type.clone(),

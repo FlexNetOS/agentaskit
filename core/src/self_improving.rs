@@ -21,9 +21,9 @@ pub struct SelfImprovingOrchestrator {
     orchestrator_id: Uuid,
     config: OrchestratorConfig,
     agent_manager: Arc<RwLock<AgentManager>>,
-    learning_engine: LearningEngine,
-    improvement_tracker: ImprovementTracker,
-    performance_analyzer: PerformanceAnalyzer,
+    learning_engine: Arc<RwLock<LearningEngine>>,
+    improvement_tracker: Arc<RwLock<ImprovementTracker>>,
+    performance_analyzer: Arc<RwLock<PerformanceAnalyzer>>,
     autonomous_pipeline: Option<AutonomousPipeline>,
     verification_system: NoaVerificationSystem,
     running: Arc<RwLock<bool>>,
@@ -244,9 +244,9 @@ impl SelfImprovingOrchestrator {
             orchestrator_id: Uuid::new_v4(),
             config,
             agent_manager: Arc::new(RwLock::new(agent_manager)),
-            learning_engine,
-            improvement_tracker,
-            performance_analyzer,
+            learning_engine: Arc::new(RwLock::new(learning_engine)),
+            improvement_tracker: Arc::new(RwLock::new(improvement_tracker)),
+            performance_analyzer: Arc::new(RwLock::new(performance_analyzer)),
             autonomous_pipeline: None,
             verification_system,
             running: Arc::new(RwLock::new(false)),
@@ -263,8 +263,8 @@ impl SelfImprovingOrchestrator {
         *self.running.write().await = true;
 
         // Initialize components
-        self.learning_engine.initialize().await?;
-        self.performance_analyzer.initialize().await?;
+        self.learning_engine.write().await.initialize().await?;
+        self.performance_analyzer.write().await.initialize().await?;
 
         // Start autonomous loops
         self.start_learning_loop().await?;
@@ -396,12 +396,14 @@ impl SelfImprovingOrchestrator {
 
         let training_example = self.create_training_example(&outcome).await?;
         self.learning_engine
+            .write()
+            .await
             .add_training_example(training_example)
             .await?;
 
         // Update models if enough new data
-        if self.learning_engine.should_retrain().await? {
-            self.learning_engine.retrain_models().await?;
+        if self.learning_engine.read().await.should_retrain().await? {
+            self.learning_engine.write().await.retrain_models().await?;
             info!("Learning models retrained with new data");
         }
 
@@ -453,6 +455,8 @@ impl SelfImprovingOrchestrator {
 
             if verification_passed {
                 self.improvement_tracker
+                    .write()
+                    .await
                     .record_improvement(improvement)
                     .await?;
                 info!("Improvement successfully implemented and verified");
@@ -520,8 +524,8 @@ impl SelfImprovingOrchestrator {
 
     async fn create_system_backup(&self) -> Result<SystemBackup> {
         // Create comprehensive system state backup
-        let improvement_tracker = self.improvement_tracker.lock().await;
-        let learning_engine = self.learning_engine.lock().await;
+        let improvement_tracker = self.improvement_tracker.read().await;
+        let learning_engine = self.learning_engine.read().await;
 
         let state_data = serde_json::json!({
             "improvements": {
@@ -681,7 +685,7 @@ impl SelfImprovingOrchestrator {
         // Enhance learning system capabilities
         info!("Applying learning improvement: {}", improvement.description);
 
-        let mut learning_engine = self.learning_engine.lock().await;
+        let mut learning_engine = self.learning_engine.read().await;
 
         // Learning improvements:
         // - Adjust learning rate based on convergence
@@ -714,7 +718,7 @@ impl SelfImprovingOrchestrator {
         // - Improve failure prediction models
         // - Optimize automatic remediation actions
 
-        let performance_analyzer = self.performance_analyzer.lock().await;
+        let performance_analyzer = self.performance_analyzer.read().await;
         let suggestion_count = performance_analyzer.optimization_suggestions.len();
 
         if suggestion_count > 10 {
@@ -747,7 +751,7 @@ impl SelfImprovingOrchestrator {
 
         // Restore learning engine state
         if let Some(learning_data) = state_data.get("learning") {
-            let mut learning_engine = self.learning_engine.lock().await;
+            let mut learning_engine = self.learning_engine.read().await;
             if let Some(accuracy) = learning_data.get("model_accuracy").and_then(|v| v.as_f64()) {
                 learning_engine.learning_metrics.model_accuracy = accuracy;
             }
