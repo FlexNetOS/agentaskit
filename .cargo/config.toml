@@ -76,6 +76,17 @@ git-fetch-with-cli = true
 [registries.crates-io]
 protocol = "sparse"
 
+# Local kellnr registry for internal crates
+# Start kellnr: cd integrations/kellnr && cargo run
+[registries.kellnr]
+index = "sparse+http://localhost:8080/api/v1/crates/"
+
+# To publish to kellnr:
+# cargo publish --registry kellnr
+# To use crates from kellnr:
+# [dependencies]
+# my-crate = { version = "1.0", registry = "kellnr" }
+
 [term]
 # Terminal output settings
 verbose = false
