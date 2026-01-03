@@ -5,8 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -15,7 +14,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
-use tracing::{info};
+use tracing::info;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,7 +68,7 @@ impl RustFmtAgent {
     pub fn new(config: Option<RustFmtConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "code_formatting".to_string(),
             "style_enforcement".to_string(),
@@ -137,7 +136,10 @@ impl Agent for RustFmtAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        _message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         Ok(None)
     }
 
@@ -146,7 +148,8 @@ impl Agent for RustFmtAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        let workspace_path = task.parameters
+        let workspace_path = task
+            .parameters
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

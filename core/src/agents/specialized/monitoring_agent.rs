@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Monitoring Agent - Comprehensive system monitoring and observability
@@ -1029,7 +1029,13 @@ impl MonitoringAgent {
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("monitoring".to_string(), "monitoring".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: [
+                ("monitoring".to_string(), "monitoring".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {

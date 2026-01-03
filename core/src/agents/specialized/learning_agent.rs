@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Learning Agent - Machine Learning and AI capabilities
@@ -1141,7 +1141,13 @@ impl LearningAgent {
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("learning".to_string(), "learning".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: [
+                ("learning".to_string(), "learning".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {

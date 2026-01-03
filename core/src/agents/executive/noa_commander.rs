@@ -7,14 +7,13 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::agents::communication::CommunicationManager;
 use crate::agents::specialized::integration_agent::MessageBroker;
+use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata,
-    AgentRole, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    ResourceUsage,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA

@@ -3,13 +3,13 @@
 // vulnerability assessment, access control management, and security policy enforcement
 
 use crate::agents::{Agent, AgentResult, MessageId};
-use anyhow::Result;
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -588,7 +588,13 @@ impl SecuritySpecialistAgent {
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("security".to_string(), "security".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: [
+                ("security".to_string(), "security".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
@@ -646,12 +652,7 @@ impl SecuritySpecialistAgent {
             "compliance" => self.run_compliance_scan(target, scan_id).await?,
             "access_audit" => self.run_access_audit_scan(target, scan_id).await?,
             "deep_security" => self.run_deep_security_scan(target, scan_id).await?,
-            _ => {
-                return Err(anyhow::anyhow!(format!(
-                    "Unknown scan type: {}",
-                    scan_type
-                )))
-            }
+            _ => return Err(anyhow::anyhow!(format!("Unknown scan type: {}", scan_type))),
         };
 
         // Update scan completion
@@ -1100,12 +1101,18 @@ impl Agent for SecuritySpecialistAgent {
                     .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "target".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "target".to_string()
+                    ))?;
                 let scan_type = task
                     .input_data
                     .get("scan_type")
                     .and_then(|v| v.as_str())
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "scan_type".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "scan_type".to_string()
+                    ))?;
 
                 match self.perform_security_scan(target, scan_type).await {
                     Ok(_) => TaskStatus::Completed,
@@ -1117,10 +1124,10 @@ impl Agent for SecuritySpecialistAgent {
             }
             "incident_response" => {
                 // Parse incident from parameters
-                let incident_data = task
-                    .input_data
-                    .get("incident")
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "incident".to_string()))?;
+                let incident_data = task.input_data.get("incident").ok_or(anyhow::anyhow!(
+                    "Missing parameter: {}",
+                    "incident".to_string()
+                ))?;
 
                 // Would deserialize actual incident data
                 let incident = SecurityIncident::default(); // Placeholder
@@ -1138,12 +1145,18 @@ impl Agent for SecuritySpecialistAgent {
                     .input_data
                     .get("policy_id")
                     .and_then(|v| v.as_str())
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "policy_id".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "policy_id".to_string()
+                    ))?;
                 let target = task
                     .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "target".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "target".to_string()
+                    ))?;
 
                 match self.enforce_security_policy(policy_id, target).await {
                     Ok(_) => TaskStatus::Completed,
@@ -1154,10 +1167,10 @@ impl Agent for SecuritySpecialistAgent {
                 }
             }
             "audit_report" => {
-                let scope_str = task
-                    .input_data
-                    .get("scope")
-                    .ok_or(anyhow::anyhow!("Missing parameter: {}", "scope".to_string()))?;
+                let scope_str = task.input_data.get("scope").ok_or(anyhow::anyhow!(
+                    "Missing parameter: {}",
+                    "scope".to_string()
+                ))?;
 
                 let scope = AuditScope::System; // Would parse from scope_str
 

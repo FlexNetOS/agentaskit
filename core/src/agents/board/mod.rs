@@ -24,7 +24,8 @@ pub struct BoardCoordinator {
     pub strategy_agent: Arc<RwLock<strategy_board_agent::StrategyBoardAgent>>,
     pub operations_agent: Arc<RwLock<operations_board_agent::OperationsBoardAgent>>,
     pub finance_agent: Arc<RwLock<finance_board_agent::FinanceBoardAgent>>,
-    pub legal_compliance_agent: Arc<RwLock<legal_compliance_board_agent::LegalComplianceBoardAgent>>,
+    pub legal_compliance_agent:
+        Arc<RwLock<legal_compliance_board_agent::LegalComplianceBoardAgent>>,
     pub digest_agent: Arc<RwLock<digest_agent::DigestAgent>>,
     pub coordination_metrics: Arc<RwLock<CoordinationMetrics>>,
 }
@@ -61,7 +62,9 @@ impl BoardCoordinator {
         strategy_agent: Arc<RwLock<strategy_board_agent::StrategyBoardAgent>>,
         operations_agent: Arc<RwLock<operations_board_agent::OperationsBoardAgent>>,
         finance_agent: Arc<RwLock<finance_board_agent::FinanceBoardAgent>>,
-        legal_compliance_agent: Arc<RwLock<legal_compliance_board_agent::LegalComplianceBoardAgent>>,
+        legal_compliance_agent: Arc<
+            RwLock<legal_compliance_board_agent::LegalComplianceBoardAgent>,
+        >,
         digest_agent: Arc<RwLock<digest_agent::DigestAgent>>,
     ) -> Self {
         Self {
@@ -76,7 +79,10 @@ impl BoardCoordinator {
     }
 
     /// Handle escalation from lower layers
-    pub async fn handle_escalation(&self, escalation: EscalationRequest) -> Result<EscalationResponse> {
+    pub async fn handle_escalation(
+        &self,
+        escalation: EscalationRequest,
+    ) -> Result<EscalationResponse> {
         tracing::warn!("Handling escalation: {}", escalation.issue_description);
 
         let mut coordination_metrics = self.coordination_metrics.write().await;
@@ -146,14 +152,21 @@ impl BoardCoordinator {
     async fn determine_task_owner(&self, task: &Task) -> Result<BoardAgentType> {
         // Simple task routing based on task name
         match task.name.as_str() {
-            name if name.contains("strategy") || name.contains("plan") => Ok(BoardAgentType::Strategy),
+            name if name.contains("strategy") || name.contains("plan") => {
+                Ok(BoardAgentType::Strategy)
+            }
             name if name.contains("operation") || name.contains("process") => {
                 Ok(BoardAgentType::Operations)
             }
-            name if name.contains("finance") || name.contains("budget") || name.contains("cost") => {
+            name if name.contains("finance")
+                || name.contains("budget")
+                || name.contains("cost") =>
+            {
                 Ok(BoardAgentType::Finance)
             }
-            name if name.contains("legal") || name.contains("compliance") => Ok(BoardAgentType::Legal),
+            name if name.contains("legal") || name.contains("compliance") => {
+                Ok(BoardAgentType::Legal)
+            }
             name if name.contains("digest")
                 || name.contains("intelligence")
                 || name.contains("insight") =>

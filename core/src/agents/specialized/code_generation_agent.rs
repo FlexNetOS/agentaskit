@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Code Generation Agent - Specialized code generation and optimization
@@ -738,7 +738,13 @@ impl CodeGenerationAgent {
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            tags: [("code-generation".to_string(), "code-generation".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
+            tags: [
+                ("code-generation".to_string(), "code-generation".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {

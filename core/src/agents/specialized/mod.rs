@@ -11,17 +11,17 @@ pub mod security_specialist_agent;
 pub mod testing_agent;
 
 // Rust/Cargo Sub-Agents
-pub mod rust_crate_scanner_agent;
-pub mod cargo_build_agent;
 pub mod cargo_audit_agent;
+pub mod cargo_build_agent;
 pub mod cargo_license_agent;
 pub mod rust_clippy_agent;
-pub mod rust_fmt_agent;
+pub mod rust_crate_scanner_agent;
+pub mod rust_cross_agent;
 pub mod rust_doc_agent;
 pub mod rust_ffi_agent;
-pub mod rust_wasm_agent;
-pub mod rust_cross_agent;
+pub mod rust_fmt_agent;
 pub mod rust_release_agent;
+pub mod rust_wasm_agent;
 
 // Re-export all specialized agents for easy access
 pub use code_generation_agent::CodeGenerationAgent;
@@ -34,23 +34,21 @@ pub use security_specialist_agent::SecuritySpecialistAgent;
 pub use testing_agent::TestingAgent;
 
 // Re-export Rust/Cargo sub-agents
-pub use rust_crate_scanner_agent::RustCrateScannerAgent;
-pub use cargo_build_agent::CargoBuildAgent;
 pub use cargo_audit_agent::CargoAuditAgent;
+pub use cargo_build_agent::CargoBuildAgent;
 pub use cargo_license_agent::CargoLicenseAgent;
 pub use rust_clippy_agent::RustClippyAgent;
-pub use rust_fmt_agent::RustFmtAgent;
+pub use rust_crate_scanner_agent::RustCrateScannerAgent;
+pub use rust_cross_agent::RustCrossAgent;
 pub use rust_doc_agent::RustDocAgent;
 pub use rust_ffi_agent::RustFFIAgent;
-pub use rust_wasm_agent::RustWasmAgent;
-pub use rust_cross_agent::RustCrossAgent;
+pub use rust_fmt_agent::RustFmtAgent;
 pub use rust_release_agent::RustReleaseAgent;
+pub use rust_wasm_agent::RustWasmAgent;
 
 use crate::agents::{Agent, AgentMessage};
 use crate::orchestration::Task;
-use agentaskit_shared::{
-    AgentId, AgentStatus, TaskResult,
-};
+use agentaskit_shared::{AgentId, AgentStatus, TaskResult};
 use anyhow::Result as AgentResult;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -135,7 +133,7 @@ impl SpecializedLayer {
         agents.insert(integration_id, integration_agent);
 
         // Rust/Cargo Sub-Agents
-        
+
         // Rust Crate Scanner Agent
         let rust_crate_scanner = Box::new(RustCrateScannerAgent::new(None));
         let rust_crate_scanner_id = rust_crate_scanner.metadata().id;
@@ -304,10 +302,7 @@ impl SpecializedLayer {
             return Ok(*id);
         }
 
-        Err(anyhow::anyhow!(
-            "No agent found for task: {}",
-            task.name
-        ))
+        Err(anyhow::anyhow!("No agent found for task: {}", task.name))
     }
 
     /// Broadcast message to all specialized agents
@@ -348,7 +343,11 @@ impl SpecializedLayer {
     }
 
     /// Execute a task on a specific agent by name
-    pub async fn execute_task_on_agent(&self, agent_name: &str, task: Task) -> AgentResult<TaskResult> {
+    pub async fn execute_task_on_agent(
+        &self,
+        agent_name: &str,
+        task: Task,
+    ) -> AgentResult<TaskResult> {
         let agent_id = self
             .get_agent_by_name(agent_name)
             .await
@@ -424,7 +423,7 @@ mod tests {
 
         // 8 original + 11 Rust sub-agents = 19 total
         assert_eq!(agent_names.len(), 19);
-        
+
         // Original agents
         assert!(agent_names.contains(&"code_generation".to_string()));
         assert!(agent_names.contains(&"testing".to_string()));
@@ -434,7 +433,7 @@ mod tests {
         assert!(agent_names.contains(&"security_specialist".to_string()));
         assert!(agent_names.contains(&"data_analytics".to_string()));
         assert!(agent_names.contains(&"integration".to_string()));
-        
+
         // Rust/Cargo sub-agents
         assert!(agent_names.contains(&"rust_crate_scanner".to_string()));
         assert!(agent_names.contains(&"cargo_build".to_string()));
@@ -470,9 +469,7 @@ pub mod utils {
     use super::*;
 
     /// Get recommended agent for specific capability name
-    pub fn get_agent_for_capability(
-        capability_name: &str,
-    ) -> Option<&'static str> {
+    pub fn get_agent_for_capability(capability_name: &str) -> Option<&'static str> {
         match capability_name {
             "code_generation" => Some("code_generation"),
             "testing" => Some("testing"),
@@ -506,7 +503,7 @@ pub mod utils {
 }
 
 // This completes the Specialized Layer implementation with all 19 domain expert agents:
-// 
+//
 // Original Domain Expert Agents (8):
 // 1. Code Generation Agent - Multi-language automated code generation and optimization
 // 2. Testing Agent - Comprehensive test automation and quality assurance
@@ -516,7 +513,7 @@ pub mod utils {
 // 6. Security Specialist Agent - Security implementation and compliance monitoring
 // 7. Data Analytics Agent - Data processing, analytics, and business intelligence
 // 8. Integration Agent - System integration, API management, and workflow orchestration
-// 
+//
 // Rust/Cargo Sub-Agents (11):
 // 9. RustCrateScannerAgent - Discover crates, versions, features; map dependency tree
 // 10. CargoBuildAgent - Build/bench/test workflows with caching and EFG-aware parallelism
@@ -532,6 +529,6 @@ pub mod utils {
 //
 // All Rust/Cargo sub-agents output: artifacts, SBOM, scores, advisories
 // All Rust/Cargo sub-agents enforce policies: MSRV, semver, export-control
-// 
+//
 // Together, these agents provide comprehensive operational capabilities to execute
 // strategic decisions from the Board Layer with technical excellence and autonomous operation.

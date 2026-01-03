@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
@@ -1021,7 +1021,10 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> AgentResult<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
             crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;

@@ -2,9 +2,8 @@ use std::env;
 
 fn main() {
     // Set build time for version tracking with UTC timestamp
-    let build_time = std::env::var("BUILD_TIME").unwrap_or_else(|_| {
-        chrono::Utc::now().to_rfc3339()
-    });
+    let build_time =
+        std::env::var("BUILD_TIME").unwrap_or_else(|_| chrono::Utc::now().to_rfc3339());
     println!("cargo:rustc-env=BUILD_TIME={}", build_time);
 
     // Generate protobuf files if they exist

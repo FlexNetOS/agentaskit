@@ -5,8 +5,8 @@
 
 use crate::agents::{Agent, AgentCapability};
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task,
+    TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Context, Result};
 use async_trait::async_trait;
@@ -253,7 +253,7 @@ impl RustCrateScannerAgent {
     pub fn new(config: Option<RustCrateScannerConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "crate_discovery".to_string(),
             "dependency_analysis".to_string(),
@@ -305,7 +305,7 @@ impl RustCrateScannerAgent {
 
         // Discover crate information
         let crate_info = self.discover_crate(workspace_path).await?;
-        
+
         // Generate SBOM if enabled
         let sbom = if self.config.generate_sbom {
             Some(self.generate_sbom(&crate_info).await?)
@@ -332,8 +332,11 @@ impl RustCrateScannerAgent {
         };
 
         // Store result
-        self.scan_results.write().await.insert(workspace_path.to_path_buf(), result.clone());
-        
+        self.scan_results
+            .write()
+            .await
+            .insert(workspace_path.to_path_buf(), result.clone());
+
         // Update last scan time
         *self.last_scan.write().await = Some(chrono::Utc::now());
 
@@ -350,7 +353,8 @@ impl RustCrateScannerAgent {
             return Err(anyhow!("Cargo.toml not found at {:?}", cargo_toml_path));
         }
 
-        let cargo_toml_content = tokio::fs::read_to_string(&cargo_toml_path).await
+        let cargo_toml_content = tokio::fs::read_to_string(&cargo_toml_path)
+            .await
             .context("Failed to read Cargo.toml")?;
 
         // Parse Cargo.toml (simplified - would use cargo_toml crate in production)
@@ -372,15 +376,13 @@ impl RustCrateScannerAgent {
     async fn generate_sbom(&self, crate_info: &CrateInfo) -> Result<Sbom> {
         debug!("Generating SBOM for crate: {}", crate_info.name);
 
-        let packages = vec![
-            SbomPackage {
-                name: crate_info.name.clone(),
-                version: crate_info.version.clone(),
-                license: crate_info.license.clone(),
-                supplier: None,
-                checksums: HashMap::new(),
-            }
-        ];
+        let packages = vec![SbomPackage {
+            name: crate_info.name.clone(),
+            version: crate_info.version.clone(),
+            license: crate_info.license.clone(),
+            supplier: None,
+            checksums: HashMap::new(),
+        }];
 
         let relationships = vec![];
 
@@ -401,7 +403,8 @@ impl RustCrateScannerAgent {
         let quality_score = 90.0;
         let compliance_score = 95.0;
         let dependency_score = 88.0;
-        let overall_score = (security_score + quality_score + compliance_score + dependency_score) / 4.0;
+        let overall_score =
+            (security_score + quality_score + compliance_score + dependency_score) / 4.0;
 
         Ok(ScanScores {
             overall_score,
@@ -415,7 +418,7 @@ impl RustCrateScannerAgent {
     /// Check for security advisories
     async fn check_advisories(&self, crate_info: &CrateInfo) -> Result<Vec<Advisory>> {
         debug!("Checking advisories for crate: {}", crate_info.name);
-        
+
         // Would integrate with RustSec advisory database in production
         Ok(vec![])
     }
@@ -423,7 +426,7 @@ impl RustCrateScannerAgent {
     /// Check policy violations
     async fn check_policies(&self, crate_info: &CrateInfo) -> Result<Vec<PolicyViolation>> {
         debug!("Checking policy compliance for crate: {}", crate_info.name);
-        
+
         let mut violations = vec![];
 
         // Check MSRV policy
@@ -471,7 +474,10 @@ impl Agent for RustCrateScannerAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         debug!("RustCrateScannerAgent received message");
         Ok(None)
     }
@@ -484,7 +490,8 @@ impl Agent for RustCrateScannerAgent {
 
         // Parse task parameters to get workspace path
         let workspace_path = if let Some(params) = &task.parameters {
-            params.get("workspace_path")
+            params
+                .get("workspace_path")
                 .and_then(|v| v.as_str())
                 .map(PathBuf::from)
                 .unwrap_or_else(|| PathBuf::from("."))
@@ -559,7 +566,9 @@ mod tests {
     async fn test_create_rust_crate_scanner_agent() {
         let agent = RustCrateScannerAgent::new(None);
         assert_eq!(agent.name, "RustCrateScannerAgent");
-        assert!(agent.capabilities().contains(&"crate_discovery".to_string()));
+        assert!(agent
+            .capabilities()
+            .contains(&"crate_discovery".to_string()));
     }
 
     #[tokio::test]

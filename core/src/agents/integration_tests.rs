@@ -2,14 +2,14 @@
 // Tests the full coordination between Executive → Board → Specialized layers
 
 use super::*;
-use crate::agents::Agent;
 use crate::agents::specialized::SpecializedLayer;
-use agentaskit_shared::{Task, TaskStatus, Priority, TaskId};
-use uuid::Uuid;
+use crate::agents::Agent;
+use agentaskit_shared::{Priority, Task, TaskId, TaskStatus};
 use chrono::{DateTime, Utc};
 use std::time::Duration;
 use tokio::time::timeout;
 use tracing::{error, info};
+use uuid::Uuid;
 
 /// Comprehensive integration test suite for Phase 4 Agent Framework
 pub struct Phase4IntegrationTest {
