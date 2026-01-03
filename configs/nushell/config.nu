@@ -65,14 +65,20 @@ alias aal = cargo clippy --all-targets
 
 # Custom commands for development
 def "todo list" [] {
-    # Parse and display .todo items
-    open ($env.AGENTASKIT_ROOT | path join "agentaskit-production" ".todo")
-    | lines
-    | where ($it | str starts-with "- [")
-    | each { |line|
-        let status = if ($line | str contains "[x]") { "✓" } else { "○" }
-        let ref = ($line | parse --regex '\[REF: ([^\]]+)\]' | get -i 0.capture0 | default "")
-        {status: $status, ref: $ref, line: $line}
+    # Ensure AGENTASKIT_ROOT is set before attempting to read the .todo file
+    let root = ($env | get -i AGENTASKIT_ROOT | default "")
+    if $root == "" {
+        print "error: AGENTASKIT_ROOT is not set. Make sure you're in the AgentAskit project context and that mise (or your env) has been activated."
+    } else {
+        # Parse and display .todo items
+        open ($root | path join "agentaskit-production" ".todo")
+        | lines
+        | where ($it | str starts-with "- [")
+        | each { |line|
+            let status = if ($line | str contains "[x]") { "✓" } else { "○" }
+            let ref = ($line | parse --regex '\[REF: ([^\]]+)\]' | get -i 0.capture0 | default "")
+            {status: $status, ref: $ref, line: $line}
+        }
     }
 }
 
