@@ -38,6 +38,9 @@ bincode.workspace = true
 config.workspace = true
 toml.workspace = true
 hex = "0.4"
+rand = "0.8"
+libc = "0.2"
+num_cpus = "1.16"
 
 # Shared AgentAsKit components
 agentaskit-shared = { path = "../shared" }
