@@ -232,30 +232,31 @@ impl BasicAgent {
 
 /// Concrete agent implementation that can be managed by AgentManager
 #[derive(Clone)]
+/// Enhanced: Managed agent with type-safe IDs
 pub struct ManagedAgent {
-    pub id: Uuid,
+    pub id: AgentId,
     pub name: String,
     pub layer: AgentLayer,
     pub capabilities: Vec<String>,
     pub status: Arc<RwLock<AgentStatus>>,
     pub resource_requirements: ResourceRequirements,
     pub performance_metrics: Arc<RwLock<PerformanceMetrics>>,
-    pub escalation_path: Option<Uuid>,
-    pub subordinates: Arc<RwLock<Vec<Uuid>>>,
+    pub escalation_path: Option<AgentId>,
+    pub subordinates: Arc<RwLock<Vec<AgentId>>>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub last_heartbeat: Arc<RwLock<Option<chrono::DateTime<chrono::Utc>>>>,
     pub metadata: AgentMetadata,
 }
 
 impl ManagedAgent {
-    /// Create a new managed agent
+    /// Enhanced: Create a new managed agent with type-safe ID
     pub fn new(
         name: String,
         layer: AgentLayer,
         capabilities: Vec<String>,
         resource_requirements: ResourceRequirements,
     ) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let now = chrono::Utc::now();
 
         let metadata = AgentMetadata {
