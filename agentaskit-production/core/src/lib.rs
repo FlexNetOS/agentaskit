@@ -62,6 +62,9 @@ pub mod noop;              // No-op implementations for testing (95 lines)
 // Agent base (re-exported through agents module)
 pub mod agent;             // Agent base implementation (94 lines)
 
+// Protocol implementations (CODE-004)
+pub mod protocol_impl;     // Concrete implementations of shared protocol traits
+
 // Re-export commonly used types for convenience
 pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
 pub use orchestration::{OrchestratorEngine, Task, TaskStatus, TaskType, Priority};
