@@ -472,57 +472,57 @@
 
 #### Subtasks (auto-generated)
 <!-- AUTO:WORKFLOW-009:SUBTASKS:BEGIN -->
-- [x] Review basenames present outside production (top sample):
-  - [x] .gitattributes
-  - [x] .gitignore
-  - [x] .gitmodules
-  - [x] .qoderignore
-  - [x] a2a.rs
-  - [x] a2a_tests.rs
-  - [x] agent_directory_template.csv
-  - [x] agent_map_crosswalk.md
-  - [x] agent_schema_template.json
-  - [x] agentask.subject.todo
-  - [x] agentask.todo
-  - [x] agentaskit.todo
-  - [x] ai_sop_interface.rs
-  - [x] all_inclusive_agent_directory.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.fixed_20251005-081849.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.full_20251005-081849.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.healed_20251005-081849.csv
-  - [x] analyze_all_repositories.csv
-  - [x] anchor-20251005-080803.json
-  - [x] ark-os repository analysis_ comprehensive feature catalog.md
-  - [x] ark-os_ architectural positioning for agenticai os scaffold.md
-  - [x] auth.rs
-  - [x] auth_tests.rs
-  - [x] capsule.schema.v2_20251005-081849.json
-  - [x] capsule.schema_20251005-081849.json
-  - [x] cargo_audit_agent.rs
-  - [x] cargo_build_agent.rs
-  - [x] cargo_license_agent.rs
-  - [x] check_errors.txt
-  - [x] check_errors_2.txt
-  - [x] comprehensive agenticai os repository analysis.md
-  - [x] config.rs
-  - [x] config_tests.rs
-  - [x] crosscheck_report.md
-  - [x] csv_schema.md
-  - [x] csv_schema_v1_20251005-081849.md
-  - [x] csv_schema_v2_20251005-081849.md
-  - [x] csv_schema_v3_20251005-081849.md
-  - [x] data.csv
-  - [x] dependency_analysis.md
-  - [x] dispatch_run_todo.ps1
-  - [x] enhanced_workflow_components_report.md
-  - [x] enhanced_workflow_implementation.md
-  - [x] enhanced_workflow_tests.rs
-  - [x] final_report.md
-  - [x] final_summary.md
-  - [x] fitness-report.json
-  - [x] gateway.rs
-  - [x] generator.rs
-  - [x] healing_report.md
+- [ ] Review basenames present outside production (top sample):
+  - [ ] .gitattributes
+  - [ ] .gitignore
+  - [ ] .gitmodules
+  - [ ] .qoderignore
+  - [ ] a2a.rs
+  - [ ] a2a_tests.rs
+  - [ ] agent_directory_template.csv
+  - [ ] agent_map_crosswalk.md
+  - [ ] agent_schema_template.json
+  - [ ] agentask.subject.todo
+  - [ ] agentask.todo
+  - [ ] agentaskit.todo
+  - [ ] ai_sop_interface.rs
+  - [ ] all_inclusive_agent_directory.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.fixed_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.full_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.healed_20251005-081849.csv
+  - [ ] analyze_all_repositories.csv
+  - [ ] anchor-20251005-080803.json
+  - [ ] ark-os repository analysis_ comprehensive feature catalog.md
+  - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
+  - [ ] auth.rs
+  - [ ] auth_tests.rs
+  - [ ] capsule.schema.v2_20251005-081849.json
+  - [ ] capsule.schema_20251005-081849.json
+  - [ ] cargo_audit_agent.rs
+  - [ ] cargo_build_agent.rs
+  - [ ] cargo_license_agent.rs
+  - [ ] check_errors.txt
+  - [ ] check_errors_2.txt
+  - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] config.rs
+  - [ ] config_tests.rs
+  - [ ] crosscheck_report.md
+  - [ ] csv_schema.md
+  - [ ] csv_schema_v1_20251005-081849.md
+  - [ ] csv_schema_v2_20251005-081849.md
+  - [ ] csv_schema_v3_20251005-081849.md
+  - [ ] data.csv
+  - [ ] dependency_analysis.md
+  - [ ] dispatch_run_todo.ps1
+  - [ ] enhanced_workflow_components_report.md
+  - [ ] enhanced_workflow_implementation.md
+  - [ ] enhanced_workflow_tests.rs
+  - [ ] final_report.md
+  - [ ] final_summary.md
+  - [ ] fitness-report.json
+  - [ ] gateway.rs
+  - [ ] generator.rs
+  - [ ] healing_report.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
