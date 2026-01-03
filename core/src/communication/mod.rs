@@ -8,7 +8,7 @@ use tracing::{debug, error, info, warn};
 use uuid::Uuid;
 
 /// Message types for inter-agent communication
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum MessageType {
     Request,
     Response,

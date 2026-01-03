@@ -1013,7 +1013,7 @@ impl MonitoringAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id: id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),

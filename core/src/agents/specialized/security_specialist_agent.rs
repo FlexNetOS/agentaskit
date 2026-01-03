@@ -572,7 +572,7 @@ impl SecuritySpecialistAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id: id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
@@ -1222,7 +1222,7 @@ impl Agent for SecuritySpecialistAgent {
                 priority,
                 timeout,
             } => {
-                debug!("Received task request: {} from {}", task.name, from.0);
+                debug!("Received task request: {} from {}", task.name, from);
 
                 // Execute the requested task
                 let task_result = self.execute_task(task.clone()).await?;
@@ -1244,7 +1244,7 @@ impl Agent for SecuritySpecialistAgent {
                 payload,
                 scope,
             } => {
-                debug!("Received broadcast: {} from {}", topic, from.0);
+                debug!("Received broadcast: {} from {}", topic, from);
 
                 // Handle broadcast messages based on topic
                 match topic.as_str() {
@@ -1272,7 +1272,7 @@ impl Agent for SecuritySpecialistAgent {
                 context,
                 timestamp,
             } => {
-                debug!("Received alert: {} from {}", message, from.0);
+                debug!("Received alert: {} from {}", message, from);
 
                 // Handle security alerts
                 if matches!(

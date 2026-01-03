@@ -235,7 +235,7 @@ impl CommunicationManager {
         let queue = AgentMessageQueue::new(sender);
         agent_queues.insert(agent_id, queue);
 
-        tracing::info!("Registered agent {} for communication", agent_id.0);
+        tracing::info!("Registered agent {} for communication", agent_id);
         Ok(())
     }
 
@@ -260,7 +260,7 @@ impl CommunicationManager {
         // Remove message queue
         agent_queues.remove(&agent_id);
 
-        tracing::info!("Deregistered agent {} from communication", agent_id.0);
+        tracing::info!("Deregistered agent {} from communication", agent_id);
         Ok(())
     }
 
@@ -274,7 +274,7 @@ impl CommunicationManager {
             .or_insert_with(Vec::new)
             .push(agent_id);
 
-        tracing::debug!("Agent {} subscribed to topic '{}'", agent_id.0, topic);
+        tracing::debug!("Agent {} subscribed to topic '{}'", agent_id, topic);
         Ok(())
     }
 
@@ -363,11 +363,11 @@ impl CommunicationManager {
                 metrics.messages_delivered += 1;
             } else {
                 // Queue full, handle overflow
-                tracing::warn!("Agent {} message queue full, dropping message", agent_id.0);
+                tracing::warn!("Agent {} message queue full, dropping message", agent_id);
                 return Err(anyhow::anyhow!("Agent queue full"));
             }
         } else {
-            tracing::warn!("Agent {} not found for message delivery", agent_id.0);
+            tracing::warn!("Agent {} not found for message delivery", agent_id);
             return Err(anyhow::anyhow!("Agent not found"));
         }
 
@@ -509,7 +509,7 @@ impl HeartbeatManager {
             for agent_id in stale_agents {
                 tracing::warn!(
                     "Agent {} appears to be stale, removing from registry",
-                    agent_id.0
+                    agent_id
                 );
                 // Note: In production, this should trigger more sophisticated recovery
                 registry.deregister_agent(agent_id)?;
@@ -567,7 +567,7 @@ impl DeliveryRetryProcessor {
 
                     tracing::debug!(
                         "Retrying message {} (attempt {})",
-                        message_id.0,
+                        message_id,
                         pending.attempts
                     );
 

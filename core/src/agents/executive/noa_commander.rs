@@ -1236,7 +1236,7 @@ impl Agent for NoaCommander {
             } => {
                 tracing::debug!(
                     "NOA Commander received task request from {}: {}",
-                    from.0,
+                    from,
                     task.name
                 );
 
@@ -1278,7 +1278,7 @@ impl Agent for NoaCommander {
                 let mut agent_coordinator = self.agent_coordinator.write().await;
                 // TODO: Update agent health tracking
 
-                tracing::debug!("Received heartbeat from agent {}", from.0);
+                tracing::debug!("Received heartbeat from agent {}", from);
                 Ok(None)
             }
             _ => {
