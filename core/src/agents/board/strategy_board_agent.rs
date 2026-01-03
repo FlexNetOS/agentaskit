@@ -273,7 +273,7 @@ struct MarketAnalyzer {
 }
 
 /// Market intelligence
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct MarketIntelligence {
     pub market_segment: String,
     pub market_size: f64,
@@ -834,8 +834,8 @@ impl Agent for StrategyBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 

@@ -535,7 +535,7 @@ struct SLAMeasurement {
 }
 
 /// SLA violation record
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct SLAViolation {
     pub violation_id: Uuid,
     pub sla_id: String,

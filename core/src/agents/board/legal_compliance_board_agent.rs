@@ -1101,8 +1101,8 @@ impl Agent for LegalComplianceBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 
