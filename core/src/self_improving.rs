@@ -495,7 +495,7 @@ impl SelfImprovingOrchestrator {
         // Calculate system-wide success rate for context
         let success_rate = self
             .improvement_tracker
-            .lock()
+            .read()
             .await
             .metrics_history
             .iter()
@@ -685,7 +685,7 @@ impl SelfImprovingOrchestrator {
         // Enhance learning system capabilities
         info!("Applying learning improvement: {}", improvement.description);
 
-        let mut learning_engine = self.learning_engine.read().await;
+        let mut learning_engine = self.learning_engine.write().await;
 
         // Learning improvements:
         // - Adjust learning rate based on convergence
@@ -751,7 +751,7 @@ impl SelfImprovingOrchestrator {
 
         // Restore learning engine state
         if let Some(learning_data) = state_data.get("learning") {
-            let mut learning_engine = self.learning_engine.read().await;
+            let mut learning_engine = self.learning_engine.write().await;
             if let Some(accuracy) = learning_data.get("model_accuracy").and_then(|v| v.as_f64()) {
                 learning_engine.learning_metrics.model_accuracy = accuracy;
             }

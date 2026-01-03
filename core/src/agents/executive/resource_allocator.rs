@@ -638,8 +638,7 @@ impl ResourceAllocator {
         // Find suitable resources
         let capacity = self.convert_requirements_to_capacity(&requirements);
         let suitable_pool_key = self
-            .find_suitable_resource_pool(&resource_manager, &capacity)
-            .await?;
+            .find_suitable_resource_pool(&resource_manager, &capacity)?;
 
         // Create allocation
         let mut allocation = ResourceAllocation {
