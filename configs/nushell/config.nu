@@ -83,22 +83,18 @@ def "todo list" [] {
 }
 
 def "build tools" [] {
-    # Build external tools from source
+    # Build external tools from source without changing the working directory
     print "Building pixi..."
-    cd ($env.AGENTASKIT_ROOT | path join "tools" "external" "pixi")
-    cargo build --release
+    cargo build --manifest-path ($env.AGENTASKIT_ROOT | path join "tools" "external" "pixi" "Cargo.toml") --release
 
     print "Building nushell..."
-    cd ($env.AGENTASKIT_ROOT | path join "tools" "external" "nushell")
-    cargo build --release
+    cargo build --manifest-path ($env.AGENTASKIT_ROOT | path join "tools" "external" "nushell" "Cargo.toml") --release
 
     print "Building coreutils..."
-    cd ($env.AGENTASKIT_ROOT | path join "tools" "external" "coreutils")
-    cargo build --release
+    cargo build --manifest-path ($env.AGENTASKIT_ROOT | path join "tools" "external" "coreutils" "Cargo.toml") --release
 
     print "Building rusty-tags..."
-    cd ($env.AGENTASKIT_ROOT | path join "tools" "external" "rusty-tags")
-    cargo build --release
+    cargo build --manifest-path ($env.AGENTASKIT_ROOT | path join "tools" "external" "rusty-tags" "Cargo.toml") --release
 }
 
 # Starship prompt (optional)
