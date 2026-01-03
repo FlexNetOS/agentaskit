@@ -8,10 +8,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Resource Allocator Agent - Dynamic resource management and optimization
@@ -324,7 +324,7 @@ struct ResourceOptimizer {
 }
 
 /// Optimization strategies
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OptimizationStrategy {
     CostMinimization,
     PerformanceMaximization,
@@ -379,7 +379,7 @@ enum ConstraintType {
 }
 
 /// Optimization result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct OptimizationResult {
     pub optimization_time: Instant,
     pub strategy_used: OptimizationStrategy,
@@ -390,7 +390,7 @@ struct OptimizationResult {
 }
 
 /// Optimization actions
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OptimizationAction {
     ResourceReallocation {
         from: AgentId,
@@ -580,10 +580,12 @@ enum ModelType {
 
 impl ResourceAllocator {
     pub fn new(config: ResourceAllocatorConfig) -> Self {
+        let id = AgentId::new();
         let metadata = AgentMetadata {
-            id: AgentId::from_name("resource-allocator"),
+            id,
             name: "Resource Allocator".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "resource-management".to_string(),
                 "resource-optimization".to_string(),
@@ -592,17 +594,19 @@ impl ResourceAllocator {
                 "cost-optimization".to_string(),
                 "auto-scaling".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 10 * 1024 * 1024, // 10MB
-                max_cpu: 2.0,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -631,11 +635,10 @@ impl ResourceAllocator {
             tracing::warn!("Agent {} already has resource allocation", agent_id);
         }
 
-        // Find suitable resources
+        // Enhanced: Find suitable resources (not async - no await needed)
         let capacity = self.convert_requirements_to_capacity(&requirements);
         let suitable_pool_key = self
-            .find_suitable_resource_pool(&resource_manager, &capacity)
-            .await?;
+            .find_suitable_resource_pool(&resource_manager, &capacity)?;
 
         // Create allocation
         let mut allocation = ResourceAllocation {
@@ -805,11 +808,12 @@ impl ResourceAllocator {
         let total_capacity = self.calculate_total_capacity(&resource_manager);
         let allocated_capacity = self.calculate_allocated_capacity(&resource_manager);
         let utilization = self.calculate_system_utilization(&resource_manager);
+        let available_capacity = self.subtract_capacities(&total_capacity, &allocated_capacity);
 
         Ok(SystemResourceMetrics {
             total_capacity,
             allocated_capacity,
-            available_capacity: self.subtract_capacities(&total_capacity, &allocated_capacity),
+            available_capacity,
             system_utilization: utilization,
             active_agents: resource_manager.allocations.len(),
             active_alerts: monitor.active_alerts.len(),
@@ -823,11 +827,11 @@ impl ResourceAllocator {
         requirements: &ResourceRequirements,
     ) -> ResourceCapacity {
         ResourceCapacity {
-            cpu_cores: requirements.max_cpu as f64,
-            memory_bytes: requirements.max_memory,
-            storage_bytes: requirements.max_storage,
-            network_mbps: 100.0, // Default
-            gpu_units: 0,
+            cpu_cores: requirements.cpu_cores.unwrap_or(1) as f64,
+            memory_bytes: requirements.memory_mb.unwrap_or(512) * 1024 * 1024,
+            storage_bytes: requirements.storage_mb.unwrap_or(100) * 1024 * 1024,
+            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100) as f64,
+            gpu_units: if requirements.gpu_required { 1 } else { 0 },
             custom_units: HashMap::new(),
         }
     }
@@ -962,30 +966,7 @@ impl Agent for ResourceAllocator {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Resource Allocator");
-
-        // Initialize resource pools
-        let mut resource_manager = self.resource_manager.write().await;
-        self.initialize_resource_pools(&mut resource_manager)
-            .await?;
-
-        // Initialize monitoring targets
-        let mut monitor = self.monitor.write().await;
-        self.initialize_monitoring(&mut monitor).await?;
-
-        // Initialize optimization objectives
-        let mut optimizer = self.optimizer.write().await;
-        self.initialize_optimization_objectives(&mut optimizer)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Resource Allocator initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Resource Allocator");
 
         // Start resource monitoring
@@ -1023,7 +1004,7 @@ impl Agent for ResourceAllocator {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Resource Allocator");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1037,13 +1018,16 @@ impl Agent for ResourceAllocator {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
-                Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                Ok(Some(crate::agents::AgentMessage::Response {
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1054,13 +1038,13 @@ impl Agent for ResourceAllocator {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "allocate-resources" => {
                 let agent_id = task
-                    .parameters
+                    .input_data
                     .get("agent_id")
                     .and_then(|v| v.as_str())
                     .map(AgentId::from_name)
@@ -1068,12 +1052,12 @@ impl Agent for ResourceAllocator {
 
                 // Parse resource requirements from parameters
                 let requirements = ResourceRequirements {
-                    min_cpu: 0.1,
-                    min_memory: 128 * 1024 * 1024,
-                    min_storage: 1024 * 1024,
-                    max_cpu: 1.0,
-                    max_memory: 1024 * 1024 * 1024,
-                    max_storage: 100 * 1024 * 1024,
+                    cpu_cores: Some(1),
+                    memory_mb: Some(1024),
+                    storage_mb: Some(100),
+                    network_bandwidth_mbps: Some(50),
+                    gpu_required: false,
+                    special_capabilities: Vec::new(),
                 };
 
                 let allocation = self
@@ -1137,25 +1121,15 @@ impl Agent for ResourceAllocator {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let resource_manager = self.resource_manager.read().await;
-        let monitor = self.monitor.read().await;
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let _state = self.state.read().await;
+        let _resource_manager = self.resource_manager.read().await;
+        let _monitor = self.monitor.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0,                 // Placeholder
-            memory_usage: 128 * 1024 * 1024, // 128MB placeholder
-            task_queue_size: 0,
-            completed_tasks: resource_manager.allocation_history.len() as u64,
-            failed_tasks: 0, // Track this in real implementation
-            average_response_time: Duration::from_millis(50),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Resource Allocator configuration");
 
         // TODO: Parse and update configuration
@@ -1165,6 +1139,7 @@ impl Agent for ResourceAllocator {
     fn capabilities(&self) -> &[String] {
         &self.metadata.capabilities
     }
+
 }
 
 impl ResourceAllocator {

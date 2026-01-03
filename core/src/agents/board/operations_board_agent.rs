@@ -8,9 +8,11 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Operations Board Agent - Operational excellence and process management
@@ -22,6 +24,7 @@ use agentaskit_shared::{
 /// - Operational risk management and compliance
 /// - Resource efficiency and capacity planning
 /// - Operational governance and oversight
+#[derive(Debug)]
 pub struct OperationsBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -963,9 +966,9 @@ struct ImprovementMetrics {
 impl OperationsBoardAgent {
     pub fn new(config: OperationsBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("operations-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("operations-board-agent"),
             name: "Operations Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "operations-management".to_string(),
                 "process-optimization".to_string(),
@@ -975,16 +978,19 @@ impl OperationsBoardAgent {
                 "change-management".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.4,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 100 * 1024 * 1024, // 100MB
-                max_cpu: 2.0,
-                max_memory: 8 * 1024 * 1024 * 1024,  // 8GB
-                max_storage: 5 * 1024 * 1024 * 1024, // 5GB
+                cpu_cores: Some(2),
+                memory_mb: Some(8192),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -1043,24 +1049,6 @@ impl Agent for OperationsBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Operations Board Agent");
-
-        // Initialize operations management
-        let mut operations_manager = self.operations_manager.write().await;
-        self.initialize_operational_processes(&mut operations_manager)
-            .await?;
-
-        // Initialize performance monitoring
-        let mut performance_monitor = self.performance_monitor.write().await;
-        self.initialize_performance_dashboards(&mut performance_monitor)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Operations Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Operations Board Agent");
@@ -1112,7 +1100,7 @@ impl Agent for OperationsBoardAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1148,7 +1136,7 @@ impl Agent for OperationsBoardAgent {
             }
             "optimize-process" => {
                 let process_id = task
-                    .parameters
+                    .input_data
                     .get("process_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
@@ -1168,7 +1156,7 @@ impl Agent for OperationsBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Operations planning failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1177,20 +1165,10 @@ impl Agent for OperationsBoardAgent {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let operations_manager = self.operations_manager.read().await;
+        let _state = self.state.read().await;
+        let _operations_manager = self.operations_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0,                  // Placeholder
-            memory_usage: 1024 * 1024 * 1024, // 1GB placeholder
-            task_queue_size: 0,
-            completed_tasks: operations_manager.operations_metrics.total_processes,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(150),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

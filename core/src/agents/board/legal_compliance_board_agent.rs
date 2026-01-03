@@ -8,9 +8,11 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Legal Compliance Board Agent - Legal oversight and regulatory compliance
@@ -22,6 +24,7 @@ use agentaskit_shared::{
 /// - Policy development and enforcement
 /// - Legal documentation and audit support
 /// - Compliance training and awareness programs
+#[derive(Debug)]
 pub struct LegalComplianceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -898,9 +901,9 @@ struct PolicyMetrics {
 impl LegalComplianceBoardAgent {
     pub fn new(config: LegalComplianceBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("legal-compliance-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("legal-compliance-board-agent"),
             name: "Legal Compliance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "compliance-monitoring".to_string(),
                 "regulatory-tracking".to_string(),
@@ -910,16 +913,19 @@ impl LegalComplianceBoardAgent {
                 "legal-documentation".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.2,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 50 * 1024 * 1024, // 50MB
-                max_cpu: 1.0,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(1),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -988,29 +994,6 @@ impl Agent for LegalComplianceBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Legal Compliance Board Agent");
-
-        // Initialize compliance frameworks
-        let mut compliance_manager = self.compliance_manager.write().await;
-        self.initialize_compliance_frameworks(&mut compliance_manager)
-            .await?;
-
-        // Initialize regulatory tracking
-        let mut regulatory_tracker = self.regulatory_tracker.write().await;
-        self.initialize_regulatory_monitoring(&mut regulatory_tracker)
-            .await?;
-
-        // Initialize legal risk models
-        let mut legal_risk_assessor = self.legal_risk_assessor.write().await;
-        self.initialize_risk_models(&mut legal_risk_assessor)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Legal Compliance Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Legal Compliance Board Agent");
@@ -1062,7 +1045,7 @@ impl Agent for LegalComplianceBoardAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1098,7 +1081,7 @@ impl Agent for LegalComplianceBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Legal compliance check failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1107,20 +1090,10 @@ impl Agent for LegalComplianceBoardAgent {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let compliance_manager = self.compliance_manager.read().await;
+        let _state = self.state.read().await;
+        let _compliance_manager = self.compliance_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 3.0,                  // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: 0,
-            completed_tasks: compliance_manager.compliance_metrics.active_frameworks,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(120),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

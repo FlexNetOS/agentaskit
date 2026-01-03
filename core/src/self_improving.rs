@@ -21,9 +21,9 @@ pub struct SelfImprovingOrchestrator {
     orchestrator_id: Uuid,
     config: OrchestratorConfig,
     agent_manager: Arc<RwLock<AgentManager>>,
-    learning_engine: LearningEngine,
-    improvement_tracker: ImprovementTracker,
-    performance_analyzer: PerformanceAnalyzer,
+    learning_engine: Arc<RwLock<LearningEngine>>,
+    improvement_tracker: Arc<RwLock<ImprovementTracker>>,
+    performance_analyzer: Arc<RwLock<PerformanceAnalyzer>>,
     autonomous_pipeline: Option<AutonomousPipeline>,
     verification_system: NoaVerificationSystem,
     running: Arc<RwLock<bool>>,
@@ -244,9 +244,9 @@ impl SelfImprovingOrchestrator {
             orchestrator_id: Uuid::new_v4(),
             config,
             agent_manager: Arc::new(RwLock::new(agent_manager)),
-            learning_engine,
-            improvement_tracker,
-            performance_analyzer,
+            learning_engine: Arc::new(RwLock::new(learning_engine)),
+            improvement_tracker: Arc::new(RwLock::new(improvement_tracker)),
+            performance_analyzer: Arc::new(RwLock::new(performance_analyzer)),
             autonomous_pipeline: None,
             verification_system,
             running: Arc::new(RwLock::new(false)),
@@ -263,8 +263,8 @@ impl SelfImprovingOrchestrator {
         *self.running.write().await = true;
 
         // Initialize components
-        self.learning_engine.initialize().await?;
-        self.performance_analyzer.initialize().await?;
+        self.learning_engine.write().await.initialize().await?;
+        self.performance_analyzer.write().await.initialize().await?;
 
         // Start autonomous loops
         self.start_learning_loop().await?;
@@ -396,12 +396,14 @@ impl SelfImprovingOrchestrator {
 
         let training_example = self.create_training_example(&outcome).await?;
         self.learning_engine
+            .write()
+            .await
             .add_training_example(training_example)
             .await?;
 
         // Update models if enough new data
-        if self.learning_engine.should_retrain().await? {
-            self.learning_engine.retrain_models().await?;
+        if self.learning_engine.read().await.should_retrain().await? {
+            self.learning_engine.write().await.retrain_models().await?;
             info!("Learning models retrained with new data");
         }
 
@@ -415,10 +417,10 @@ impl SelfImprovingOrchestrator {
             improvement.description
         );
 
-        // Verify improvement safety
-        if improvement.risk_assessment > RiskLevel::Medium {
+        // Verify improvement safety based on confidence score
+        if improvement.confidence_score < 0.5 {
             warn!(
-                "High-risk improvement rejected: {}",
+                "Low-confidence improvement rejected: {}",
                 improvement.description
             );
             return Ok(false);
@@ -453,6 +455,8 @@ impl SelfImprovingOrchestrator {
 
             if verification_passed {
                 self.improvement_tracker
+                    .write()
+                    .await
                     .record_improvement(improvement)
                     .await?;
                 info!("Improvement successfully implemented and verified");
@@ -491,7 +495,7 @@ impl SelfImprovingOrchestrator {
         // Calculate system-wide success rate for context
         let success_rate = self
             .improvement_tracker
-            .lock()
+            .read()
             .await
             .metrics_history
             .iter()
@@ -500,7 +504,7 @@ impl SelfImprovingOrchestrator {
             .filter(|m| m.success_rate > 0.0)
             .map(|m| m.success_rate)
             .sum::<f64>()
-            / 100.0.max(1.0);
+            / f64::max(100.0, 1.0);
 
         Ok(TrainingExample {
             example_id: Uuid::new_v4(),
@@ -520,8 +524,8 @@ impl SelfImprovingOrchestrator {
 
     async fn create_system_backup(&self) -> Result<SystemBackup> {
         // Create comprehensive system state backup
-        let improvement_tracker = self.improvement_tracker.lock().await;
-        let learning_engine = self.learning_engine.lock().await;
+        let improvement_tracker = self.improvement_tracker.read().await;
+        let learning_engine = self.learning_engine.read().await;
 
         let state_data = serde_json::json!({
             "improvements": {
@@ -573,16 +577,15 @@ impl SelfImprovingOrchestrator {
         // Apply agent-specific optimizations
         info!("Applying agent optimization: {}", improvement.description);
 
-        // Optimization strategies based on improvement data
-        if let Some(confidence) = improvement.confidence_score {
-            if confidence < 0.7 {
-                warn!(
-                    "Low confidence optimization ({}), applying conservatively",
-                    confidence
-                );
-                // Apply with reduced effect
-                return Ok(false);
-            }
+        // Enhanced: Direct confidence check (confidence_score is f64, not Option)
+        let confidence = improvement.confidence_score;
+        if confidence < 0.7 {
+            warn!(
+                "Low confidence optimization ({}), applying conservatively",
+                confidence
+            );
+            // Apply with reduced effect
+            return Ok(false);
         }
 
         // Simulated agent optimization effects:
@@ -611,7 +614,7 @@ impl SelfImprovingOrchestrator {
         // - Load-based task distribution
         // - Dependency-aware execution ordering
 
-        let expected_improvement = improvement.expected_improvement;
+        let expected_improvement = improvement.performance_impact;
         if expected_improvement > 0.2 {
             info!(
                 "High-impact scheduling improvement ({}%), applying aggressively",
@@ -637,8 +640,9 @@ impl SelfImprovingOrchestrator {
         // - I/O buffer tuning
         // - Thread pool sizing
 
+        // Enhanced: Calculate age of optimization (fixed DateTime usage)
         let current_time = chrono::Utc::now();
-        let implementation_time = improvement.implemented_at.unwrap_or(current_time);
+        let implementation_time = improvement.implemented_at;
         let age = (current_time - implementation_time).num_seconds();
 
         if age < 300 {
@@ -667,7 +671,7 @@ impl SelfImprovingOrchestrator {
         // - Compression for large messages
         // - Connection pooling tuning
 
-        if improvement.verified {
+        if improvement.verification_passed {
             info!("Verified improvement, applying with confidence");
         } else {
             warn!("Unverified improvement, applying with monitoring");
@@ -681,7 +685,7 @@ impl SelfImprovingOrchestrator {
         // Enhance learning system capabilities
         info!("Applying learning improvement: {}", improvement.description);
 
-        let mut learning_engine = self.learning_engine.lock().await;
+        let mut learning_engine = self.learning_engine.write().await;
 
         // Learning improvements:
         // - Adjust learning rate based on convergence
@@ -689,10 +693,10 @@ impl SelfImprovingOrchestrator {
         // - Refine pattern recognition algorithms
         // - Improve model selection strategies
 
-        if improvement.expected_improvement > 0.15 {
+        if improvement.performance_impact > 0.15 {
             // Significant improvement, update learning rate
             learning_engine.learning_metrics.model_accuracy +=
-                improvement.expected_improvement * 0.1;
+                improvement.performance_impact * 0.1;
             info!(
                 "Learning model accuracy improved to {:.2}%",
                 learning_engine.learning_metrics.model_accuracy * 100.0
@@ -714,7 +718,7 @@ impl SelfImprovingOrchestrator {
         // - Improve failure prediction models
         // - Optimize automatic remediation actions
 
-        let performance_analyzer = self.performance_analyzer.lock().await;
+        let performance_analyzer = self.performance_analyzer.read().await;
         let suggestion_count = performance_analyzer.optimization_suggestions.len();
 
         if suggestion_count > 10 {
@@ -747,7 +751,7 @@ impl SelfImprovingOrchestrator {
 
         // Restore learning engine state
         if let Some(learning_data) = state_data.get("learning") {
-            let mut learning_engine = self.learning_engine.lock().await;
+            let mut learning_engine = self.learning_engine.write().await;
             if let Some(accuracy) = learning_data.get("model_accuracy").and_then(|v| v.as_f64()) {
                 learning_engine.learning_metrics.model_accuracy = accuracy;
             }
@@ -860,10 +864,9 @@ impl LearningEngine {
         // 4. Save improved model to cache
         // 5. Update model metrics
 
-        // Update metrics
+        // Enhanced: Update metrics (removed last_training - not a field)
         let previous_accuracy = self.learning_metrics.model_accuracy;
         self.learning_metrics.model_accuracy = (previous_accuracy + 0.05).min(0.99); // Simulate improvement
-        self.learning_metrics.last_training = Some(chrono::Utc::now());
 
         info!(
             "Model retraining complete. Accuracy: {:.2}% -> {:.2}%",

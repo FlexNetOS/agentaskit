@@ -47,22 +47,48 @@ agentaskit-production/
 
 ### Prerequisites
 
-- **Rust:** 1.70+
-- **Python:** 3.8+
-- **Optional:** minisign, fsverity, capnp
+- **Rust:** 1.70+ (via rustup)
+- **Node.js:** 20+ (for claude-flow)
+- **Nushell:** 0.90+ (cross-platform shell)
+- **Optional:** mise, pixi, direnv
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/FlexNetOS/agentaskit.git
-cd agentaskit/agentaskit-production
+# Clone the repository with submodules
+git clone --recurse-submodules https://github.com/FlexNetOS/agentaskit.git
+cd agentaskit
 
-# Build the system
+# Bootstrap (nushell required)
+nu tools/bootstrap.nu
+
+# Or build directly
 cargo build --release
 
 # Initialize with default configuration
 cargo run --bin ark-os -- start --agents 50
+```
+
+### Nushell Integration
+
+```nu
+# Source the environment
+source configs/nushell/env.nu
+
+# AI completion (uses aichat)
+ai "explain rust ownership"
+
+# List AI providers
+ai providers
+
+# Orchestrate with claude-flow
+orchestrate "build feature X"
+
+# Start swarm
+swarm start research
+
+# Local inference
+llama run "hello world"
 ```
 
 ### Basic Usage
@@ -324,6 +350,46 @@ cargo doc --open
 - [Deployment Guide](docs/deployment/production-deployment.md)
 
 ## 🔗 Integration Points
+
+### AI Providers (via aichat)
+
+The system integrates [aichat](integrations/aichat) as a unified CLI for 20+ AI providers:
+
+| Provider | Endpoint |
+|----------|----------|
+| OpenAI | GPT-4, GPT-3.5 |
+| Anthropic | Claude 3.5, Claude 3 |
+| Google | Gemini, Vertex AI |
+| AWS | Bedrock |
+| Cohere | Command |
+| + 18 OpenAI-compatible | Groq, Mistral, DeepSeek, etc. |
+
+### Orchestration (via claude-flow)
+
+[Claude-flow](integrations/claude-flow) provides enterprise-grade multi-agent orchestration:
+
+- **SPARC Modes:** Orchestrator, Coder, Researcher, TDD, Architect, Reviewer
+- **Swarm Intelligence:** Mesh, Star, Hierarchical topologies
+- **Memory:** ReasoningBank with AgentDB vector database
+- **MCP Integration:** Model Context Protocol servers
+
+### Agent Gateway
+
+The [agentgateway](integrations/agentgateway) provides protocol routing:
+
+- **MCP Protocol:** Tool execution via Model Context Protocol
+- **A2A Protocol:** Agent-to-Agent communication
+- **CEL Authorization:** Common Expression Language policies
+- **Rate Limiting:** Per-route rate limiting
+
+### Local Inference
+
+[llama.cpp](integrations/llama.cpp) integration for local AI inference:
+
+```bash
+# Run local inference
+llama run "your prompt" --model llama-3.gguf
+```
 
 ### External Systems
 

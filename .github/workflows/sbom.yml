@@ -1,4 +1,5 @@
 name: SBOM
+
 on:
   workflow_dispatch:
   push:
@@ -12,10 +13,55 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Generate SBOM (stub)
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Generate SBOM
+        shell: bash
         run: |
-          mkdir -p sbom
-          echo '{"bomFormat":"CycloneDX","specVersion":"1.5","components":[]}' > sbom/placeholder.json
+          pixi run nu -c '
+            print "=== Generating SBOM ==="
+
+            mkdir sbom
+
+            # Parse Cargo.lock for dependencies
+            let cargo_deps = if ("Cargo.lock" | path exists) {
+              open Cargo.lock
+              | lines
+              | where { |l| $l | str starts-with "name = " }
+              | each { |l| $l | str replace "name = " "" | str trim -c "\"" }
+              | uniq
+            } else {
+              []
+            }
+
+            # Create CycloneDX SBOM
+            let sbom = {
+              bomFormat: "CycloneDX"
+              specVersion: "1.5"
+              version: 1
+              metadata: {
+                timestamp: (date now | format date "%Y-%m-%dT%H:%M:%SZ")
+                tools: [{
+                  vendor: "AgentAskit"
+                  name: "nushell-sbom-gen"
+                  version: "1.0.0"
+                }]
+              }
+              components: ($cargo_deps | each { |name| {
+                type: "library"
+                name: $name
+                purl: $"pkg:cargo/($name)"
+              }})
+            }
+
+            $sbom | to json | save -f sbom/sbom.cdx.json
+
+            print $"Generated SBOM with ($cargo_deps | length) components"
+            print "✓ SBOM saved to sbom/sbom.cdx.json"
+          '
+
       - uses: actions/upload-artifact@v4
         with:
           name: sbom

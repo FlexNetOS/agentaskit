@@ -1,0 +1,156 @@
+name: Nushell Migration Check
+
+on:
+  push:
+    paths:
+      - '**/*.sh'
+      - '**/*.ps1'
+      - '**/*.bash'
+  pull_request:
+    paths:
+      - '**/*.sh'
+      - '**/*.ps1'
+      - '**/*.bash'
+  workflow_dispatch:
+
+jobs:
+  detect-legacy-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Detect Legacy Scripts
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print "=== Checking for legacy shell scripts ==="
+            print ""
+
+            # Find all shell scripts (excluding external tools)
+            let bash_scripts = (glob "**/*.sh" | where { |f|
+              not ($f | str contains "external") and
+              not ($f | str contains "node_modules") and
+              not ($f | str contains "target")
+            })
+
+            let ps_scripts = (glob "**/*.ps1" | where { |f|
+              not ($f | str contains "external") and
+              not ($f | str contains "node_modules") and
+              not ($f | str contains "target")
+            })
+
+            let bash_scripts_in_code = (glob "**/*.bash" | where { |f|
+              not ($f | str contains "external")
+            })
+
+            let all_legacy = ($bash_scripts | append $ps_scripts | append $bash_scripts_in_code)
+
+            if ($all_legacy | length) > 0 {
+              print "⚠️  Found legacy shell scripts that should be migrated to Nushell:"
+              print ""
+              for script in $all_legacy {
+                print $"  - ($script)"
+              }
+              print ""
+              print "Migration guide:"
+              print "  1. Create equivalent .nu script in same location"
+              print "  2. Use nushell syntax (see configs/nushell/env.nu for examples)"
+              print "  3. Delete the legacy script"
+              print "  4. Update any references in workflows/configs"
+              print ""
+
+              # Fail if legacy scripts found (enforces migration)
+              # Uncomment to enforce:
+              # exit 1
+            } else {
+              print "✓ No legacy shell scripts found outside of external tools"
+            }
+
+            print ""
+            print "=== Nushell Script Inventory ==="
+            let nu_scripts = (glob "**/*.nu" | where { |f| not ($f | str contains "external") })
+            print $"Found ($nu_scripts | length) nushell scripts:"
+            for script in $nu_scripts {
+              print $"  ✓ ($script)"
+            }
+          '
+
+  validate-nushell-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Validate Nushell Scripts
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print "=== Validating Nushell scripts ==="
+
+            let nu_scripts = (glob "**/*.nu" | where { |f|
+              not ($f | str contains "external") and
+              not ($f | str contains "target")
+            })
+
+            mut errors = 0
+
+            for script in $nu_scripts {
+              print $"Checking ($script)..."
+
+              # Try to parse the script (syntax check)
+              try {
+                # Use `--ide-check 100` to run a non-executing, LSP-style analysis as a fast syntax/validation check in CI
+                nu --ide-check 100 $script | ignore
+                print $"  ✓ ($script) - syntax OK"
+              } catch {
+                print $"  ✗ ($script) - syntax error"
+                $errors = $errors + 1
+              }
+            }
+
+            if $errors > 0 {
+              print $"\n($errors) script(s) have errors"
+              exit 1
+            }
+
+            print "\n✓ All nushell scripts validated successfully"
+          '
+
+  cross-platform-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Test Bootstrap Script
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print $"=== Testing bootstrap on (sys host | get name) ==="
+
+            # Source the environment config
+            source configs/nushell/env.nu
+
+            # Verify environment is set up
+            print $"AGENTASKIT_ROOT: ($env.AGENTASKIT_ROOT)"
+
+            # Test that key commands work
+            print "Testing todo list command..."
+            try {
+              todo list | first 3 | print
+            } catch {
+              print "  (no todo items or .todo not found - OK for CI)"
+            }
+
+            print "✓ Cross-platform test passed"
+          '

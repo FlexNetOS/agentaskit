@@ -1,0 +1,45 @@
+# Rustfmt configuration for AgentAsKit Production
+# Ensures consistent code formatting across the entire project
+
+# Edition
+edition = "2021"
+
+# Line length and wrapping
+max_width = 100
+wrap_comments = true
+comment_width = 80
+format_code_in_doc_comments = true
+
+# Imports
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+reorder_imports = true
+
+# Function definitions
+fn_params_layout = "Tall"
+brace_style = "SameLineWhere"
+where_single_line = false
+
+# Control flow
+control_brace_style = "AlwaysSameLine"
+
+# Formatting options
+use_field_init_shorthand = true
+use_try_shorthand = true
+force_explicit_abi = true
+
+# Strings and arrays
+overflow_delimited_expr = true
+format_strings = true
+
+# Match expressions
+match_block_trailing_comma = true
+
+# Trailing elements
+trailing_comma = "Vertical"
+trailing_semicolon = true
+
+# Miscellaneous
+newline_style = "Unix"
+normalize_comments = true
+normalize_doc_attributes = true

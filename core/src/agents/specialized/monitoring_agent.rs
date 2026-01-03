@@ -7,10 +7,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Monitoring Agent - Comprehensive system monitoring and observability
@@ -23,6 +23,8 @@ use agentaskit_shared::{
 /// - Health monitoring and reporting
 /// - SLA monitoring and compliance
 pub struct MonitoringAgent {
+    id: AgentId,
+    name: String,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -998,32 +1000,47 @@ struct HealthStats {
 impl MonitoringAgent {
     pub fn new(config: Option<MonitoringConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = AgentId::new();
+        let name = "Monitoring Agent".to_string();
+        let capabilities = vec![
+            "metrics-collection".to_string(),
+            "alert-management".to_string(),
+            "log-analysis".to_string(),
+            "health-monitoring".to_string(),
+            "performance-monitoring".to_string(),
+            "observability".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("monitoring-agent"),
-            name: "Monitoring Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "metrics-collection".to_string(),
-                "alert-management".to_string(),
-                "log-analysis".to_string(),
-                "health-monitoring".to_string(),
-                "performance-monitoring".to_string(),
-                "observability".to_string(),
-            ],
+            id: id,
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
-                min_storage: 50 * 1024 * 1024 * 1024, // 50GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024,    // 32GB
-                max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(102400),
+                network_bandwidth_mbps: Some(200),
+                gpu_required: false,
+                special_capabilities: vec!["metrics".to_string(), "time-series".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [
+                ("monitoring".to_string(), "monitoring".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
+            id,
+            name,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1045,17 +1062,7 @@ impl MonitoringAgent {
 
         let service_health = ServiceHealth {
             service_name: service_name.clone(),
-            overall_status: HealthStatus {
-                agent_id: self.metadata.id,
-                state: AgentStatus::Active,
-                last_heartbeat: chrono::Utc::now(),
-                cpu_usage: 0.0,
-                memory_usage: 0,
-                task_queue_size: 0,
-                completed_tasks: 0,
-                failed_tasks: 0,
-                average_response_time: Duration::from_millis(100),
-            },
+            overall_status: HealthStatus::Healthy,
             component_statuses: HashMap::new(),
             last_updated: Instant::now(),
             uptime: Duration::from_secs(0),
@@ -1120,33 +1127,7 @@ impl Agent for MonitoringAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Monitoring Agent");
-
-        // Initialize metrics collection
-        let mut metrics_collector = self.metrics_collector.write().await;
-        self.initialize_metrics_collection(&mut metrics_collector)
-            .await?;
-
-        // Initialize alert rules
-        let mut alert_manager = self.alert_manager.write().await;
-        self.initialize_alert_rules(&mut alert_manager).await?;
-
-        // Initialize log processing
-        let mut log_analyzer = self.log_analyzer.write().await;
-        self.initialize_log_processing(&mut log_analyzer).await?;
-
-        // Initialize health checks
-        let mut health_monitor = self.health_monitor.write().await;
-        self.initialize_health_checks(&mut health_monitor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Monitoring Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Monitoring Agent");
 
         // Start metrics collection
@@ -1195,7 +1176,7 @@ impl Agent for MonitoringAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Monitoring Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1204,13 +1185,13 @@ impl Agent for MonitoringAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1221,13 +1202,13 @@ impl Agent for MonitoringAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "start-monitoring" => {
                 let service_name = task
-                    .parameters
+                    .input_data
                     .get("service_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-service")
@@ -1266,7 +1247,7 @@ impl Agent for MonitoringAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Monitoring task failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1274,24 +1255,14 @@ impl Agent for MonitoringAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let metrics_collector = self.metrics_collector.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: metrics_collector.metric_streams.len() as usize,
-            completed_tasks: metrics_collector.collection_stats.total_metrics_collected,
-            failed_tasks: metrics_collector.collection_stats.collection_errors,
-            average_response_time: Duration::from_millis(100),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Monitoring Agent configuration");
         Ok(())
     }

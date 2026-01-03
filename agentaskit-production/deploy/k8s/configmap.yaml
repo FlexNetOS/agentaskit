@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AgentAskit ConfigMap
+# REF: DEP-K8S - K8s manifests & Helm charts
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentaskit-config
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: config
+data:
+  # Application Configuration
+  AGENTASKIT_ENV: "production"
+  AGENTASKIT_LOG_LEVEL: "info"
+  AGENTASKIT_LOG_FORMAT: "json"
+
+  # Server Configuration
+  AGENTASKIT_HTTP_PORT: "8080"
+  AGENTASKIT_GRPC_PORT: "9000"
+  AGENTASKIT_METRICS_PORT: "9090"
+
+  # Performance Configuration
+  AGENTASKIT_MAX_CONNECTIONS: "10000"
+  AGENTASKIT_REQUEST_TIMEOUT_MS: "30000"
+  AGENTASKIT_WORKER_THREADS: "8"
+
+  # Agent Configuration
+  AGENTASKIT_MAX_AGENTS: "1000"
+  AGENTASKIT_AGENT_STARTUP_TIMEOUT_MS: "100"
+  AGENTASKIT_AGENT_RESPONSE_TIMEOUT_MS: "50"
+
+  # Observability Configuration
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+  OTEL_SERVICE_NAME: "agentaskit"
+
+  # Feature Flags
+  AGENTASKIT_FEATURE_TRIPLE_VERIFICATION: "true"
+  AGENTASKIT_FEATURE_MODEL_D_MERGE: "true"
+  AGENTASKIT_FEATURE_CAPABILITY_TOKENS: "true"
+
+---
+# Application settings as file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentaskit-settings
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: config
+data:
+  settings.toml: |
+    [server]
+    http_port = 8080
+    grpc_port = 9000
+    metrics_port = 9090
+    max_connections = 10000
+    request_timeout_ms = 30000
+
+    [performance]
+    worker_threads = 8
+    task_throughput_target = 10000
+    message_throughput_target = 100000
+    startup_time_target_ms = 100
+    response_time_target_ms = 50
+
+    [agents]
+    max_agents = 1000
+    startup_timeout_ms = 100
+    response_timeout_ms = 50
+    health_check_interval_ms = 5000
+
+    [verification]
+    enabled = true
+    triple_verification = true
+    model_d_merge = true
+
+    [security]
+    capability_tokens = true
+    token_rotation_hours = 24
+    audit_logging = true
+
+    [observability]
+    metrics_enabled = true
+    tracing_enabled = true
+    logging_structured = true

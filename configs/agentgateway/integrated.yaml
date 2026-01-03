@@ -1,0 +1,144 @@
+# Integrated AgentGateway Configuration
+# Includes: aichat, claude-flow, llama.cpp
+
+listeners:
+  # MCP primary listener
+  - name: mcp-main
+    protocol: mcp
+    address: "127.0.0.1:8080"
+
+  # Agent-to-Agent protocol
+  - name: a2a-main
+    protocol: a2a
+    address: "127.0.0.1:8081"
+
+  # Orchestration layer
+  - name: orchestration
+    protocol: mcp
+    address: "127.0.0.1:8082"
+
+targets:
+  # aichat - Centralized AI CLI for all providers
+  - name: aichat-provider
+    type: stdio
+    command: "aichat"
+    args: ["--serve"]
+    env:
+      AICHAT_CONFIG_DIR: "${AGENTASKIT_ROOT}/configs/aichat"
+
+  # claude-flow - Orchestration layer
+  - name: claude-flow-orchestrator
+    type: stdio
+    command: "node"
+    args:
+      - "${AGENTASKIT_ROOT}/integrations/claude-flow/bin/claude-flow.js"
+      - "mcp"
+    env:
+      CLAUDE_FLOW_CONFIG: "${AGENTASKIT_ROOT}/configs/claude-flow"
+
+  # Local inference via llama.cpp
+  - name: llama-local
+    type: stdio
+    command: "${AGENTASKIT_ROOT}/integrations/llama.cpp/main"
+    args:
+      - "-m"
+      - "${AGENTASKIT_ROOT}/models/default.gguf"
+      - "-c"
+      - "4096"
+    env:
+      LLAMA_N_GPU_LAYERS: "35"
+
+  # Example MCP server
+  - name: mcp-everything
+    type: stdio
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-everything"]
+
+routing:
+  routes:
+    # Route AI requests to aichat
+    - name: ai-completion
+      matches:
+        - type: mcp_tool
+          name: "complete"
+        - type: mcp_tool
+          name: "chat"
+        - type: mcp_tool
+          name: "generate"
+      target: aichat-provider
+      timeout_ms: 30000
+      retry:
+        attempts: 2
+        backoff:
+          base_ms: 1000
+          max_ms: 5000
+
+    # Route orchestration to claude-flow
+    - name: orchestration
+      matches:
+        - type: path_prefix
+          prefix: "/orchestrate"
+        - type: mcp_tool
+          name: "spawn_agent"
+        - type: mcp_tool
+          name: "coordinate"
+        - type: a2a_skill
+          skill_id: "orchestration"
+      target: claude-flow-orchestrator
+      timeout_ms: 60000
+
+    # Route local inference
+    - name: local-inference
+      matches:
+        - type: header
+          name: "X-Provider"
+          value: "local"
+        - type: cel
+          expression: "request.params.provider == 'llama'"
+      target: llama-local
+      timeout_ms: 120000
+
+    # Default: MCP everything server
+    - name: default-mcp
+      matches:
+        - type: path_prefix
+          prefix: "/mcp"
+      target: mcp-everything
+
+  default_route: mcp-everything
+
+auth:
+  enabled: false  # Enable in production
+
+  policies:
+    - name: allow-internal
+      condition: "request.source.ip == '127.0.0.1'"
+      action: allow
+
+    - name: allow-orchestration
+      condition: "request.path.startsWith('/orchestrate') && request.hasHeader('X-Auth-Token')"
+      action: allow
+
+    - name: rate-limit-ai
+      condition: "request.path.startsWith('/mcp/ai')"
+      action: rate_limit
+      rate_limit:
+        requests_per_second: 10
+        burst: 20
+
+observability:
+  logging:
+    level: info
+    format: json
+
+  metrics:
+    enabled: true
+    endpoint: "127.0.0.1:9090/metrics"
+
+  tracing:
+    enabled: false
+    endpoint: ""
+
+health:
+  endpoint: "127.0.0.1:8079/health"
+  interval_ms: 10000

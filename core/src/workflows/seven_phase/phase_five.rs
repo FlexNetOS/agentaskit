@@ -10,7 +10,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::PhaseResult;
+use super::{PhaseResult, PhaseStatus};
 
 #[derive(Debug)]
 pub struct QualityAssuranceValidator;
@@ -159,12 +159,12 @@ impl QualityAssuranceValidator {
 
         evidence.push("Pass A: Self-check verification initiated".to_string());
 
-        // Check 1: Verify all required phases completed
+        // Enhanced: Check 1: Verify all required phases completed
         let required_phases = vec![
             super::PhaseType::UserRequestIngestion,
-            super::PhaseType::TaskAllocationMatching,
+            super::PhaseType::AgentSelection,      // Was: TaskAllocationMatching
             super::PhaseType::TaskExecution,
-            super::PhaseType::CommunicationCoordination,
+            super::PhaseType::Communication,       // Was: CommunicationCoordination
         ];
 
         for phase in &required_phases {
@@ -236,7 +236,7 @@ impl QualityAssuranceValidator {
 
             // In production, this would actually re-execute the phase
             // For now, we validate the structure and format
-            if !result.output.to_string().is_empty() && result.success {
+            if !result.output.to_string().is_empty() && result.status == PhaseStatus::Completed {
                 derivation_matches += 1;
                 evidence.push(format!("✓ Phase {:?} re-derivation matches", phase));
                 sha256_hashes.insert(format!("{:?}_original", phase), original_hash);
@@ -304,7 +304,7 @@ impl QualityAssuranceValidator {
 
         // Challenge 3: Verify all phases succeeded
         adversarial_checks_total += 1;
-        let all_succeeded = phase_results.values().all(|r| r.success);
+        let all_succeeded = phase_results.values().all(|r| r.status == PhaseStatus::Completed);
         if all_succeeded {
             evidence.push("✓ All phases reported success".to_string());
             adversarial_checks_passed += 1;
@@ -316,7 +316,7 @@ impl QualityAssuranceValidator {
         adversarial_checks_total += 1;
         let max_duration = phase_results
             .values()
-            .map(|r| r.duration_ms)
+            .map(|r| r.performance.phase_duration.num_milliseconds())
             .max()
             .unwrap_or(0);
         if max_duration < 60000 {

@@ -2,10 +2,21 @@
 //!
 //! This library unifies the best capabilities from all integrated systems:
 //! - rustecosys: Tauri desktop application framework
-//! - rustecosys2: Advanced orchestration and execution engine  
+//! - rustecosys2: Advanced orchestration and execution engine
 //! - agentrs: Comprehensive multi-agent system
 //!
 //! Following the "Heal, Don't Harm" principle, all capabilities are preserved and enhanced.
+
+// Clippy lint configuration for production-ready code quality
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
+// Allow some pedantic lints that are too strict for this codebase
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::must_use_candidate)]
 
 use anyhow::Result;
 
@@ -17,6 +28,10 @@ pub mod orchestration;
 pub mod performance;
 pub mod security;
 
+// AI and tool integration
+pub mod ai;
+pub mod mcp;
+
 // Enhanced workflow processing module
 pub mod workflows;
 
@@ -26,7 +41,8 @@ pub mod self_improving;
 pub mod verification;
 
 // Re-export commonly used types for convenience
-pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
+pub use agents::{Agent, AgentLayer, AgentManager};
+pub use agentaskit_shared::AgentStatus;
 pub use communication::{Message, MessageBroker, MessageType, Priority as MessagePriority};
 pub use monitoring::{AgentMetrics, Alert, AlertLevel, MetricsCollector, SystemMetrics};
 pub use orchestration::{OrchestratorEngine, Priority, Task, TaskStatus, TaskType};
@@ -46,6 +62,16 @@ pub use self_improving::{
     ImprovementTracker, LearningEngine, OrchestratorConfig, SelfImprovingOrchestrator,
 };
 pub use verification::{NoaVerificationSystem, TruthGate, VerificationStatus};
+
+// Export AI and MCP capabilities
+pub use ai::{
+    AIProvider, AichatProvider, ChatMessage, CompletionRequest, CompletionResponse,
+    GatewayBridge, GatewayConfig, McpTool, Provider, ProviderManager, SharedGateway,
+};
+pub use mcp::{
+    AgentToolContext, ToolEnabledAgent, ToolEnabledAgentFactory, ToolHandler, ToolRegistry,
+    ToolResult,
+};
 
 /// Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

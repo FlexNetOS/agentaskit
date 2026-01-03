@@ -8,10 +8,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
@@ -296,7 +296,7 @@ struct AgentWorkload {
 impl Default for AgentWorkload {
     fn default() -> Self {
         Self {
-            agent_id: AgentId::from_name("default"),
+            agent_id: AgentId::new(),
             current_tasks: 0,
             queued_tasks: 0,
             total_capacity: 100,
@@ -535,7 +535,7 @@ struct SLAMeasurement {
 }
 
 /// SLA violation record
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct SLAViolation {
     pub violation_id: Uuid,
     pub sla_id: String,
@@ -549,7 +549,7 @@ struct SLAViolation {
 }
 
 /// SLA violation severity
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum ViolationSeverity {
     Minor,
     Major,
@@ -571,10 +571,12 @@ struct SLAMetrics {
 
 impl PriorityManager {
     pub fn new(config: PriorityManagerConfig) -> Self {
+        let id = AgentId::new();
         let metadata = AgentMetadata {
-            id: AgentId::from_name("priority-manager"),
+            id,
             name: "Priority Manager".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "priority-management".to_string(),
                 "task-scheduling".to_string(),
@@ -583,17 +585,19 @@ impl PriorityManager {
                 "escalation-handling".to_string(),
                 "load-balancing".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 5 * 1024 * 1024,  // 5MB
-                max_cpu: 1.5,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 100 * 1024 * 1024,     // 100MB
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(100),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -826,19 +830,19 @@ impl PriorityManager {
             PriorityFactorType::Urgency => {
                 // Extract urgency from task metadata or use default
                 Ok(task
-                    .parameters
+                    .input_data
                     .get("urgency")
                     .and_then(|v| v.as_f64())
                     .unwrap_or(50.0))
             }
             PriorityFactorType::Importance => Ok(task
-                .parameters
+                .input_data
                 .get("importance")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(50.0)),
             PriorityFactorType::Deadline => {
                 // Calculate deadline proximity
-                if let Some(deadline_str) = task.parameters.get("deadline").and_then(|v| v.as_str())
+                if let Some(deadline_str) = task.input_data.get("deadline").and_then(|v| v.as_str())
                 {
                     // TODO: Parse deadline and calculate proximity
                     Ok(70.0) // Placeholder
@@ -849,7 +853,7 @@ impl PriorityManager {
             PriorityFactorType::Dependencies => {
                 // Count dependent tasks
                 let dep_count = task
-                    .parameters
+                    .input_data
                     .get("dependencies")
                     .and_then(|v| v.as_array())
                     .map(|arr| arr.len())
@@ -857,12 +861,12 @@ impl PriorityManager {
                 Ok((dep_count as f64 * 10.0).clamp(0.0, 100.0))
             }
             PriorityFactorType::BusinessValue => Ok(task
-                .parameters
+                .input_data
                 .get("business_value")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(40.0)),
             PriorityFactorType::UserPriority => Ok(task
-                .parameters
+                .input_data
                 .get("user_priority")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(50.0)),
@@ -878,7 +882,7 @@ impl PriorityManager {
     fn calculate_age_factor(&self, task: &Task) -> f64 {
         // Prefer a created_at timestamp stored in task parameters.
         // Expected format: RFC3339 (e.g., "2024-01-01T12:34:56Z").
-        if let Some(created_at_str) = task.parameters.get("created_at").and_then(|v| v.as_str()) {
+        if let Some(created_at_str) = task.input_data.get("created_at").and_then(|v| v.as_str()) {
             if let Ok(created_at) = chrono::DateTime::parse_from_rfc3339(created_at_str) {
                 let created_at_utc = created_at.with_timezone(&chrono::Utc);
                 let age = chrono::Utc::now().signed_duration_since(created_at_utc);
@@ -931,30 +935,8 @@ impl Agent for PriorityManager {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Priority Manager");
 
-        // Initialize priority factors
-        let mut priority_engine = self.priority_engine.write().await;
-        self.initialize_priority_factors(&mut priority_engine)
-            .await?;
-
-        // Initialize default policies
-        let mut policy_manager = self.policy_manager.write().await;
-        self.initialize_default_policies(&mut policy_manager)
-            .await?;
-
-        // Initialize SLA definitions
-        let mut sla_monitor = self.sla_monitor.write().await;
-        self.initialize_sla_definitions(&mut sla_monitor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Priority Manager initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Priority Manager");
 
         // Start priority calculation cycle
@@ -1003,7 +985,7 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Priority Manager");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1017,13 +999,16 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
-                Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                Ok(Some(crate::agents::AgentMessage::Response {
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1034,7 +1019,7 @@ impl Agent for PriorityManager {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1062,14 +1047,14 @@ impl Agent for PriorityManager {
             }
             "escalate-priority" => {
                 let task_id = task
-                    .parameters
+                    .input_data
                     .get("task_id")
                     .and_then(|v| v.as_str())
                     .and_then(|s| Uuid::parse_str(s).ok())
                     .ok_or_else(|| anyhow::anyhow!("Invalid task_id parameter"))?;
 
                 let escalation_factor = task
-                    .parameters
+                    .input_data
                     .get("escalation_factor")
                     .and_then(|v| v.as_f64())
                     .unwrap_or(0.2);
@@ -1114,25 +1099,15 @@ impl Agent for PriorityManager {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let scheduler = self.scheduler.read().await;
-        let priority_engine = self.priority_engine.read().await;
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let _state = self.state.read().await;
+        let _scheduler = self.scheduler.read().await;
+        let _priority_engine = self.priority_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 8.0,                  // Placeholder
-            memory_usage: 128 * 1024 * 1024, // 128MB placeholder
-            task_queue_size: scheduler.task_queue.len(),
-            completed_tasks: scheduler.scheduling_metrics.tasks_completed,
-            failed_tasks: scheduler.scheduling_metrics.tasks_failed,
-            average_response_time: Duration::from_millis(25),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Priority Manager configuration");
 
         // TODO: Parse and update configuration

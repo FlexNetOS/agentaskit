@@ -7,10 +7,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Code Generation Agent - Specialized code generation and optimization
@@ -23,6 +23,8 @@ use agentaskit_shared::{
 /// - Multi-language code generation support
 /// - Integration with development workflows
 pub struct CodeGenerationAgent {
+    id: AgentId,
+    name: String,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -707,32 +709,47 @@ struct LanguageMetrics {
 impl CodeGenerationAgent {
     pub fn new(config: Option<CodeGenerationConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = AgentId::new();
+        let name = "Code Generation Agent".to_string();
+        let capabilities = vec![
+            "code-generation".to_string(),
+            "code-refactoring".to_string(),
+            "quality-analysis".to_string(),
+            "template-management".to_string(),
+            "multi-language-support".to_string(),
+            "pattern-recognition".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("code-generation-agent"),
-            name: "Code Generation Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "code-generation".to_string(),
-                "code-refactoring".to_string(),
-                "quality-analysis".to_string(),
-                "template-management".to_string(),
-                "multi-language-support".to_string(),
-                "pattern-recognition".to_string(),
-            ],
+            id,
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                min_storage: 1024 * 1024 * 1024,    // 1GB
-                max_cpu: 4.0,
-                max_memory: 16 * 1024 * 1024 * 1024,  // 16GB
-                max_storage: 50 * 1024 * 1024 * 1024, // 50GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: vec!["llm".to_string(), "code-analysis".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [
+                ("code-generation".to_string(), "code-generation".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
+            id,
+            name,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -848,35 +865,7 @@ impl Agent for CodeGenerationAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Code Generation Agent");
-
-        // Initialize generation models
-        let mut code_generator = self.code_generator.write().await;
-        self.initialize_generation_models(&mut code_generator)
-            .await?;
-
-        // Initialize quality metrics
-        let mut quality_analyzer = self.quality_analyzer.write().await;
-        self.initialize_quality_metrics(&mut quality_analyzer)
-            .await?;
-
-        // Initialize templates
-        let mut template_manager = self.template_manager.write().await;
-        self.initialize_templates(&mut template_manager).await?;
-
-        // Initialize language support
-        let mut language_support = self.language_support.write().await;
-        self.initialize_language_support(&mut language_support)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Code Generation Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Code Generation Agent");
 
         // Start quality analysis monitoring
@@ -911,7 +900,7 @@ impl Agent for CodeGenerationAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Code Generation Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -920,13 +909,13 @@ impl Agent for CodeGenerationAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -937,20 +926,20 @@ impl Agent for CodeGenerationAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "generate-code" => {
                 let title = task
-                    .parameters
+                    .input_data
                     .get("title")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Generated Code")
                     .to_string();
 
                 let language = task
-                    .parameters
+                    .input_data
                     .get("language")
                     .and_then(|v| v.as_str())
                     .unwrap_or("rust")
@@ -1005,7 +994,7 @@ impl Agent for CodeGenerationAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Code generation failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1013,25 +1002,14 @@ impl Agent for CodeGenerationAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let code_generator = self.code_generator.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0,                      // Placeholder
-            memory_usage: 2 * 1024 * 1024 * 1024, // 2GB placeholder
-            task_queue_size: code_generator.active_tasks.len() as usize,
-            completed_tasks: code_generator.generation_metrics.successful_generations,
-            failed_tasks: code_generator.generation_metrics.total_generations
-                - code_generator.generation_metrics.successful_generations,
-            average_response_time: Duration::from_millis(500),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Code Generation Agent configuration");
         Ok(())
     }

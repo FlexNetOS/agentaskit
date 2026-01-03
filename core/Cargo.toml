@@ -20,6 +20,9 @@ serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 
+# AI/LLM Integration
+airust.workspace = true
+
 anyhow.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
@@ -45,6 +48,8 @@ chrono = { version = "0.4", features = ["serde"] }
 num_cpus = "1.13"
 sysinfo = "0.30"
 walkdir = "2.5"
+md5 = "0.7"
+which = "6.0"
 
 [dev-dependencies]
 mockall.workspace = true
@@ -54,3 +59,4 @@ tokio-test = "0.4"
 [build-dependencies]
 tonic-build = "0.9"
 prost-build = "0.11"
+chrono = "0.4"

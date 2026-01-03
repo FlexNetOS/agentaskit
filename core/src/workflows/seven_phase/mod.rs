@@ -20,7 +20,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+use crate::agents::AgentMessage;
+use agentaskit_shared::{AgentId, Task, TaskId, TaskStatus};
 use crate::workflows::{ChatRequest, TaskSubject, VerificationProtocol, VerificationStatus};
 
 pub mod phase_five;
@@ -45,7 +46,7 @@ pub struct SevenPhaseOrchestrator {
 }
 
 /// Workflow state tracking across all seven phases
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct WorkflowState {
     pub id: Uuid,
     pub chat_request: ChatRequest,
@@ -71,7 +72,7 @@ pub enum PhaseType {
 }
 
 /// Result from each phase with verification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PhaseResult {
     pub phase: PhaseType,
     pub status: PhaseStatus,
@@ -82,7 +83,7 @@ pub struct PhaseResult {
     pub evidence_hashes: HashMap<String, String>, // file -> SHA-256
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum PhaseStatus {
     Pending,
     InProgress,
@@ -91,7 +92,7 @@ pub enum PhaseStatus {
     RequiresReview,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum WorkflowStatus {
     Initializing,
     Processing,
@@ -101,7 +102,7 @@ pub enum WorkflowStatus {
 }
 
 /// Performance metrics for entire workflow
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PerformanceMetrics {
     pub total_processing_time: chrono::Duration,
     pub agent_startup_time: chrono::Duration,
@@ -112,7 +113,7 @@ pub struct PerformanceMetrics {
 }
 
 /// Performance metrics per phase
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PhasePerformanceMetrics {
     pub phase_duration: chrono::Duration,
     pub cpu_usage: f64,
@@ -509,11 +510,13 @@ impl SevenPhaseOrchestrator {
                 verification_results: Vec::new(),
             },
             truth_gate_requirements: crate::workflows::TruthGateRequirements {
-                minimum_evidence_count: 3,
-                required_verification_passes: vec!["self_check".to_string()],
-                mathematical_proof_required: false,
-                external_validation_required: false,
-                consensus_threshold: 0.8,
+                artifact_presence: true,
+                smoke_test_passed: false,
+                spec_match_verified: false,
+                limits_documented: false,
+                hashes_provided: false,
+                gap_scan_complete: false,
+                triple_verification_complete: false,
             },
         })
     }
@@ -571,8 +574,8 @@ impl SevenPhaseOrchestrator {
                 deliverable_specifications: Vec::new(),
                 target_locations: Vec::new(),
                 timeline: crate::workflows::ExecutionTimeline {
-                    start_date: Utc::now(),
-                    end_date: Utc::now() + chrono::Duration::days(1),
+                    start_time: Utc::now(),
+                    estimated_end_time: Utc::now() + chrono::Duration::days(1),
                     milestones: Vec::new(),
                     critical_path: Vec::new(),
                 },

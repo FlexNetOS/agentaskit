@@ -1,0 +1,100 @@
+# mise configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# All scripts use Nushell for cross-platform compatibility
+
+[tools]
+# Rust toolchain (managed by rustup, mise tracks version)
+rust = "stable"
+
+# Node.js for frontend tooling and scripts
+node = "20"
+
+# Python for AI/ML workflows and scripts
+python = "3.11"
+
+[env]
+# Project root for scripts
+PROJECT_ROOT = "{{cwd}}"
+AGENTASKIT_ROOT = "{{cwd}}"
+
+# XDG compliance
+XDG_CONFIG_HOME = "{{env.HOME}}/.config"
+XDG_DATA_HOME = "{{env.HOME}}/.local/share"
+XDG_CACHE_HOME = "{{env.HOME}}/.cache"
+XDG_STATE_HOME = "{{env.HOME}}/.local/state"
+
+# Rust settings (XDG compliant)
+CARGO_HOME = "{{env.HOME}}/.local/share/cargo"
+RUSTUP_HOME = "{{env.HOME}}/.local/share/rustup"
+
+# Tool paths - unified bin directory first
+PATH = [
+  "{{cwd}}/tools/bin",
+  "{{cwd}}/tools/external/nushell/target/release",
+  "{{cwd}}/tools/external/coreutils/target/release",
+  "{{cwd}}/tools/external/rusty-tags/target/release",
+  "{{env.HOME}}/.local/bin",
+  "{{env.PATH}}"
+]
+
+# All tasks use nushell for cross-platform compatibility
+[tasks.build]
+description = "Build the AgentAskit core"
+run = "nu -c 'cd agentaskit-production; cargo build --release'"
+
+[tasks.test]
+description = "Run all tests"
+run = "nu -c 'cd agentaskit-production; cargo test --all'"
+
+[tasks.lint]
+description = "Run linting checks"
+run = '''
+nu -c '
+  cargo clippy --all-targets --all-features -- -D warnings
+  cargo fmt --all -- --check
+'
+'''
+
+[tasks.build-tools]
+description = "Build external tools from source (nushell)"
+run = '''
+nu -c '
+  let tools = ["nushell" "coreutils" "rusty-tags"]
+  for tool in $tools {
+    let path = $"tools/external/($tool)"
+    if ($path | path exists) {
+      print $"Building ($tool)..."
+      cd $path
+      cargo build --release
+    }
+  }
+'
+'''
+
+[tasks.xdg-audit]
+description = "Run XDG compliance audit"
+run = "nu -c 'xdg-ninja --json | save -f tools/analysis/xdg_audit.json'"
+
+[tasks.todo-validate]
+description = "Validate .todo file schema"
+run = "nu -c 'cd agentaskit-production; nu scripts/validate_sot.nu'"
+
+[tasks.bootstrap]
+description = "Bootstrap development environment (nushell)"
+run = "nu tools/bootstrap.nu"
+
+[tasks.aider]
+description = "Start aider AI pair programming session"
+run = "aider --config .aider.conf.yml"
+
+[tasks.clean]
+description = "Clean all build artifacts"
+run = "nu -c 'cargo clean; rm -rf tools/external/*/target'"
+
+[tasks.fmt]
+description = "Format all code"
+run = "cargo fmt --all"
+
+[tasks.doc]
+description = "Generate documentation"
+run = "cargo doc --no-deps --document-private-items"

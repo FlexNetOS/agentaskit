@@ -2,13 +2,14 @@
 // Provides comprehensive security implementation, compliance monitoring, threat detection,
 // vulnerability assessment, access control management, and security policy enforcement
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -18,9 +19,8 @@ use uuid::Uuid;
 /// Security Specialist Agent - Domain expert for security implementation and compliance
 #[derive(Clone)]
 pub struct SecuritySpecialistAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
-    capabilities: Vec<AgentCapability>,
     config: SecurityConfig,
     metadata: AgentMetadata,
     security_engine: Arc<SecurityEngine>,
@@ -31,7 +31,7 @@ pub struct SecuritySpecialistAgent {
     security_policies: Arc<RwLock<SecurityPolicyEngine>>,
     incident_responder: Arc<IncidentResponder>,
     security_audit: Arc<SecurityAuditor>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
@@ -546,7 +546,7 @@ impl Default for SecurityConfig {
 impl SecuritySpecialistAgent {
     pub fn new(config: Option<SecurityConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
 
         let security_engine = Arc::new(SecurityEngine::new(config.clone()));
         let vulnerability_scanner = Arc::new(VulnerabilityScanner::new());
@@ -558,39 +558,48 @@ impl SecuritySpecialistAgent {
         let incident_responder = Arc::new(IncidentResponder::new(config.incident_response.clone()));
         let security_audit = Arc::new(SecurityAuditor::new(config.audit_config.clone()));
 
+        let name = "Security Specialist".to_string();
+        let capabilities = vec![
+            "security-scanning".to_string(),
+            "threat-detection".to_string(),
+            "compliance-monitoring".to_string(),
+            "incident-response".to_string(),
+            "access-control".to_string(),
+            "security-auditing".to_string(),
+            "vulnerability-assessment".to_string(),
+            "policy-enforcement".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId(id),
-            name: "SecuritySpecialist".to_string(),
-            role: crate::agents::AgentRole::Specialized,
-            capabilities: vec![
-                "SecurityScanning".to_string(),
-                "ThreatDetection".to_string(),
-                "ComplianceMonitoring".to_string(),
-                "IncidentResponse".to_string(),
-                "AccessControl".to_string(),
-                "SecurityAuditing".to_string(),
-                "VulnerabilityAssessment".to_string(),
-                "PolicyEnforcement".to_string(),
-            ],
+            id: id,
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: None,
-            resource_requirements: crate::agents::ResourceRequirements::default(),
-            health_check_interval: std::time::Duration::from_secs(60),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
+            resource_requirements: ResourceRequirements {
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(512),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
+            },
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [
+                ("security".to_string(), "security".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
             id,
-            name: "SecuritySpecialist".to_string(),
-            capabilities: vec![
-                AgentCapability::SecurityScanning,
-                AgentCapability::ThreatDetection,
-                AgentCapability::ComplianceMonitoring,
-                AgentCapability::IncidentResponse,
-                AgentCapability::AccessControl,
-                AgentCapability::SecurityAuditing,
-                AgentCapability::VulnerabilityAssessment,
-                AgentCapability::PolicyEnforcement,
-            ],
+            name,
             config,
             metadata,
             security_engine,
@@ -642,12 +651,7 @@ impl SecuritySpecialistAgent {
             "compliance" => self.run_compliance_scan(target, scan_id).await?,
             "access_audit" => self.run_access_audit_scan(target, scan_id).await?,
             "deep_security" => self.run_deep_security_scan(target, scan_id).await?,
-            _ => {
-                return Err(AgentError::InvalidInput(format!(
-                    "Unknown scan type: {}",
-                    scan_type
-                )))
-            }
+            _ => return Err(anyhow::anyhow!(format!("Unknown scan type: {}", scan_type))),
         };
 
         // Update scan completion
@@ -679,7 +683,7 @@ impl SecuritySpecialistAgent {
             scan_id,
             scan_type: "vulnerability".to_string(),
             target: target.to_string(),
-            findings: scan_result.findings.len() as u64,
+            findings: scan_result.total_findings as u64,
             severity_breakdown: scan_result.findings_by_severity,
             recommendations: scan_result.recommendations,
             scan_duration: 0, // Would be calculated from actual scan time
@@ -808,14 +812,15 @@ impl SecuritySpecialistAgent {
             + access_result.findings;
 
         let mut combined_severity = HashMap::new();
-        for (severity, count) in [
-            vuln_result.severity_breakdown,
-            threat_result.severity_breakdown,
-            compliance_result.severity_breakdown,
-            access_result.severity_breakdown,
+        // Enhanced: Combine severity breakdowns from all security scan types
+        for severity_map in [
+            &vuln_result.severity_breakdown,
+            &threat_result.severity_breakdown,
+            &compliance_result.severity_breakdown,
+            &access_result.severity_breakdown,
         ] {
-            for (sev, cnt) in severity {
-                *combined_severity.entry(sev).or_insert(0) += cnt;
+            for (sev, cnt) in severity_map {
+                *combined_severity.entry(sev.clone()).or_insert(0) += cnt;
             }
         }
 
@@ -996,23 +1001,15 @@ impl Agent for SecuritySpecialistAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        static CAPABILITIES: &[String] = &[
-            "ThreatDetection".to_string(),
-            "AccessControl".to_string(),
-            "IncidentResponse".to_string(),
-            "SecurityAuditing".to_string(),
-            "ComplianceMonitoring".to_string(),
-            "VulnerabilityScanning".to_string(),
-        ];
-        CAPABILITIES
+        &self.metadata.capabilities
     }
 
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         info!("Starting Security Specialist Agent {}", self.name);
 
         let mut active = self.active.lock().await;
         if *active {
-            return Err(AgentError::AlreadyRunning.into());
+            return Err(anyhow::anyhow!("Agent already running").into());
         }
 
         // Initialize all security components
@@ -1035,12 +1032,12 @@ impl Agent for SecuritySpecialistAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         info!("Stopping Security Specialist Agent {}", self.name);
 
         let mut active = self.active.lock().await;
         if !*active {
-            return Err(AgentError::NotRunning.into());
+            return Err(anyhow::anyhow!("Agent not running").into());
         }
 
         // Stop all security components
@@ -1065,46 +1062,24 @@ impl Agent for SecuritySpecialistAgent {
         if active {
             crate::agents::AgentStatus::Active
         } else {
-            crate::agents::AgentStatus::Idle
+            crate::agents::AgentStatus::Inactive
         }
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        info!("Initializing Security Specialist Agent {}", self.name);
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let state = self.state().await;
 
-        // Initialize all security components
-        self.security_engine.initialize().await?;
-        self.vulnerability_scanner.initialize().await?;
-        self.threat_detector.initialize().await?;
-        self.compliance_monitor.initialize().await?;
-        self.access_controller.initialize().await?;
-        self.incident_responder.initialize().await?;
-        self.security_audit.initialize().await?;
-
-        info!(
-            "Security Specialist Agent {} initialized successfully",
-            self.name
-        );
-        Ok(())
+        // Return appropriate health status based on agent state
+        match state {
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
+            AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
-        let status = self.get_security_status().await?;
-
-        Ok(crate::agents::HealthStatus {
-            agent_id: self.metadata.id,
-            state: self.state().await,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 0.0,  // Would be actual CPU usage
-            memory_usage: 0, // Would be actual memory usage
-            task_queue_size: self.tasks.lock().await.len() as usize,
-            completed_tasks: 0, // Would track completed tasks
-            failed_tasks: 0,    // Would track failed tasks
-            average_response_time: std::time::Duration::from_millis(100), // Placeholder
-        })
-    }
-
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         info!("Updating Security Specialist Agent configuration");
 
         // Parse and update configuration
@@ -1114,7 +1089,7 @@ impl Agent for SecuritySpecialistAgent {
         Ok(())
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         debug!("Executing task: {} ({})", task.name, task.task_type);
 
         // Store task
@@ -1123,30 +1098,36 @@ impl Agent for SecuritySpecialistAgent {
         let task_status = match task.task_type.as_str() {
             "security_scan" => {
                 let target = task
-                    .parameters
+                    .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
-                    .ok_or(AgentError::MissingParameter("target".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "target".to_string()
+                    ))?;
                 let scan_type = task
-                    .parameters
+                    .input_data
                     .get("scan_type")
                     .and_then(|v| v.as_str())
-                    .ok_or(AgentError::MissingParameter("scan_type".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "scan_type".to_string()
+                    ))?;
 
                 match self.perform_security_scan(target, scan_type).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Security scan failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "incident_response" => {
                 // Parse incident from parameters
-                let incident_data = task
-                    .parameters
-                    .get("incident")
-                    .ok_or(AgentError::MissingParameter("incident".to_string()))?;
+                let incident_data = task.input_data.get("incident").ok_or(anyhow::anyhow!(
+                    "Missing parameter: {}",
+                    "incident".to_string()
+                ))?;
 
                 // Would deserialize actual incident data
                 let incident = SecurityIncident::default(); // Placeholder
@@ -1155,35 +1136,41 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Incident response failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "policy_enforcement" => {
                 let policy_id = task
-                    .parameters
+                    .input_data
                     .get("policy_id")
                     .and_then(|v| v.as_str())
-                    .ok_or(AgentError::MissingParameter("policy_id".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "policy_id".to_string()
+                    ))?;
                 let target = task
-                    .parameters
+                    .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
-                    .ok_or(AgentError::MissingParameter("target".to_string()))?;
+                    .ok_or(anyhow::anyhow!(
+                        "Missing parameter: {}",
+                        "target".to_string()
+                    ))?;
 
                 match self.enforce_security_policy(policy_id, target).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Policy enforcement failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "audit_report" => {
-                let scope_str = task
-                    .parameters
-                    .get("scope")
-                    .ok_or(AgentError::MissingParameter("scope".to_string()))?;
+                let scope_str = task.input_data.get("scope").ok_or(anyhow::anyhow!(
+                    "Missing parameter: {}",
+                    "scope".to_string()
+                ))?;
 
                 let scope = AuditScope::System; // Would parse from scope_str
 
@@ -1191,7 +1178,7 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Audit report generation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1199,12 +1186,12 @@ impl Agent for SecuritySpecialistAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Security status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 
@@ -1225,7 +1212,7 @@ impl Agent for SecuritySpecialistAgent {
         Ok(result)
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request {
                 id,
@@ -1235,13 +1222,13 @@ impl Agent for SecuritySpecialistAgent {
                 priority,
                 timeout,
             } => {
-                debug!("Received task request: {} from {}", task.name, from.0);
+                debug!("Received task request: {} from {}", task.name, from);
 
                 // Execute the requested task
                 let task_result = self.execute_task(task.clone()).await?;
 
                 let response = AgentMessage::Response {
-                    id: MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: to,
                     to: from,
@@ -1257,7 +1244,7 @@ impl Agent for SecuritySpecialistAgent {
                 payload,
                 scope,
             } => {
-                debug!("Received broadcast: {} from {}", topic, from.0);
+                debug!("Received broadcast: {} from {}", topic, from);
 
                 // Handle broadcast messages based on topic
                 match topic.as_str() {
@@ -1285,7 +1272,7 @@ impl Agent for SecuritySpecialistAgent {
                 context,
                 timestamp,
             } => {
-                debug!("Received alert: {} from {}", message, from.0);
+                debug!("Received alert: {} from {}", message, from);
 
                 // Handle security alerts
                 if matches!(

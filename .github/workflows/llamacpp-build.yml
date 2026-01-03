@@ -1,18 +1,48 @@
 name: llama.cpp optional build
+
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'agentaskit-production/integrations/llama.cpp/**'
+      - 'integrations/llama.cpp/**'
+      - '.github/workflows/llamacpp-build.yml'
+  pull_request:
+    paths:
+      - 'integrations/llama.cpp/**'
+      - '.github/workflows/llamacpp-build.yml'
+
+env:
+  CMAKE_VERSION: '3.24.0'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Fetch llama.cpp
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cmake
         run: |
-          bash agentaskit-production/integrations/llama.cpp/fetch.sh
-      - name: Build (CPU)
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Verify cmake installation
         run: |
-          bash agentaskit-production/integrations/llama.cpp/build.sh
+          cmake --version
+          ninja --version
+
+      - name: Fetch llama.cpp and dependencies
+        working-directory: integrations/llama.cpp
+        run: |
+          bash fetch.sh
+
+      - name: Build llama.cpp with cmake
+        working-directory: integrations/llama.cpp
+        run: |
+          bash build.sh
+
+      - name: Verify build artifacts
+        working-directory: integrations/llama.cpp
+        run: |
+          ls -lh llama.cpp/build/
+          echo "Build completed successfully"

@@ -39,6 +39,7 @@ pub struct Message {
     pub message_type: MessageType,
     pub priority: Priority,
     pub payload: serde_json::Value,
+    pub metadata: HashMap<String, serde_json::Value>, // Additional message metadata
     pub correlation_id: Option<Uuid>, // For request-response pairing
     pub timestamp: chrono::DateTime<chrono::Utc>,
     pub timeout: Option<chrono::DateTime<chrono::Utc>>,
@@ -59,6 +60,7 @@ impl Message {
             message_type,
             priority,
             payload,
+            metadata: HashMap::new(),
             correlation_id: None,
             timestamp: chrono::Utc::now(),
             timeout: None,
@@ -310,15 +312,26 @@ impl MessageBroker {
 
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down message broker");
-        
+
         *self.running.write().await = false;
-        
+
         // Clear all channels
         self.agent_channels.write().await.clear();
         self.message_queue.write().await.clear();
-        
+
         info!("Message broker shutdown complete");
         Ok(())
+    }
+
+    /// Alias for send_message (used by protocol implementations)
+    pub async fn send(&self, message: Message) -> Result<()> {
+        self.send_message(message).await
+    }
+
+    /// Get pending messages from queue (used by protocol implementations)
+    pub async fn get_pending_messages(&self) -> Result<Vec<Message>> {
+        let queue = self.message_queue.read().await;
+        Ok(queue.clone())
     }
 }
 

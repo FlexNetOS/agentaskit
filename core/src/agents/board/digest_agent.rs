@@ -7,10 +7,11 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage};
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// DigestAgent - Knowledge synthesis and strategic intelligence
@@ -23,6 +24,7 @@ use agentaskit_shared::{
 /// - Identifying trends, patterns, and strategic opportunities
 /// - Supporting informed decision-making across the organization
 /// - Maintaining organizational knowledge and institutional memory
+#[derive(Debug)]
 pub struct DigestAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -984,9 +986,9 @@ struct AggregationMetrics {
 impl DigestAgent {
     pub fn new(config: DigestAgentConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("digest-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("digest-agent"),
             name: "DigestAgent - Strategic Intelligence".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "knowledge-synthesis".to_string(),
                 "intelligence-analysis".to_string(),
@@ -996,16 +998,19 @@ impl DigestAgent {
                 "information-aggregation".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 500 * 1024 * 1024, // 500MB
-                max_cpu: 3.0,
-                max_memory: 8 * 1024 * 1024 * 1024,   // 8GB
-                max_storage: 10 * 1024 * 1024 * 1024, // 10GB
+                cpu_cores: Some(3),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -1134,34 +1139,6 @@ impl Agent for DigestAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing DigestAgent");
-
-        // Initialize knowledge domains
-        let mut knowledge_synthesizer = self.knowledge_synthesizer.write().await;
-        self.initialize_knowledge_domains(&mut knowledge_synthesizer)
-            .await?;
-
-        // Initialize analysis frameworks
-        let mut intelligence_analyzer = self.intelligence_analyzer.write().await;
-        self.initialize_analysis_frameworks(&mut intelligence_analyzer)
-            .await?;
-
-        // Initialize report templates
-        let mut report_generator = self.report_generator.write().await;
-        self.initialize_report_templates(&mut report_generator)
-            .await?;
-
-        // Initialize data connectors
-        let mut info_aggregator = self.info_aggregator.write().await;
-        self.initialize_data_connectors(&mut info_aggregator)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("DigestAgent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting DigestAgent");
@@ -1227,7 +1204,7 @@ impl Agent for DigestAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1244,7 +1221,7 @@ impl Agent for DigestAgent {
         match task.name.as_str() {
             "generate-digest" => {
                 let digest_type = task
-                    .parameters
+                    .input_data
                     .get("type")
                     .and_then(|v| v.as_str())
                     .map(|s| match s {
@@ -1292,7 +1269,7 @@ impl Agent for DigestAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Digest processing failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1301,22 +1278,10 @@ impl Agent for DigestAgent {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let knowledge_synthesizer = self.knowledge_synthesizer.read().await;
+        let _state = self.state.read().await;
+        let _knowledge_synthesizer = self.knowledge_synthesizer.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                  // Placeholder
-            memory_usage: 1024 * 1024 * 1024, // 1GB placeholder
-            task_queue_size: 0,
-            completed_tasks: knowledge_synthesizer
-                .synthesis_metrics
-                .total_synthesis_sessions,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(300),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

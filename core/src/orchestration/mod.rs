@@ -16,6 +16,9 @@ use crate::agents::AgentManager;
 use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
+// Enhanced: Re-export unified types from shared with type-safe IDs
+pub use agentaskit_shared::{AgentId, Priority, Task, TaskId, TaskResult, TaskStatus};
+
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
     agent_manager: Arc<AgentManager>,
@@ -25,22 +28,7 @@ pub struct OrchestratorEngine {
     running: Arc<RwLock<bool>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Task {
-    pub id: Uuid,
-    pub name: String,
-    pub description: String,
-    pub task_type: TaskType,
-    pub priority: Priority,
-    pub required_capabilities: Vec<String>,
-    pub parameters: serde_json::Value,
-    pub dependencies: Vec<Uuid>,
-    pub deadline: Option<chrono::DateTime<chrono::Utc>>,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub status: TaskStatus,
-    pub assigned_agent: Option<Uuid>,
-}
-
+/// Task type classification (orchestration-specific)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TaskType {
     Analysis,
@@ -52,30 +40,10 @@ pub enum TaskType {
     Emergency,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Priority {
-    Emergency = 0,
-    Critical = 1,
-    High = 2,
-    Medium = 3,
-    Normal = 4,
-    Low = 5,
-    Maintenance = 6,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum TaskStatus {
-    Pending,
-    Assigned,
-    InProgress,
-    Completed,
-    Failed,
-    Cancelled,
-}
-
+/// Enhanced: Task queue with type-safe task IDs
 pub struct TaskQueue {
     pending_tasks: Vec<Task>,
-    active_tasks: HashMap<Uuid, Task>,
+    active_tasks: HashMap<TaskId, Task>,
     completed_tasks: Vec<Task>,
 }
 
@@ -99,7 +67,8 @@ impl TaskQueue {
         self.pending_tasks.pop()
     }
 
-    pub fn assign_task(&mut self, task_id: Uuid, agent_id: Uuid) -> Result<()> {
+    /// Enhanced: Assign task with type-safe IDs
+    pub fn assign_task(&mut self, task_id: TaskId, agent_id: AgentId) -> Result<()> {
         if let Some(mut task) = self
             .pending_tasks
             .iter()
@@ -115,7 +84,8 @@ impl TaskQueue {
         }
     }
 
-    pub fn complete_task(&mut self, task_id: Uuid, success: bool) -> Result<()> {
+    /// Enhanced: Complete task with type-safe ID
+    pub fn complete_task(&mut self, task_id: TaskId, success: bool) -> Result<()> {
         if let Some(mut task) = self.active_tasks.remove(&task_id) {
             task.status = if success {
                 TaskStatus::Completed
@@ -386,7 +356,8 @@ impl OrchestratorEngine {
         Ok(())
     }
 
-    pub async fn submit_task(&self, task: Task) -> Result<Uuid> {
+    /// Enhanced: Submit task with type-safe TaskId return
+    pub async fn submit_task(&self, task: Task) -> Result<TaskId> {
         info!("Submitting task: {} ({})", task.name, task.id);
 
         let task_id = task.id;
@@ -396,7 +367,8 @@ impl OrchestratorEngine {
         Ok(task_id)
     }
 
-    pub async fn get_task_status(&self, task_id: Uuid) -> Result<TaskStatus> {
+    /// Enhanced: Get task status with type-safe ID
+    pub async fn get_task_status(&self, task_id: TaskId) -> Result<TaskStatus> {
         let queue = self.task_queue.read().await;
 
         // Check pending tasks
@@ -446,14 +418,22 @@ pub fn create_task(
         id: Uuid::new_v4(),
         name,
         description,
-        task_type,
+        task_type: format!("{:?}", task_type),
         priority,
-        required_capabilities,
-        parameters,
-        dependencies: Vec::new(),
-        deadline: None,
-        created_at: chrono::Utc::now(),
         status: TaskStatus::Pending,
         assigned_agent: None,
+        dependencies: Vec::new(),
+        input_data: parameters,
+        output_data: None,
+        created_at: chrono::Utc::now(),
+        started_at: None,
+        completed_at: None,
+        deadline: None,
+        timeout: None,
+        retry_count: 0,
+        max_retries: 3,
+        error_message: None,
+        tags: HashMap::new(),
+        required_capabilities,
     }
 }

@@ -7,10 +7,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Testing Agent - Comprehensive automated testing and quality assurance
@@ -858,29 +858,36 @@ struct OrchestrationMetrics {
 impl TestingAgent {
     pub fn new(config: Option<TestingConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = AgentId::new();
+        let name = "Testing Agent".to_string();
+        let capabilities = vec![
+            "test-execution".to_string(),
+            "test-generation".to_string(),
+            "coverage-analysis".to_string(),
+            "performance-testing".to_string(),
+            "security-testing".to_string(),
+            "test-orchestration".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("testing-agent"),
-            name: "Testing Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "test-execution".to_string(),
-                "test-generation".to_string(),
-                "coverage-analysis".to_string(),
-                "performance-testing".to_string(),
-                "security-testing".to_string(),
-                "test-orchestration".to_string(),
-            ],
+            id,
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                min_storage: 2 * 1024 * 1024 * 1024, // 2GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024,   // 32GB
-                max_storage: 100 * 1024 * 1024 * 1024, // 100GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: vec!["test-framework".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -989,29 +996,7 @@ impl Agent for TestingAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Testing Agent");
-
-        // Initialize test runners
-        let mut test_engine = self.test_engine.write().await;
-        self.initialize_test_runners(&mut test_engine).await?;
-
-        // Initialize coverage tools
-        let mut coverage_analyzer = self.coverage_analyzer.write().await;
-        self.initialize_coverage_tools(&mut coverage_analyzer)
-            .await?;
-
-        // Initialize test generators
-        let mut test_generator = self.test_generator.write().await;
-        self.initialize_test_generators(&mut test_generator).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Testing Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Testing Agent");
 
         // Start continuous testing if enabled
@@ -1033,7 +1018,7 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Testing Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1042,13 +1027,16 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
-                Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                Ok(Some(crate::agents::AgentMessage::Response {
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1059,19 +1047,19 @@ impl Agent for TestingAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "run-tests" => {
                 let test_type = task
-                    .parameters
+                    .input_data
                     .get("test_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unit");
 
                 let environment = task
-                    .parameters
+                    .input_data
                     .get("environment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("local")
@@ -1126,7 +1114,7 @@ impl Agent for TestingAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Testing failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1134,24 +1122,18 @@ impl Agent for TestingAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
-        let test_engine = self.test_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: test_engine.execution_queue.len() as usize,
-            completed_tasks: test_engine.execution_metrics.successful_executions,
-            failed_tasks: test_engine.execution_metrics.failed_executions,
-            average_response_time: Duration::from_millis(2000),
-        })
+        match *state {
+            AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Testing Agent configuration");
         Ok(())
     }
@@ -1159,6 +1141,7 @@ impl Agent for TestingAgent {
     fn capabilities(&self) -> &[String] {
         &self.metadata.capabilities
     }
+
 }
 
 impl TestingAgent {

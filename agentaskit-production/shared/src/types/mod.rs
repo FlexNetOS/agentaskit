@@ -123,6 +123,12 @@ impl Display for AgentAsKitError {
 
 impl std::error::Error for AgentAsKitError {}
 
+impl From<anyhow::Error> for AgentAsKitError {
+    fn from(err: anyhow::Error) -> Self {
+        AgentAsKitError::Internal(err.to_string())
+    }
+}
+
 /// Result type for AgentAsKit operations
 pub type AgentAsKitResult<T> = Result<T, AgentAsKitError>;
 

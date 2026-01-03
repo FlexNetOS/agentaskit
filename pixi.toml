@@ -1,0 +1,78 @@
+# Pixi configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# All scripts use Nushell for cross-platform compatibility
+
+[project]
+name = "agentaskit"
+version = "0.1.0"
+description = "AgentAskit Production System"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+# Core development tools
+python = ">=3.11"
+rust = ">=1.70"
+
+# Nushell - cross-platform shell (our PRIMARY shell for all scripts)
+nushell = ">=0.90"
+
+# Bash for CI compatibility (minimal use, prefer nushell)
+bash = "*"
+
+# Build acceleration (faster rebuilds)
+sccache = "*"
+
+# Protobuf for gRPC (used by core/build.rs)
+protobuf = ">=3.0"
+
+# pkg-config for system library detection
+pkg-config = "*"
+
+# Data science / AI (for agent workflows)
+numpy = ">=1.24"
+pandas = ">=2.0"
+
+[tasks]
+# Bootstrap - single cross-platform script
+bootstrap = "nu tools/bootstrap.nu"
+
+# Core build tasks (simple commands work directly)
+build = "cargo build --release"
+build-dev = "cargo build"
+test = "cargo test --all"
+fmt = "cargo fmt --all"
+check = "cargo check --all"
+
+# Lint with nushell for cross-platform &&
+lint = { cmd = "nu -c 'cargo clippy --all-targets --all-features -- -D warnings; cargo fmt --check'" }
+
+# Documentation
+doc = "cargo doc --no-deps --document-private-items"
+
+# Clean all build artifacts (nushell for glob)
+clean = { cmd = "nu -c 'cargo clean; glob tools/external/*/target | each { rm -rf $in }'" }
+
+# Build with sccache
+build-cached = { cmd = "cargo build --release", env = { RUSTC_WRAPPER = "sccache" } }
+
+# Build external tools
+build-tools = { cmd = "nu -c 'for tool in [nushell coreutils rusty-tags] { cd $\"tools/external/($tool)\"; cargo build --release }'" }
+
+# Aider AI pair programming
+aider = "aider --config .aider.conf.yml"
+
+[feature.dev.dependencies]
+# Development-only dependencies
+pytest = "*"
+black = "*"
+ruff = "*"
+pre-commit = "*"
+
+[environments]
+default = { features = [], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+
+# No activation scripts - use nushell config instead
+# [activation]
+# scripts = [".envrc"]  # Removed - use nushell

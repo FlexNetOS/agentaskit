@@ -15,6 +15,7 @@ pub mod orchestration;
 pub mod communication;
 pub mod security;
 pub mod monitoring;
+pub mod ai;
 
 // Enhanced workflow processing module
 pub mod workflows;
@@ -23,6 +24,49 @@ pub mod workflows;
 pub mod verification;
 pub mod autonomous;
 pub mod self_improving;
+
+// Integrated orphaned modules (previously in core/src root but not declared)
+// Orchestration components
+pub mod orchestrator;      // Core orchestrator implementation (406 lines)
+pub mod executor;          // Task executor (253 lines)
+pub mod expansion;         // Agent scaling system (555 lines)
+pub mod engine;            // Core engine (183 lines)
+pub mod rust_workers;      // Worker pool (100 lines)
+pub mod task;              // Task definitions (30 lines)
+
+// Governance modules
+pub mod governance_integration;        // Full governance (319 lines)
+pub mod governance_integration_simple; // Lightweight governance (168 lines)
+#[cfg(test)]
+pub mod governance_stubs;              // Governance test stubs (158 lines)
+
+// Human oversight and autonomous operation
+pub mod hootl;             // Human-On-Outside-The-Loop (516 lines)
+pub mod evolution;         // Evolution logic for self-improvement (83 lines)
+
+// Communication and messaging
+pub mod broker;            // Message broker stub (19 lines)
+
+// Configuration
+pub mod production_config; // Production configuration (164 lines)
+pub mod build;             // Build information utilities
+
+// CLI and shell
+pub mod shell;             // Interactive shell interface (247 lines)
+
+// Effects and utilities
+pub mod effect;            // Effect system (12 lines)
+#[cfg(test)]
+pub mod noop;              // No-op implementations for testing (95 lines)
+
+// Agent base (re-exported through agents module)
+pub mod agent;             // Agent base implementation (94 lines)
+
+// Protocol implementations (CODE-004)
+pub mod protocol_impl;     // Concrete implementations of shared protocol traits
+
+// Dependency injection (INFRA-002)
+pub mod service_registry;  // Service registry / DI container
 
 // Re-export commonly used types for convenience
 pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
@@ -43,6 +87,9 @@ pub use workflows::{
 pub use verification::{NoaVerificationSystem, VerificationPass, VerificationStatus, TruthGate, EvidenceLedger};
 pub use autonomous::{AutonomousPipeline, PipelineConfig, MLEngine, BuildSystem};
 pub use self_improving::{SelfImprovingOrchestrator, OrchestratorConfig, LearningEngine, ImprovementTracker};
+
+// Export service registry / DI container
+pub use service_registry::{ServiceRegistry, ServiceRegistryBuilder, ServiceState, Service};
 
 /// Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

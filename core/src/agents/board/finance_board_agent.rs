@@ -8,9 +8,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Finance Board Agent - Financial oversight and resource management
@@ -22,6 +23,7 @@ use agentaskit_shared::{
 /// - Revenue and profitability analysis
 /// - Investment decision support
 /// - Financial reporting and governance
+#[derive(Debug)]
 pub struct FinanceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -804,9 +806,9 @@ struct RiskMetrics {
 impl FinanceBoardAgent {
     pub fn new(config: FinanceBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("finance-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("finance-board-agent"),
             name: "Finance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "financial-planning".to_string(),
                 "budget-management".to_string(),
@@ -816,16 +818,19 @@ impl FinanceBoardAgent {
                 "financial-reporting".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024,  // 512MB
-                min_storage: 100 * 1024 * 1024, // 100MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                max_storage: 5 * 1024 * 1024 * 1024, // 5GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -886,27 +891,6 @@ impl Agent for FinanceBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Finance Board Agent");
-
-        // Initialize financial planning models
-        let mut financial_planner = self.financial_planner.write().await;
-        self.initialize_forecasting_models(&mut financial_planner)
-            .await?;
-
-        // Initialize budget controls
-        let mut budget_manager = self.budget_manager.write().await;
-        self.initialize_budget_controls(&mut budget_manager).await?;
-
-        // Initialize risk models
-        let mut risk_assessor = self.risk_assessor.write().await;
-        self.initialize_risk_models(&mut risk_assessor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Finance Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Finance Board Agent");
@@ -972,7 +956,7 @@ impl Agent for FinanceBoardAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1011,7 +995,7 @@ impl Agent for FinanceBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Financial analysis failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -1023,17 +1007,7 @@ impl Agent for FinanceBoardAgent {
         let state = self.state.read().await;
         let budget_manager = self.budget_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 8.0,                  // Placeholder
-            memory_usage: 512 * 1024 * 1024, // 512MB placeholder
-            task_queue_size: 0,
-            completed_tasks: budget_manager.budgets.len() as u64,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(180),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

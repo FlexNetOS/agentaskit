@@ -8,9 +8,11 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Strategy Board Agent - Strategic planning and decision-making
@@ -22,6 +24,7 @@ use agentaskit_shared::{
 /// - Strategic decision support and recommendation
 /// - Risk assessment for strategic initiatives
 /// - Alignment of tactical decisions with strategic objectives
+#[derive(Debug)]
 pub struct StrategyBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -270,7 +273,7 @@ struct MarketAnalyzer {
 }
 
 /// Market intelligence
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct MarketIntelligence {
     pub market_segment: String,
     pub market_size: f64,
@@ -469,9 +472,9 @@ struct AlignmentAssessment {
 impl StrategyBoardAgent {
     pub fn new(config: StrategyBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("strategy-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("strategy-board-agent"),
             name: "Strategy Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "strategic-planning".to_string(),
                 "market-analysis".to_string(),
@@ -481,16 +484,19 @@ impl StrategyBoardAgent {
                 "stakeholder-alignment".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 50 * 1024 * 1024, // 50MB
-                max_cpu: 1.5,
-                max_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                max_storage: 2 * 1024 * 1024 * 1024, // 2GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(2048),
+                network_bandwidth_mbps: Some(50),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -676,24 +682,6 @@ impl Agent for StrategyBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Strategy Board Agent");
-
-        // Initialize planning methodologies
-        let mut planning_engine = self.planning_engine.write().await;
-        self.initialize_planning_methodologies(&mut planning_engine)
-            .await?;
-
-        // Initialize decision framework
-        let mut decision_framework = self.decision_framework.write().await;
-        self.initialize_decision_criteria(&mut decision_framework)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Strategy Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Strategy Board Agent");
@@ -745,7 +733,7 @@ impl Agent for StrategyBoardAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -762,7 +750,7 @@ impl Agent for StrategyBoardAgent {
         match task.name.as_str() {
             "create-strategic-plan" => {
                 let vision = task
-                    .parameters
+                    .input_data
                     .get("vision")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Default vision")
@@ -787,7 +775,7 @@ impl Agent for StrategyBoardAgent {
             }
             "conduct-market-analysis" => {
                 let market_segment = task
-                    .parameters
+                    .input_data
                     .get("market_segment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("general")
@@ -826,7 +814,7 @@ impl Agent for StrategyBoardAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Strategy planning failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),
@@ -835,20 +823,10 @@ impl Agent for StrategyBoardAgent {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let planning_engine = self.planning_engine.read().await;
+        let _state = self.state.read().await;
+        let _planning_engine = self.planning_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 5.0,                  // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: 0,
-            completed_tasks: planning_engine.metrics.total_plans,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(200),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

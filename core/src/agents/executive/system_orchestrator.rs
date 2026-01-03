@@ -7,10 +7,11 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage, AgentResult};
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// System Orchestrator Agent - Operational workflow management
@@ -148,7 +149,7 @@ struct WorkflowStep {
 }
 
 /// Workflow step types
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum WorkflowStepType {
     Task,            // Execute a specific task
     Decision,        // Make a decision based on input
@@ -403,7 +404,7 @@ enum DependencyNodeType {
 }
 
 /// Deadlock detection result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct DeadlockDetection {
     pub detection_time: Instant,
     pub deadlock_found: bool,
@@ -475,9 +476,9 @@ impl Default for PerformanceThresholds {
 impl SystemOrchestrator {
     pub fn new(config: OrchestratorConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("system-orchestrator"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
             capabilities: vec![
                 "workflow-orchestration".to_string(),
                 "task-scheduling".to_string(),
@@ -487,16 +488,19 @@ impl SystemOrchestrator {
                 "coordination".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 5 * 1024 * 1024,  // 5MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 500 * 1024 * 1024,     // 500MB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(500),
+                network_bandwidth_mbps: Some(100),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -706,29 +710,7 @@ impl Agent for SystemOrchestrator {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing System Orchestrator");
-
-        // Initialize workflow templates
-        let mut workflow_engine = self.workflow_engine.write().await;
-        self.initialize_workflow_templates(&mut workflow_engine)
-            .await?;
-
-        // Initialize scheduler with load balancer
-        let mut scheduler = self.scheduler.write().await;
-        scheduler.load_balancer.strategy = self.config.load_balancing_strategy.clone();
-
-        // Initialize performance thresholds
-        let mut performance_monitor = self.performance_monitor.write().await;
-        performance_monitor.thresholds = PerformanceThresholds::default();
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("System Orchestrator initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting System Orchestrator");
 
         // Start task scheduling loop
@@ -776,7 +758,7 @@ impl Agent for SystemOrchestrator {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping System Orchestrator");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -790,13 +772,13 @@ impl Agent for SystemOrchestrator {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -807,13 +789,13 @@ impl Agent for SystemOrchestrator {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "schedule-task" => {
                 let priority = task
-                    .parameters
+                    .input_data
                     .get("priority")
                     .and_then(|v| v.as_str())
                     .and_then(|s| match s {
@@ -840,13 +822,13 @@ impl Agent for SystemOrchestrator {
             }
             "execute-workflow" => {
                 let template_id = task
-                    .parameters
+                    .input_data
                     .get("template_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
 
                 let workflow_id = self
-                    .execute_workflow(template_id, task.parameters.clone())
+                    .execute_workflow(template_id, task.input_data.clone())
                     .await?;
 
                 Ok(TaskResult {
@@ -894,25 +876,15 @@ impl Agent for SystemOrchestrator {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let workflow_engine = self.workflow_engine.read().await;
-        let scheduler = self.scheduler.read().await;
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let _state = self.state.read().await;
+        let _workflow_engine = self.workflow_engine.read().await;
+        let _scheduler = self.scheduler.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                 // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: scheduler.task_queue.len(),
-            completed_tasks: workflow_engine.metrics.completed_workflows,
-            failed_tasks: workflow_engine.metrics.failed_workflows,
-            average_response_time: workflow_engine.metrics.avg_execution_time,
-        })
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating System Orchestrator configuration");
 
         // TODO: Parse and update configuration

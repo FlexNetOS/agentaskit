@@ -3,11 +3,143 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-/// Common agent identifier type used across all AgentAsKit systems
-pub type AgentId = Uuid;
+/// Enhanced: Common agent identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct AgentId(pub Uuid);
 
-/// Common task identifier type
-pub type TaskId = Uuid;
+impl AgentId {
+    /// Create a new random AgentId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a deterministic AgentId from a name string
+    /// Uses UUID v5 (name-based) for consistent ID generation
+    pub fn from_name(name: &str) -> Self {
+        // Use a namespace UUID for agent names
+        const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
+            0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
+            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
+        ]);
+        Self(Uuid::new_v5(&AGENT_NAMESPACE, name.as_bytes()))
+    }
+
+    /// Create an AgentId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for AgentId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for AgentId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Namespace UUID for AgentAsKit agent IDs (deterministic generation)
+pub const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
+    0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
+    0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
+]);
+
+/// Create a deterministic AgentId from a string name
+/// Uses UUID v5 (SHA-1 based) for consistent IDs across runs
+#[inline]
+pub fn agent_id_from_name(name: &str) -> AgentId {
+    AgentId::from_name(name)
+/// Enhanced: Common task identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct TaskId(pub Uuid);
+
+impl TaskId {
+    /// Create a new random TaskId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a TaskId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for TaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for TaskId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Enhanced: Message identifier with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Enhanced: Common message identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// Universal agent status enumeration
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -18,13 +150,15 @@ pub enum AgentStatus {
     Busy,
     Error,
     Maintenance,
+    Terminating,
     Shutdown,
 }
 
-/// Universal task status enumeration
+/// Universal task status enumeration (unified from core and shared)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TaskStatus {
     Pending,
+    Assigned,     // Added from core/orchestration
     InProgress,
     Completed,
     Failed,
@@ -32,14 +166,17 @@ pub enum TaskStatus {
     Timeout,
 }
 
-/// Priority levels used across all systems
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+/// Priority levels used across all systems (unified from core and shared)
+/// Lower numeric values = higher priority
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Priority {
-    Low = 1,
-    Normal = 2,
-    High = 3,
-    Critical = 4,
-    Emergency = 5,
+    Emergency = 0,    // Highest priority - from core/orchestration ordering
+    Critical = 1,
+    High = 2,
+    Medium = 3,       // Added from core/orchestration
+    Normal = 4,
+    Low = 5,
+    Maintenance = 6,  // Added from core/orchestration - lowest priority
 }
 
 /// Health status for NOA monitoring integration
@@ -79,7 +216,7 @@ pub struct ResourceRequirements {
     pub special_capabilities: Vec<String>,
 }
 
-/// Common task structure used across FlexNetOS and NOA
+/// Common task structure used across FlexNetOS and NOA (unified from core and shared)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
     pub id: TaskId,
@@ -95,12 +232,25 @@ pub struct Task {
     pub created_at: DateTime<Utc>,
     pub started_at: Option<DateTime<Utc>>,
     pub completed_at: Option<DateTime<Utc>>,
+    pub deadline: Option<DateTime<Utc>>,  // Added from core/orchestration
     pub timeout: Option<DateTime<Utc>>,
     pub retry_count: u32,
     pub max_retries: u32,
     pub error_message: Option<String>,
     pub tags: HashMap<String, String>,
     pub required_capabilities: Vec<String>,
+}
+
+impl Task {
+    /// Get task parameters (compatibility alias for input_data)
+    pub fn parameters(&self) -> &serde_json::Value {
+        &self.input_data
+    }
+
+    /// Set task parameters (compatibility alias for input_data)
+    pub fn set_parameters(&mut self, params: serde_json::Value) {
+        self.input_data = params;
+    }
 }
 
 /// Task execution result
@@ -162,15 +312,16 @@ pub struct ScalingPolicy {
 
 /// Message structure for inter-agent communication
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Agent message with type-safe IDs
 pub struct AgentMessage {
-    pub message_id: Uuid,
+    pub message_id: MessageId,
     pub from_agent: AgentId,
     pub to_agent: AgentId,
     pub message_type: String,
     pub priority: Priority,
     pub timestamp: DateTime<Utc>,
     pub payload: serde_json::Value,
-    pub correlation_id: Option<Uuid>,
+    pub correlation_id: Option<TaskId>,
     pub reply_to: Option<AgentId>,
     pub ttl: Option<DateTime<Utc>>,
 }

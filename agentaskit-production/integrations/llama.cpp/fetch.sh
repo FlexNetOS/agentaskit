@@ -1,13 +1,46 @@
-#!/usr/bin/env bash
-set -euo pipefail
-root_dir="$(cd "$(dirname "$0")" && pwd)"
-cd "$root_dir"
-if [ ! -d llama.cpp ]; then
-  git clone https://github.com/ggerganov/llama.cpp.git
+#!/bin/bash
+# Fetch and build llama.cpp
+#
+# SECURITY NOTE: This script fetches llama.cpp from an external repository
+# using a mutable ref (LLAMA_VERSION defaults to 'master'). For production
+# deployments, it is strongly recommended to:
+# 1. Pin to a specific trusted commit or tag instead of a branch
+# 2. Add integrity or signature verification
+# 3. Consider using a git submodule with a pinned commit
+# This reduces supply chain risk from compromised upstream repositories.
+set -e
+
+LLAMA_VERSION="${LLAMA_VERSION:-master}"
+VENDOR_DIR="$(dirname "$0")/vendor"
+
+echo "=== Fetching llama.cpp ==="
+
+if [ -d "$VENDOR_DIR" ] && [ -d "$VENDOR_DIR/.git" ]; then
+    echo "Updating existing llama.cpp..."
+    cd "$VENDOR_DIR"
+    git fetch origin
+    git checkout "$LLAMA_VERSION"
+    if ! git pull origin "$LLAMA_VERSION"; then
+        echo "Warning: 'git pull origin \"$LLAMA_VERSION\"' failed. Continuing with the currently checked-out revision." >&2
+    fi
+else
+    echo "Cloning llama.cpp..."
+    git clone https://github.com/ggerganov/llama.cpp.git "$VENDOR_DIR"
+    cd "$VENDOR_DIR"
+    git checkout "$LLAMA_VERSION"
 fi
-cd llama.cpp
-# Pin to a known good commit (update as needed)
-COMMIT=${LLAMACPP_COMMIT:-"master"}
-git fetch --all
-git checkout "$COMMIT"
-echo "Checked out llama.cpp @ $(git rev-parse --short HEAD)"
+
+echo "=== Building llama.cpp ==="
+
+# Detect CUDA
+if command -v nvcc &> /dev/null; then
+    echo "CUDA detected, building with GPU support..."
+    make LLAMA_CUDA=1 -j$(nproc)
+else
+    echo "Building CPU-only..."
+    make -j$(nproc)
+fi
+
+echo "=== Build Complete ==="
+echo "Binary: $VENDOR_DIR/main"
+ls -la "$VENDOR_DIR/main" 2>/dev/null || echo "Note: main binary may have different name"
