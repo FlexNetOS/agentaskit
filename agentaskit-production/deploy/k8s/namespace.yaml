@@ -1,0 +1,14 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Kubernetes Namespace Configuration
+# REF: DEP-K8S
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: system
+    environment: production
+  annotations:
+    description: "AgentAskit Production Environment"

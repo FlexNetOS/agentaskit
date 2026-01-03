@@ -1,0 +1,303 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Release Pipeline with Gates
+# REF: CD-GATES - Release pipeline & gates
+# REF: REL-VERSIONING - Versioning & release notes
+# ─────────────────────────────────────────────────────────────────────────────
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a pre-release?'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 1: Verification Gate
+  # ─────────────────────────────────────────────────────────────────────────────
+  verification-gate:
+    name: Verification Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      verified: ${{ steps.verify.outputs.verified }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Run verification tests
+        id: verify
+        run: |
+          mkdir -p TEST/release
+
+          # Run all tests
+          if cargo test --all-features 2>&1 | tee TEST/release/verification.log; then
+            echo "verified=true" >> $GITHUB_OUTPUT
+            echo "✅ Verification passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "verified=false" >> $GITHUB_OUTPUT
+            echo "❌ Verification failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Upload verification logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-logs
+          path: TEST/release/
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 2: Security Gate
+  # ─────────────────────────────────────────────────────────────────────────────
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: verification-gate
+    outputs:
+      secure: ${{ steps.security.outputs.secure }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Security audit
+        id: security
+        run: |
+          mkdir -p TEST/release
+
+          if cargo audit --deny warnings 2>&1 | tee TEST/release/security-audit.log; then
+            echo "secure=true" >> $GITHUB_OUTPUT
+            echo "✅ Security audit passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "secure=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Security vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+            # Allow release with warnings, but not critical
+            cargo audit --deny critical
+          fi
+
+      - name: Upload security logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-logs
+          path: TEST/release/
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate 3: Build Release Artifacts
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-release:
+    name: Build Release (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    needs: [verification-gate, security-gate]
+    timeout-minutes: 45
+
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: agentaskit-linux-amd64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact: agentaskit-darwin-amd64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact: agentaskit-darwin-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: agentaskit-windows-amd64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package artifacts (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p artifacts
+          cp target/${{ matrix.target }}/release/agentaskit* artifacts/ 2>/dev/null || true
+          tar -czvf ${{ matrix.artifact }}.tar.gz -C artifacts .
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts
+          Copy-Item target/${{ matrix.target }}/release/*.exe artifacts/ -ErrorAction SilentlyContinue
+          Compress-Archive -Path artifacts/* -DestinationPath ${{ matrix.artifact }}.zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            *.tar.gz
+            *.zip
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Generate Changelog
+  # ─────────────────────────────────────────────────────────────────────────────
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: build-release
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get version from tag or input
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+
+          echo "Generating changelog for v${VERSION}"
+
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Generate changelog
+          echo "## What's Changed in v${VERSION}" > changelog.md
+          echo "" >> changelog.md
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "### Commits since ${PREV_TAG}" >> changelog.md
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" >> changelog.md
+          else
+            echo "### All commits" >> changelog.md
+            git log --pretty=format:"- %s (%h)" -20 >> changelog.md
+          fi
+
+          echo "" >> changelog.md
+          echo "" >> changelog.md
+          echo "### Contributors" >> changelog.md
+          git log ${PREV_TAG:+$PREV_TAG..HEAD} --pretty=format:"%an" | sort -u | while read name; do
+            echo "- ${name}" >> changelog.md
+          done
+
+          cat changelog.md
+
+          # Set output
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: changelog.md
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Create Release
+  # ─────────────────────────────────────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-release, generate-changelog]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Get version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          body: ${{ needs.generate-changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          files: |
+            release-artifacts/**/*.tar.gz
+            release-artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Post-Release Validation
+  # ─────────────────────────────────────────────────────────────────────────────
+  post-release:
+    name: Post-Release Validation
+    runs-on: ubuntu-latest
+    needs: create-release
+
+    steps:
+      - name: Verify release
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Release created successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Verify artifacts are downloadable" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test installation on target platforms" >> $GITHUB_STEP_SUMMARY
+          echo "3. Update documentation if needed" >> $GITHUB_STEP_SUMMARY
+          echo "4. Announce release to stakeholders" >> $GITHUB_STEP_SUMMARY
