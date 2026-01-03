@@ -13,7 +13,6 @@ pub mod sop_parser;
 
 // Re-export key types for convenience
 pub use ai_sop_interface::{AISopAnalyzer, ContentAnalysis, ProcedureValidation};
-pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
 pub use methodology_engine::{MethodologyEngine, QualityGates, Scores};
 pub use sop_parser::{SOPDocument, SOPProcedure, SOPStep};
 
@@ -28,8 +27,9 @@ use tokio::fs;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
-use agentaskit_shared::{AgentCommunicationProtocol, TaskOrchestrationProtocol};
+use crate::agents::AgentMessage;
+use crate::orchestration::{Task, TaskStatus};
+use agentaskit_shared::{AgentCommunicationProtocol, AgentId, TaskOrchestrationProtocol};
 
 /// Enhanced chat request structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -552,13 +552,12 @@ impl EnhancedWorkflowProcessor {
     ) -> Result<Vec<Deliverable>> {
         let mut deliverables = Vec::new();
 
-        // Initialize location manager for workspace detection
-        let location_mgr = location_manager::LocationManager::new()?;
+        // Determine workspace root (current directory or from environment)
+        let workspace_root = std::env::current_dir()?;
 
         // Initialize deliverable manager
         let deliverable_mgr = deliverable_manager::DeliverableManager::new(
-            location_mgr.clone(),
-            "agentaskit-production/archive".to_string(),
+            workspace_root.join("agentaskit-production"),
         );
 
         // Generate deliverables based on task type and requirements
@@ -566,33 +565,23 @@ impl EnhancedWorkflowProcessor {
             // Create deliverable specification using deliverable_manager
             let spec = deliverable_manager::DeliverableSpec {
                 name: self.generate_deliverable_name(output_req).await?,
+                description: output_req.to_string(),
                 deliverable_type: self.determine_deliverable_type(output_req).await?,
+                priority: task_subject.priority.clone(),
                 category: self.determine_category_from_requirement(output_req).await?,
-                priority: self
-                    .convert_to_deliverable_priority(&task_subject.priority)
-                    .await?,
-                expected_size: None, // Will be determined by manager
-                format_requirements: vec![],
             };
 
             // Plan deliverable with location resolution
-            let planned = deliverable_mgr.plan(&spec).await?;
+            let planned = deliverable_mgr.plan(&spec)?;
 
             // Convert to Deliverable structure
             let deliverable = Deliverable {
                 id: Uuid::new_v4(),
                 name: planned.spec.name.clone(),
-                description: output_req.to_string(),
+                description: planned.spec.description.clone(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
-                target_location: self
-                    .convert_to_target_location(&planned.primary_location)
-                    .await?,
-                file_specifications: vec![format!(
-                    "Format: {:?}, Max size: {:?}, Category: {}",
-                    planned.spec.format_requirements,
-                    planned.spec.expected_size,
-                    planned.spec.category
-                )],
+                target_location: planned.target_location.clone(),
+                file_specifications: planned.file_specifications.clone(),
                 quality_requirements: self
                     .generate_quality_requirements(&task_subject.develop.request_type)
                     .await?,
@@ -607,44 +596,6 @@ impl EnhancedWorkflowProcessor {
         deliverables.extend(self.create_standard_deliverables(task_subject).await?);
 
         Ok(deliverables)
-    }
-
-    /// Convert location_manager::ResolvedLocation to workflows::TargetLocation
-    async fn convert_to_target_location(
-        &self,
-        resolved: &location_manager::ResolvedLocation,
-    ) -> Result<TargetLocation> {
-        Ok(TargetLocation {
-            location_type: self.convert_location_type(&resolved.location_type).await?,
-            base_path: resolved.workspace_root.clone(),
-            relative_path: resolved.relative_path.clone(),
-            filename_pattern: "*.rs".to_string(), // Default pattern, can be customized
-            organization_rules: self
-                .get_organization_rules_for_location(&resolved.location_type)
-                .await?,
-            backup_locations: resolved
-                .backup_paths
-                .iter()
-                .map(|p| p.to_string_lossy().to_string())
-                .collect(),
-        })
-    }
-
-    /// Convert location_manager::LocationType to workflows::LocationType
-    async fn convert_location_type(
-        &self,
-        loc_type: &location_manager::LocationType,
-    ) -> Result<LocationType> {
-        use location_manager::LocationType as LM;
-        Ok(match loc_type {
-            LM::ProductionDirectory => LocationType::ProductionDirectory,
-            LM::DocsSubdirectory => LocationType::DocsSubdirectory,
-            LM::TestDirectory => LocationType::TestDirectory,
-            LM::ConfigDirectory => LocationType::ConfigDirectory,
-            LM::ScriptsDirectory => LocationType::ScriptsDirectory,
-            LM::ArchiveDirectory => LocationType::ArchiveDirectory,
-            LM::TempDirectory => LocationType::TempDirectory,
-        })
     }
 
     /// Determine category from output requirement string
@@ -686,21 +637,20 @@ impl EnhancedWorkflowProcessor {
     /// Get organization rules for specific location type
     async fn get_organization_rules_for_location(
         &self,
-        loc_type: &location_manager::LocationType,
+        loc_type: &LocationType,
     ) -> Result<Vec<String>> {
-        use location_manager::LocationType as LM;
         Ok(match loc_type {
-            LM::ProductionDirectory => vec![
+            LocationType::ProductionDirectory => vec![
                 "Follow Rust project structure".to_string(),
                 "Place source files in src/".to_string(),
                 "Place tests in tests/".to_string(),
             ],
-            LM::DocsSubdirectory => vec![
+            LocationType::DocsSubdirectory => vec![
                 "Use markdown format".to_string(),
                 "Include table of contents".to_string(),
                 "Follow documentation template".to_string(),
             ],
-            LM::TestDirectory => vec![
+            LocationType::TestDirectory => vec![
                 "Group by module".to_string(),
                 "Include integration tests".to_string(),
                 "Add benchmarks in benches/".to_string(),
@@ -894,5 +844,3 @@ pub struct SOTAnalysis {
     pub request_alignment: f32, // 0.0 to 1.0 score
 }
 
-// Re-export for external use (AgentMessage already imported at module level)
-pub use crate::agents::{AgentId, Task, TaskStatus};
