@@ -77,3 +77,109 @@ def "env info" [] {
     print $"CARGO_HOME:      ($env.CARGO_HOME)"
     print $"Tools bin:       ($env.AGENTASKIT_ROOT)/tools/bin"
 }
+
+# ==============================================================================
+# AI Integration (aichat + claude-flow)
+# ==============================================================================
+
+# aichat configuration
+$env.AICHAT_CONFIG_DIR = ($env.AGENTASKIT_ROOT | path join "configs" "aichat")
+
+# AI completion using aichat CLI
+def ai [prompt: string, --model (-m): string = ""] {
+    let aichat = ($env.AGENTASKIT_ROOT | path join "integrations" "aichat" "target" "release" "aichat")
+    if not ($aichat | path exists) {
+        # Try system aichat
+        if (which aichat | is-empty) {
+            print "aichat not found. Build with: cd integrations/aichat && cargo build --release"
+            return
+        }
+        if ($model | is-empty) {
+            ^aichat $prompt
+        } else {
+            ^aichat -m $model $prompt
+        }
+    } else {
+        if ($model | is-empty) {
+            ^$aichat $prompt
+        } else {
+            ^$aichat -m $model $prompt
+        }
+    }
+}
+
+# List available AI providers/models
+def "ai providers" [] {
+    let aichat = ($env.AGENTASKIT_ROOT | path join "integrations" "aichat" "target" "release" "aichat")
+    if ($aichat | path exists) {
+        ^$aichat --list-models
+    } else if not (which aichat | is-empty) {
+        ^aichat --list-models
+    } else {
+        print "aichat not found"
+    }
+}
+
+# claude-flow orchestration
+def orchestrate [task: string, --agent (-a): string = "default"] {
+    let cf = ($env.AGENTASKIT_ROOT | path join "integrations" "claude-flow" "bin" "claude-flow.js")
+    if not ($cf | path exists) {
+        print "claude-flow not found at integrations/claude-flow"
+        return
+    }
+    ^node $cf run --agent $agent $task
+}
+
+# Start claude-flow swarm
+def "swarm start" [name: string = "default"] {
+    let cf = ($env.AGENTASKIT_ROOT | path join "integrations" "claude-flow" "bin" "claude-flow-swarm")
+    if not ($cf | path exists) {
+        print "claude-flow swarm not found"
+        return
+    }
+    ^$cf start $name
+}
+
+# Agent gateway control
+def "gateway start" [--config (-c): string = "integrated"] {
+    let config_path = ($env.AGENTASKIT_ROOT | path join "configs" "agentgateway" $"($config).yaml")
+    if not ($config_path | path exists) {
+        print $"Config not found: ($config_path)"
+        return
+    }
+    print $"Starting gateway with config: ($config_path)"
+    # Gateway would be started here - placeholder for actual implementation
+}
+
+# Local inference helper
+def "llama run" [prompt: string, --model (-m): string = "default.gguf"] {
+    let llama = ($env.AGENTASKIT_ROOT | path join "integrations" "llama.cpp" "main")
+    let model_path = ($env.AGENTASKIT_ROOT | path join "models" $model)
+    if not ($llama | path exists) {
+        print "llama.cpp not built. Build with: cd integrations/llama.cpp && make"
+        return
+    }
+    if not ($model_path | path exists) {
+        print $"Model not found: ($model_path)"
+        return
+    }
+    ^$llama -m $model_path -p $prompt
+}
+
+# aichat nushell keybinding integration (Alt+E for inline AI)
+def _aichat_nushell [] {
+    let _prev = (commandline)
+    if ($_prev != "") {
+        print '⌛'
+        commandline edit -r (ai $_prev)
+    }
+}
+
+# Add keybinding for aichat integration (uncomment to enable)
+# $env.config.keybindings = ($env.config.keybindings | append {
+#     name: aichat_integration
+#     modifier: alt
+#     keycode: char_e
+#     mode: [emacs, vi_insert]
+#     event: [{ send: executehostcommand, cmd: "_aichat_nushell" }]
+# })
