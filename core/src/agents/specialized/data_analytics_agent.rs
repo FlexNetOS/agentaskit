@@ -2,7 +2,7 @@
 // Provides comprehensive data processing, analytics, visualization, reporting,
 // and business intelligence capabilities for data-driven insights
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -19,7 +19,8 @@ use uuid::Uuid;
 pub struct DataAnalyticsAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<AgentCapability>,
+    capabilities: Vec<String>,
+    metadata: AgentMetadata,
     config: DataAnalyticsConfig,
     data_processor: Arc<DataProcessor>,
     analytics_engine: Arc<AnalyticsEngine>,
@@ -673,19 +674,36 @@ impl DataAnalyticsAgent {
         let stream_processor = Arc::new(StreamProcessor::new(config.streaming_config.clone()));
         let query_optimizer = Arc::new(QueryOptimizer::new(config.performance_config.clone()));
 
+        let capabilities = vec![
+            "data-processing".to_string(),
+            "statistical-analysis".to_string(),
+            "machine-learning".to_string(),
+            "data-visualization".to_string(),
+            "report-generation".to_string(),
+            "stream-processing".to_string(),
+            "data-warehouse".to_string(),
+            "query-optimization".to_string(),
+        ];
+
+        let metadata = AgentMetadata {
+            id,
+            name: "DataAnalytics".to_string(),
+            agent_type: "Specialized".to_string(),
+            version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            resource_requirements: ResourceRequirements::default(),
+            tags: HashMap::new(),
+        };
+
         Self {
             id,
             name: "DataAnalytics".to_string(),
-            capabilities: vec![
-                AgentCapability::DataProcessing,
-                AgentCapability::StatisticalAnalysis,
-                AgentCapability::MachineLearning,
-                AgentCapability::DataVisualization,
-                AgentCapability::ReportGeneration,
-                AgentCapability::StreamProcessing,
-                AgentCapability::DataWarehouse,
-                AgentCapability::QueryOptimization,
-            ],
+            capabilities,
+            metadata,
             config,
             data_processor,
             analytics_engine,
@@ -968,14 +986,7 @@ impl DataAnalyticsAgent {
 #[async_trait]
 impl Agent for DataAnalyticsAgent {
     fn metadata(&self) -> &AgentMetadata {
-        &AgentMetadata {
-            id: self.id,
-            name: self.name.clone(),
-            capabilities: self.capabilities().to_vec(),
-            version: "1.0.0".to_string(),
-            description: "Data Analytics Agent for comprehensive data processing and analysis"
-                .to_string(),
-        }
+        &self.metadata
     }
 
     async fn state(&self) -> AgentStatus {
@@ -987,45 +998,16 @@ impl Agent for DataAnalyticsAgent {
         }
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        info!("Initializing Data Analytics Agent {}", self.name);
-
-        // Initialize all analytics components
-        self.data_processor.initialize().await?;
-        self.analytics_engine.initialize().await?;
-        self.ml_pipeline.initialize().await?;
-        self.visualization_engine.initialize().await?;
-        self.reporting_engine.initialize().await?;
-        self.stream_processor.initialize().await?;
-        self.query_optimizer.initialize().await?;
-
-        info!(
-            "Data Analytics Agent {} initialized successfully",
-            self.name
-        );
-        Ok(())
-    }
-
     fn capabilities(&self) -> &[String] {
-        static CAPABILITIES: &[String] = &[
-            "DataProcessing".to_string(),
-            "StatisticalAnalysis".to_string(),
-            "MachineLearning".to_string(),
-            "DataVisualization".to_string(),
-            "ReportGeneration".to_string(),
-            "StreamProcessing".to_string(),
-            "DataWarehouse".to_string(),
-            "QueryOptimization".to_string(),
-        ];
-        CAPABILITIES
+        &self.capabilities
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state().await;
         let task_queue_size = self.tasks.lock().await.len() as usize;
 
         Ok(HealthStatus {
-            agent_id: self.metadata.id,
+            agent_id: self.id,
             state,
             last_heartbeat: chrono::Utc::now(),
             cpu_usage: 0.0,  // Would be measured in real implementation
@@ -1037,7 +1019,7 @@ impl Agent for DataAnalyticsAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         info!("Updating Data Analytics Agent configuration");
         // Would parse and apply configuration updates
         Ok(())
@@ -1048,7 +1030,7 @@ impl Agent for DataAnalyticsAgent {
 
         let mut active = self.active.lock().await;
         if *active {
-            return Err(AgentError::AlreadyRunning);
+            return Err(anyhow::anyhow!("Agent already running"));
         }
 
         // Initialize all analytics components
@@ -1073,7 +1055,7 @@ impl Agent for DataAnalyticsAgent {
 
         let mut active = self.active.lock().await;
         if !*active {
-            return Err(AgentError::NotRunning);
+            return Err(anyhow::anyhow!("Agent not running"));
         }
 
         // Stop all analytics components
@@ -1090,19 +1072,19 @@ impl Agent for DataAnalyticsAgent {
         Ok(())
     }
 
-    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskStatus> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         debug!("Executing task: {} ({})", task.name, task.task_type);
 
         // Store task
         self.tasks.lock().await.insert(task.id, task.clone());
 
-        let result = match task.task_type.as_str() {
+        let status = match task.task_type.as_str() {
             "data_processing" => {
                 // Parse dataset from parameters
                 let dataset_data = task
                     .parameters
                     .get("dataset")
-                    .ok_or(AgentError::MissingParameter("dataset".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset"))?;
 
                 let dataset = DataSet::default(); // Would deserialize from actual data
 
@@ -1118,11 +1100,11 @@ impl Agent for DataAnalyticsAgent {
                 let dataset_id = task
                     .parameters
                     .get("dataset_id")
-                    .ok_or(AgentError::MissingParameter("dataset_id".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset_id"))?;
                 let analysis_type_str = task
                     .parameters
                     .get("analysis_type")
-                    .ok_or(AgentError::MissingParameter("analysis_type".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: analysis_type"))?;
 
                 let analysis_type = AnalysisType::Descriptive; // Would parse from string
 
@@ -1139,7 +1121,7 @@ impl Agent for DataAnalyticsAgent {
                 let training_data = task
                     .parameters
                     .get("training_request")
-                    .ok_or(AgentError::MissingParameter("training_request".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: training_request"))?;
 
                 let training_request = ModelTrainingRequest::default(); // Would deserialize
 
@@ -1153,9 +1135,10 @@ impl Agent for DataAnalyticsAgent {
             }
             "visualization" => {
                 // Parse visualization request from parameters
-                let viz_data = task.parameters.get("visualization_request").ok_or(
-                    AgentError::MissingParameter("visualization_request".to_string()),
-                )?;
+                let viz_data = task
+                    .parameters
+                    .get("visualization_request")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: visualization_request"))?;
 
                 let viz_request = VisualizationRequest::default(); // Would deserialize
 
@@ -1172,7 +1155,7 @@ impl Agent for DataAnalyticsAgent {
                 let report_data = task
                     .parameters
                     .get("report_request")
-                    .ok_or(AgentError::MissingParameter("report_request".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: report_request"))?;
 
                 let report_request = ReportRequest::default(); // Would deserialize
 
@@ -1189,7 +1172,7 @@ impl Agent for DataAnalyticsAgent {
                 let query_data = task
                     .parameters
                     .get("query")
-                    .ok_or(AgentError::MissingParameter("query".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: query"))?;
 
                 let query = DataQuery::default(); // Would deserialize
 
@@ -1206,7 +1189,7 @@ impl Agent for DataAnalyticsAgent {
                 let stream_data = task
                     .parameters
                     .get("stream_config")
-                    .ok_or(AgentError::MissingParameter("stream_config".to_string()))?;
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: stream_config"))?;
 
                 let stream_config = StreamConfig::default(); // Would deserialize
 
@@ -1231,8 +1214,15 @@ impl Agent for DataAnalyticsAgent {
             }
         };
 
-        debug!("Task {} completed with status: {:?}", task.name, result);
-        Ok(result)
+        debug!("Task {} completed with status: {:?}", task.name, status);
+
+        Ok(TaskResult {
+            task_id: task.id,
+            status,
+            output_data: None,
+            error_message: None,
+            completed_at: chrono::Utc::now(),
+        })
     }
 
     async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {

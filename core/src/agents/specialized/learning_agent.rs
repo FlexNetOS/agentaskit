@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -23,6 +23,9 @@ use agentaskit_shared::{
 /// - Model deployment and serving
 /// - Continuous learning and adaptation
 pub struct LearningAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -1110,20 +1113,24 @@ struct EngineeringMetrics {
 impl LearningAgent {
     pub fn new(config: Option<LearningConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Learning Agent".to_string();
+        let capabilities = vec![
+            "model-training".to_string(),
+            "knowledge-extraction".to_string(),
+            "feature-engineering".to_string(),
+            "model-deployment".to_string(),
+            "continuous-learning".to_string(),
+            "pattern-recognition".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("learning-agent"),
-            name: "Learning Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "model-training".to_string(),
-                "knowledge-extraction".to_string(),
-                "feature-engineering".to_string(),
-                "model-deployment".to_string(),
-                "continuous-learning".to_string(),
-                "pattern-recognition".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 min_cpu: 4.0,
                 min_memory: 8 * 1024 * 1024 * 1024,    // 8GB
@@ -1132,10 +1139,15 @@ impl LearningAgent {
                 max_memory: 128 * 1024 * 1024 * 1024, // 128GB
                 max_storage: 10 * 1024 * 1024 * 1024 * 1024, // 10TB
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [("learning".to_string(), "learning".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1234,7 +1246,7 @@ impl Agent for LearningAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Initializing Learning Agent");
 
         // Initialize model management
@@ -1262,7 +1274,7 @@ impl Agent for LearningAgent {
         Ok(())
     }
 
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Learning Agent");
 
         // Start continuous learning
@@ -1282,7 +1294,7 @@ impl Agent for LearningAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Learning Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1291,13 +1303,13 @@ impl Agent for LearningAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1308,7 +1320,7 @@ impl Agent for LearningAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1401,7 +1413,7 @@ impl Agent for LearningAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let model_manager = self.model_manager.read().await;
 
@@ -1419,13 +1431,13 @@ impl Agent for LearningAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Learning Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.metadata.capabilitiesself.capabilities
     }
 }
 
