@@ -14,7 +14,7 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 python = ">=3.11"
 rust = ">=1.70"
 
-# Nushell - cross-platform shell (the ONLY shell we use)
+# Nushell - cross-platform shell (our PRIMARY shell for all scripts)
 nushell = ">=0.90"
 
 # Bash for CI compatibility (minimal use, prefer nushell)
