@@ -20,6 +20,9 @@ serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 
+# AI/LLM Integration
+airust.workspace = true
+
 anyhow.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
