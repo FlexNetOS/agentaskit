@@ -12,6 +12,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// Operations Board Agent - Operational excellence and process management
 /// 
 /// The Operations Board Agent is responsible for:
@@ -961,10 +963,14 @@ struct ImprovementMetrics {
 
 impl OperationsBoardAgent {
     pub fn new(config: OperationsBoardConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("operations-board-agent"),
             name: "Operations Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "Board".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "operations-management".to_string(),
                 "process-optimization".to_string(),
@@ -973,17 +979,19 @@ impl OperationsBoardAgent {
                 "incident-management".to_string(),
                 "change-management".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.4,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 100 * 1024 * 1024,  // 100MB
-                max_cpu: 2.0,
-                max_memory: 8 * 1024 * 1024 * 1024, // 8GB
-                max_storage: 5 * 1024 * 1024 * 1024, // 5GB
+                cpu_cores: Some(2),
+                memory_mb: Some(8192), // 8GB
+                storage_mb: Some(5120), // 5GB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags,
         };
 
         Self {

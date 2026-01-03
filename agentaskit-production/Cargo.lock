@@ -50,6 +50,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "agentaskit-services"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "agentaskit-shared"
 version = "0.1.0"
 dependencies = [

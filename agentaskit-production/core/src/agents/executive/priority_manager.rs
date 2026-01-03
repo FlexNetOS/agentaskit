@@ -13,6 +13,8 @@ use crate::agents::{
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
+use agentaskit_shared::data_models::AgentStatus;
+
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
 /// 
 /// The Priority Manager is responsible for:
@@ -569,10 +571,14 @@ struct SLAMetrics {
 
 impl PriorityManager {
     pub fn new(config: PriorityManagerConfig) -> Self {
+        let mut tags = HashMap::new();
+        tags.insert("cluster_assignment".to_string(), "orchestration".to_string());
+
         let metadata = AgentMetadata {
             id: AgentId::from_name("priority-manager"),
             name: "Priority Manager".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "Executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "priority-management".to_string(),
                 "task-scheduling".to_string(),
@@ -581,17 +587,19 @@ impl PriorityManager {
                 "escalation-handling".to_string(),
                 "load-balancing".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 5 * 1024 * 1024,   // 5MB
-                max_cpu: 1.5,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 100 * 1024 * 1024,     // 100MB
+                cpu_cores: Some(2),
+                memory_mb: Some(2048), // 2GB
+                storage_mb: Some(100), // 100MB
+                network_bandwidth_mbps: None,
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags,
         };
 
         Self {
