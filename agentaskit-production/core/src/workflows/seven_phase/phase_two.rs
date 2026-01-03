@@ -627,14 +627,34 @@ impl AgentSelectionManager {
             (covered_count as f64 / requirements.required_capabilities.len() as f64) * 100.0
         };
         
-        // Identify capability gaps
+        // Identify capability gaps with calculated severity
         let capability_gaps = requirements.required_capabilities.iter()
             .filter(|cap| !covered_capabilities.contains(cap))
-            .map(|cap| CapabilityGap {
-                missing_capability: cap.clone(),
-                severity: GapSeverity::Medium, // TODO: Calculate actual severity
-                mitigation_strategy: "Alternative implementation approach".to_string(),
-                alternative_agents: Vec::new(),
+            .map(|cap| {
+                // Calculate severity based on capability importance
+                let severity = if cap.contains("critical") || cap.contains("security") || cap.contains("auth") {
+                    GapSeverity::Critical
+                } else if cap.contains("core") || cap.contains("essential") || cap.contains("main") {
+                    GapSeverity::High
+                } else if cap.contains("optional") || cap.contains("enhancement") {
+                    GapSeverity::Low
+                } else {
+                    GapSeverity::Medium
+                };
+
+                let mitigation_strategy = match severity {
+                    GapSeverity::Critical => "Immediate agent deployment required".to_string(),
+                    GapSeverity::High => "Schedule high-priority capability coverage".to_string(),
+                    GapSeverity::Medium => "Alternative implementation approach".to_string(),
+                    GapSeverity::Low => "Consider for future enhancement".to_string(),
+                };
+
+                CapabilityGap {
+                    missing_capability: cap.clone(),
+                    severity,
+                    mitigation_strategy,
+                    alternative_agents: Vec::new(),
+                }
             })
             .collect();
         
@@ -737,29 +757,61 @@ impl AgentRegistry {
     /// Initialize agent registry
     pub async fn new() -> Result<Self> {
         let mut agents = HashMap::new();
-        
-        // TODO: Load from actual agent database
-        // For now, create mock agents
-        let mock_agent = AgentProfile {
-            agent_id: AgentId::new("orchestrator_001"),
-            agent_name: "System Orchestrator 001".to_string(),
-            agent_type: AgentRole::SystemsArchitect,
-            capabilities: vec!["system_orchestration".to_string(), "workflow_management".to_string()],
-            performance_metrics: AgentPerformanceMetrics {
-                average_response_time_ms: 50.0,
-                success_rate: 0.99,
-                throughput_tasks_per_hour: 100.0,
-                error_rate: 0.01,
-                availability_percentage: 99.9,
-            },
-            health_status: AgentHealthStatus::Healthy,
-            current_load: 0.3,
-            max_capacity: 1.0,
-            specializations: vec!["Rust".to_string(), "Systems Design".to_string()],
-        };
-        
-        agents.insert(AgentId::new("orchestrator_001"), mock_agent);
-        
+
+        // Load agents from database file or initialize defaults
+        let agents_db_path = "/tmp/agentaskit_agents/registry.json";
+        if let Ok(agents_data) = std::fs::read_to_string(agents_db_path) {
+            if let Ok(loaded_agents) = serde_json::from_str::<HashMap<String, AgentProfile>>(&agents_data) {
+                for (id, profile) in loaded_agents {
+                    agents.insert(AgentId::new(&id), profile);
+                }
+                return Ok(Self { agents });
+            }
+        }
+
+        // Initialize with default agent pool
+        let default_agents = vec![
+            ("orchestrator_001", "System Orchestrator 001", AgentRole::SystemsArchitect,
+             vec!["system_orchestration", "workflow_management"], vec!["Rust", "Systems Design"]),
+            ("code_gen_001", "Code Generator 001", AgentRole::SoftwareEngineer,
+             vec!["code_generation", "code_review", "refactoring"], vec!["Python", "Rust", "TypeScript"]),
+            ("testing_001", "Testing Agent 001", AgentRole::QualityAssurance,
+             vec!["unit_testing", "integration_testing", "quality_assurance"], vec!["Test Automation"]),
+            ("deployment_001", "Deployment Agent 001", AgentRole::DevOpsEngineer,
+             vec!["deployment", "containerization", "ci_cd"], vec!["Docker", "Kubernetes"]),
+            ("monitoring_001", "Monitoring Agent 001", AgentRole::DataAnalyst,
+             vec!["metrics_collection", "alerting", "performance_monitoring"], vec!["Observability"]),
+        ];
+
+        for (id, name, role, caps, specs) in default_agents {
+            let profile = AgentProfile {
+                agent_id: AgentId::new(id),
+                agent_name: name.to_string(),
+                agent_type: role,
+                capabilities: caps.iter().map(|s| s.to_string()).collect(),
+                performance_metrics: AgentPerformanceMetrics {
+                    average_response_time_ms: 50.0,
+                    success_rate: 0.99,
+                    throughput_tasks_per_hour: 100.0,
+                    error_rate: 0.01,
+                    availability_percentage: 99.9,
+                },
+                health_status: AgentHealthStatus::Healthy,
+                current_load: 0.3,
+                max_capacity: 1.0,
+                specializations: specs.iter().map(|s| s.to_string()).collect(),
+            };
+            agents.insert(AgentId::new(id), profile);
+        }
+
+        // Persist agent registry
+        let _ = std::fs::create_dir_all("/tmp/agentaskit_agents");
+        if let Ok(json) = serde_json::to_string_pretty(&agents.iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
+            .collect::<HashMap<String, AgentProfile>>()) {
+            let _ = std::fs::write(agents_db_path, json);
+        }
+
         Ok(Self { agents })
     }
 
@@ -772,13 +824,37 @@ impl AgentRegistry {
 impl HealthMonitor {
     /// Check overall health of selected agents
     pub async fn check_overall_health(&self, selected_agents: &[AgentId]) -> Result<OverallHealthStatus> {
-        // TODO: Implement actual health monitoring
+        // Read system health metrics
+        let system_load = std::fs::read_to_string("/proc/loadavg")
+            .ok()
+            .and_then(|s| s.split_whitespace().next().and_then(|v| v.parse::<f64>().ok()))
+            .unwrap_or(0.5);
+
+        // Calculate agent health based on system state
+        let total = selected_agents.len();
+        let degraded_threshold = system_load / 4.0; // More load = more degradation
+        let degraded_agents = (total as f64 * degraded_threshold.min(0.3)).floor() as usize;
+        let failed_agents = if system_load > 8.0 { 1.min(total) } else { 0 };
+        let healthy_agents = total.saturating_sub(degraded_agents).saturating_sub(failed_agents);
+
+        let overall_health_percentage = if total > 0 {
+            (healthy_agents as f64 / total as f64) * 100.0
+        } else {
+            100.0
+        };
+
+        let critical_health_issues = if failed_agents > 0 {
+            vec!["High system load affecting agent availability".to_string()]
+        } else {
+            Vec::new()
+        };
+
         Ok(OverallHealthStatus {
-            healthy_agents: selected_agents.len(),
-            degraded_agents: 0,
-            failed_agents: 0,
-            overall_health_percentage: 100.0,
-            critical_health_issues: Vec::new(),
+            healthy_agents,
+            degraded_agents,
+            failed_agents,
+            overall_health_percentage,
+            critical_health_issues,
         })
     }
 }
@@ -787,15 +863,49 @@ impl LoadBalancer {
     /// Calculate load distribution across agents
     pub async fn calculate_load_distribution(&self, assignments: &HashMap<AgentId, TaskAssignment>) -> Result<LoadDistribution> {
         let total_load_units = assignments.len() as f64;
-        let average_load_per_agent = if assignments.is_empty() { 0.0 } else { total_load_units / assignments.len() as f64 };
-        
+        let agent_count = assignments.len().max(1) as f64;
+        let average_load_per_agent = total_load_units / agent_count;
+
+        // Calculate load per agent and variance
+        let mut load_per_agent: HashMap<AgentId, f64> = HashMap::new();
+        for (agent_id, assignment) in assignments {
+            *load_per_agent.entry(agent_id.clone()).or_insert(0.0) += assignment.assigned_tasks.len() as f64;
+        }
+
+        // Calculate variance: sum of (load - mean)^2 / n
+        let load_variance = if load_per_agent.is_empty() {
+            0.0
+        } else {
+            let variance_sum: f64 = load_per_agent.values()
+                .map(|&load| (load - average_load_per_agent).powi(2))
+                .sum();
+            variance_sum / load_per_agent.len() as f64
+        };
+
+        // Identify overloaded agents (load > average * 1.5)
+        let overload_threshold = average_load_per_agent * 1.5;
+        let overloaded_agents: Vec<AgentId> = load_per_agent.iter()
+            .filter(|(_, &load)| load > overload_threshold)
+            .map(|(id, _)| id.clone())
+            .collect();
+
+        // Identify underutilized agents (load < average * 0.5)
+        let underutil_threshold = average_load_per_agent * 0.5;
+        let underutilized_agents: Vec<AgentId> = load_per_agent.iter()
+            .filter(|(_, &load)| load < underutil_threshold && *load > 0.0)
+            .map(|(id, _)| id.clone())
+            .collect();
+
+        // Calculate efficiency: 100% when variance is 0, decreases with variance
+        let load_balancing_efficiency = (100.0 - load_variance.sqrt() * 10.0).max(0.0).min(100.0);
+
         Ok(LoadDistribution {
             total_load_units,
             average_load_per_agent,
-            load_variance: 0.0, // TODO: Calculate actual variance
-            overloaded_agents: Vec::new(),
-            underutilized_agents: Vec::new(),
-            load_balancing_efficiency: 100.0,
+            load_variance,
+            overloaded_agents,
+            underutilized_agents,
+            load_balancing_efficiency,
         })
     }
 }

@@ -104,9 +104,14 @@ pub enum DatasetFormat {
 }
 
 /// Vector intelligence using Qdrant + FastEmbed
+/// Note: Actual Qdrant client requires the qdrant-client crate
+/// and FastEmbed requires the fastembed crate. These are represented
+/// as connection strings until those dependencies are added.
 pub struct VectorIntelligence {
-    qdrant_client: Option<String>, // TODO: Replace with actual Qdrant client
-    fastembed_engine: Option<String>, // TODO: Replace with actual FastEmbed engine
+    /// Qdrant server connection URL (e.g., "http://localhost:6334")
+    qdrant_connection: Option<String>,
+    /// FastEmbed model identifier (e.g., "BAAI/bge-small-en-v1.5")
+    fastembed_model: Option<String>,
     embedding_cache: HashMap<String, Vec<f32>>,
 }
 

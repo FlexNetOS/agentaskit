@@ -531,10 +531,32 @@ impl ExpansionEngine {
         let security_issues = self.identify_security_issues().await?;
         let compliance_status = self.check_compliance().await?;
         
+        // Scan for exposed ports using /proc/net/tcp on Linux
+        let exposed_ports = {
+            let mut ports = Vec::new();
+            if let Ok(tcp_content) = std::fs::read_to_string("/proc/net/tcp") {
+                for line in tcp_content.lines().skip(1) {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        if let Some(addr) = parts.get(1) {
+                            if let Some(port_hex) = addr.split(':').nth(1) {
+                                if let Ok(port) = u16::from_str_radix(port_hex, 16) {
+                                    if port > 0 && !ports.contains(&port) {
+                                        ports.push(port);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ports
+        };
+
         Ok(SecurityAnalysis {
             timestamp: Utc::now(),
             file_permissions,
-            exposed_ports: Vec::new(), // TODO: Implement port scanning
+            exposed_ports,
             security_issues,
             compliance_status,
         })

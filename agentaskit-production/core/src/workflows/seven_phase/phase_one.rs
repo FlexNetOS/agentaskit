@@ -652,10 +652,42 @@ impl RequestClassifier {
             storage_requirements_mb: estimated_agents as f64 * 50.0,
         };
 
+        // Calculate secondary categories based on message content
+        let mut secondary_categories = Vec::new();
+        let category_keywords = [
+            (RequestCategory::Technical, &["code", "implement", "build", "develop", "api"]),
+            (RequestCategory::Creative, &["design", "create", "generate", "new"]),
+            (RequestCategory::Educational, &["learn", "explain", "understand", "tutorial"]),
+            (RequestCategory::PerformanceOptimization, &["optimize", "fast", "efficient", "performance"]),
+            (RequestCategory::SystemOperation, &["system", "orchestrate", "workflow", "deploy"]),
+        ];
+
+        for (category, keywords) in &category_keywords {
+            if *category != primary_category {
+                if keywords.iter().any(|kw| message.contains(kw)) {
+                    secondary_categories.push(category.clone());
+                }
+            }
+        }
+
+        // Calculate confidence based on keyword matches and message clarity
+        let total_keywords: usize = category_keywords.iter()
+            .map(|(_, kws)| kws.iter().filter(|kw| message.contains(**kw)).count())
+            .sum();
+        let confidence_score = if total_keywords == 0 {
+            0.60 // Low confidence when no keywords match
+        } else if total_keywords == 1 {
+            0.75
+        } else if total_keywords <= 3 {
+            0.85
+        } else {
+            0.95 // High confidence with many keyword matches
+        };
+
         Ok(RequestClassification {
             primary_category,
-            secondary_categories: Vec::new(), // TODO: Implement secondary classification
-            confidence_score: 0.85, // TODO: Implement actual confidence calculation
+            secondary_categories,
+            confidence_score,
             complexity_estimate,
             resource_requirements,
         })
@@ -668,9 +700,19 @@ impl SessionManager {
         let session_id = chat_request.session_id.clone()
             .unwrap_or_else(|| format!("session-{}", uuid::Uuid::new_v4()));
 
-        // TODO: Implement actual session retrieval from storage
-        Ok(SessionContext {
-            session_id,
+        // Attempt to retrieve session from storage
+        let session_path = format!("/tmp/agentaskit_sessions/{}.json", session_id);
+        if let Ok(session_data) = std::fs::read_to_string(&session_path) {
+            if let Ok(mut context) = serde_json::from_str::<SessionContext>(&session_data) {
+                // Add current request to conversation history
+                context.conversation_history.push(chat_request.clone());
+                return Ok(context);
+            }
+        }
+
+        // Create new session if not found in storage
+        let context = SessionContext {
+            session_id: session_id.clone(),
             conversation_history: vec![chat_request.clone()],
             context_variables: HashMap::new(),
             user_preferences: UserPreferences {
@@ -680,6 +722,14 @@ impl SessionManager {
                 preferred_agents: Vec::new(),
             },
             active_tasks: Vec::new(),
-        })
+        };
+
+        // Persist new session to storage
+        let _ = std::fs::create_dir_all("/tmp/agentaskit_sessions");
+        if let Ok(json) = serde_json::to_string_pretty(&context) {
+            let _ = std::fs::write(&session_path, json);
+        }
+
+        Ok(context)
     }
 }
