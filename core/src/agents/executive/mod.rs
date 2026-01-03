@@ -70,7 +70,7 @@ pub async fn broadcast_emergency_alert(
         severity: crate::agents::AlertSeverity::Emergency,
         message: alert_message,
         context,
-        timestamp: std::time::Instant::now(),
+        timestamp: chrono::Utc::now(),
     };
 
     // Broadcast to all executive agents
@@ -80,7 +80,7 @@ pub async fn broadcast_emergency_alert(
             from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
             topic: "emergency-alert".to_string(),
             payload: serde_json::to_value(alert)?,
-            scope: crate::agents::BroadcastScope::Role(AgentRole::Executive),
+            scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
         })
         .await?;
 

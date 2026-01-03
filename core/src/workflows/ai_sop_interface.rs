@@ -43,21 +43,16 @@ impl AISopAnalyzer {
             completeness_score -= 0.15;
         }
 
-        // Check scope coverage
-        if let Some(ref scope) = sop.scope {
-            if scope.inclusions.is_empty() {
-                recommendations.push("Define explicit scope inclusions for clarity".to_string());
-                completeness_score -= 0.05;
-            }
-            if scope.exclusions.is_empty() {
-                recommendations.push("Consider documenting scope exclusions".to_string());
-            }
-            if scope.limitations.is_empty() {
-                recommendations.push("Document known limitations for transparency".to_string());
-            }
-        } else {
-            issues.push("Missing scope definition".to_string());
-            completeness_score -= 0.1;
+        // Enhanced: Check scope coverage (direct field access - more efficient)
+        if sop.scope.inclusions.is_empty() {
+            recommendations.push("Define explicit scope inclusions for clarity".to_string());
+            completeness_score -= 0.05;
+        }
+        if sop.scope.exclusions.is_empty() {
+            recommendations.push("Consider documenting scope exclusions".to_string());
+        }
+        if sop.scope.limitations.is_empty() {
+            recommendations.push("Document known limitations for transparency".to_string());
         }
 
         // Check roles definition
@@ -67,17 +62,13 @@ impl AISopAnalyzer {
         }
 
         // Check materials and resources
-        if let Some(ref materials) = sop.materials {
-            if materials.required_tools.is_empty() {
-                recommendations.push("List required tools for reproducibility".to_string());
-                completeness_score -= 0.05;
-            }
-            if materials.environment_variables.is_empty() {
-                recommendations.push("Document environment variables if applicable".to_string());
-            }
-        } else {
-            recommendations.push("Consider adding materials section".to_string());
+        // Enhanced: Check materials (direct field access)
+        if sop.materials.required_tools.is_empty() {
+            recommendations.push("List required tools for reproducibility".to_string());
             completeness_score -= 0.05;
+        }
+        if sop.materials.environment_variables.is_empty() {
+            recommendations.push("Document environment variables if applicable".to_string());
         }
 
         // Check procedures
@@ -98,12 +89,10 @@ impl AISopAnalyzer {
             }
         }
 
-        // Check quality checks
-        if let Some(ref quality) = sop.quality_checks {
-            if quality.build_time_gates.is_empty() && quality.runtime_guards.is_empty() {
-                recommendations.push("Define quality gates for verification".to_string());
-                completeness_score -= 0.05;
-            }
+        // Enhanced: Check quality checks (direct field access)
+        if sop.quality_checks.build_time_gates.is_empty() && sop.quality_checks.runtime_guards.is_empty() {
+            recommendations.push("Define quality gates for verification".to_string());
+            completeness_score -= 0.05;
         }
 
         let confidence = completeness_score.max(0.0).min(1.0);
@@ -222,16 +211,14 @@ impl AISopAnalyzer {
             });
         }
 
-        // Extract from quality checks
-        if let Some(ref quality) = sop.quality_checks {
-            for gate in &quality.build_time_gates {
-                concepts.push(Concept {
-                    name: format!("Build Gate: {}", gate),
-                    category: ConceptCategory::QualityCheck,
-                    description: gate.clone(),
-                    importance: 0.9,
-                });
-            }
+        // Enhanced: Extract from quality checks (direct field access)
+        for gate in &sop.quality_checks.build_time_gates {
+            concepts.push(Concept {
+                name: format!("Build Gate: {}", gate),
+                category: ConceptCategory::QualityCheck,
+                description: gate.clone(),
+                importance: 0.9,
+            });
         }
 
         Ok(concepts)
