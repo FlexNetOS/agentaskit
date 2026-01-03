@@ -1139,34 +1139,6 @@ impl Agent for DigestAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing DigestAgent");
-
-        // Initialize knowledge domains
-        let mut knowledge_synthesizer = self.knowledge_synthesizer.write().await;
-        self.initialize_knowledge_domains(&mut knowledge_synthesizer)
-            .await?;
-
-        // Initialize analysis frameworks
-        let mut intelligence_analyzer = self.intelligence_analyzer.write().await;
-        self.initialize_analysis_frameworks(&mut intelligence_analyzer)
-            .await?;
-
-        // Initialize report templates
-        let mut report_generator = self.report_generator.write().await;
-        self.initialize_report_templates(&mut report_generator)
-            .await?;
-
-        // Initialize data connectors
-        let mut info_aggregator = self.info_aggregator.write().await;
-        self.initialize_data_connectors(&mut info_aggregator)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("DigestAgent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting DigestAgent");

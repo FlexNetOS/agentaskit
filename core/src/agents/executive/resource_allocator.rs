@@ -1140,11 +1140,6 @@ impl Agent for ResourceAllocator {
         &self.metadata.capabilities
     }
 
-    async fn initialize(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Resource Allocator");
-        *self.state.write().await = AgentStatus::Active;
-        Ok(())
-    }
 }
 
 impl ResourceAllocator {

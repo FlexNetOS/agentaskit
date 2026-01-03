@@ -9,10 +9,10 @@ use uuid::Uuid;
 
 use crate::agents::communication::CommunicationManager;
 use crate::agents::specialized::integration_agent::MessageBroker;
-use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage,
 };
 

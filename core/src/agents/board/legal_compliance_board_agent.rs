@@ -994,29 +994,6 @@ impl Agent for LegalComplianceBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Legal Compliance Board Agent");
-
-        // Initialize compliance frameworks
-        let mut compliance_manager = self.compliance_manager.write().await;
-        self.initialize_compliance_frameworks(&mut compliance_manager)
-            .await?;
-
-        // Initialize regulatory tracking
-        let mut regulatory_tracker = self.regulatory_tracker.write().await;
-        self.initialize_regulatory_monitoring(&mut regulatory_tracker)
-            .await?;
-
-        // Initialize legal risk models
-        let mut legal_risk_assessor = self.legal_risk_assessor.write().await;
-        self.initialize_risk_models(&mut legal_risk_assessor)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Legal Compliance Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Legal Compliance Board Agent");

@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1063,17 +1063,7 @@ impl MonitoringAgent {
 
         let service_health = ServiceHealth {
             service_name: service_name.clone(),
-            overall_status: HealthStatus {
-                agent_id: self.metadata.id,
-                state: AgentStatus::Active,
-                last_heartbeat: chrono::Utc::now(),
-                cpu_usage: 0.0,
-                memory_usage: 0,
-                task_queue_size: 0,
-                completed_tasks: 0,
-                failed_tasks: 0,
-                average_response_time: Duration::from_millis(100),
-            },
+            overall_status: HealthStatus::Healthy,
             component_statuses: HashMap::new(),
             last_updated: Instant::now(),
             uptime: Duration::from_secs(0),

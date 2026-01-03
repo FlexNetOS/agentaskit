@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1099,33 +1099,6 @@ impl Agent for EmergencyResponder {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Emergency Responder");
-
-        // Initialize emergency detection rules
-        let mut emergency_detector = self.emergency_detector.write().await;
-        self.initialize_detection_rules(&mut emergency_detector)
-            .await?;
-
-        // Initialize response plans
-        let mut crisis_manager = self.crisis_manager.write().await;
-        self.initialize_response_plans(&mut crisis_manager).await?;
-
-        // Initialize recovery strategies
-        let mut recovery_coordinator = self.recovery_coordinator.write().await;
-        self.initialize_recovery_strategies(&mut recovery_coordinator)
-            .await?;
-
-        // Initialize escalation policies
-        let mut escalation_manager = self.escalation_manager.write().await;
-        self.initialize_escalation_policies(&mut escalation_manager)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Emergency Responder initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Emergency Responder");

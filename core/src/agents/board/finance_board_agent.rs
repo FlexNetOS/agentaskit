@@ -891,27 +891,6 @@ impl Agent for FinanceBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Finance Board Agent");
-
-        // Initialize financial planning models
-        let mut financial_planner = self.financial_planner.write().await;
-        self.initialize_forecasting_models(&mut financial_planner)
-            .await?;
-
-        // Initialize budget controls
-        let mut budget_manager = self.budget_manager.write().await;
-        self.initialize_budget_controls(&mut budget_manager).await?;
-
-        // Initialize risk models
-        let mut risk_assessor = self.risk_assessor.write().await;
-        self.initialize_risk_models(&mut risk_assessor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Finance Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Finance Board Agent");

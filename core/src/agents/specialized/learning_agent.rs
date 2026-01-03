@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1251,34 +1251,6 @@ impl Agent for LearningAgent {
 
     async fn state(&self) -> AgentStatus {
         self.state.read().await.clone()
-    }
-
-    async fn start(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Learning Agent");
-
-        // Initialize model management
-        let mut model_manager = self.model_manager.write().await;
-        self.initialize_model_management(&mut model_manager).await?;
-
-        // Initialize training orchestration
-        let mut training_orchestrator = self.training_orchestrator.write().await;
-        self.initialize_training_orchestration(&mut training_orchestrator)
-            .await?;
-
-        // Initialize knowledge extraction
-        let mut knowledge_extractor = self.knowledge_extractor.write().await;
-        self.initialize_knowledge_extraction(&mut knowledge_extractor)
-            .await?;
-
-        // Initialize feature engineering
-        let mut feature_engineer = self.feature_engineer.write().await;
-        self.initialize_feature_engineering(&mut feature_engineer)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Learning Agent initialized successfully");
-        Ok(())
     }
 
     async fn start(&mut self) -> AgentResult<()> {

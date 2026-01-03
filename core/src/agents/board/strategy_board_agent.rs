@@ -682,24 +682,6 @@ impl Agent for StrategyBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Strategy Board Agent");
-
-        // Initialize planning methodologies
-        let mut planning_engine = self.planning_engine.write().await;
-        self.initialize_planning_methodologies(&mut planning_engine)
-            .await?;
-
-        // Initialize decision framework
-        let mut decision_framework = self.decision_framework.write().await;
-        self.initialize_decision_criteria(&mut decision_framework)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Strategy Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Strategy Board Agent");

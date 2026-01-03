@@ -1049,24 +1049,6 @@ impl Agent for OperationsBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Operations Board Agent");
-
-        // Initialize operations management
-        let mut operations_manager = self.operations_manager.write().await;
-        self.initialize_operational_processes(&mut operations_manager)
-            .await?;
-
-        // Initialize performance monitoring
-        let mut performance_monitor = self.performance_monitor.write().await;
-        self.initialize_performance_dashboards(&mut performance_monitor)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Operations Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Operations Board Agent");

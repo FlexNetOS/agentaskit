@@ -1124,19 +1124,13 @@ impl Agent for TestingAgent {
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
-        let test_engine = self.test_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: test_engine.execution_queue.len() as usize,
-            completed_tasks: test_engine.execution_metrics.successful_executions,
-            failed_tasks: test_engine.execution_metrics.failed_executions,
-            average_response_time: Duration::from_millis(2000),
-        })
+        match *state {
+            AgentStatus::Active | AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1148,11 +1142,6 @@ impl Agent for TestingAgent {
         &self.metadata.capabilities
     }
 
-    async fn initialize(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Testing Agent");
-        *self.state.write().await = AgentStatus::Active;
-        Ok(())
-    }
 }
 
 impl TestingAgent {
