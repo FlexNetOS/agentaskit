@@ -4,3 +4,11 @@
 [submodule "wiki-rs"]
 	path = wiki-rs
 	url = https://github.com/FlexNetOS/wiki-rs.git
+[submodule "integrations/aichat"]
+	path = integrations/aichat
+	url = https://github.com/FlexNetOS/aichat.git
+	branch = all-ai-cli-nu
+[submodule "integrations/claude-flow"]
+	path = integrations/claude-flow
+	url = https://github.com/FlexNetOS/claude-flow-noa-ide.git
+	branch = orchestration-layer
