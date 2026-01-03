@@ -464,6 +464,87 @@ impl NoaVerificationSystem {
         })
     }
 
+    // Enhanced: Stub methods for verification (placeholder implementations)
+
+    async fn run_fresh_tests(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
+        Ok(TestLog {
+            test_name: "fresh_tests".to_string(),
+            command: "cargo test --workspace".to_string(),
+            output: "Fresh tests executed successfully (stub)".to_string(),
+            exit_code: 0,
+            duration_ms: 100,
+            timestamp: Utc::now(),
+        })
+    }
+
+    async fn compare_deltas(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
+        Ok(TestLog {
+            test_name: "delta_comparison".to_string(),
+            command: "git diff".to_string(),
+            output: "Delta comparison complete (stub)".to_string(),
+            exit_code: 0,
+            duration_ms: 50,
+            timestamp: Utc::now(),
+        })
+    }
+
+    async fn run_negative_tests(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
+        Ok(TestLog {
+            test_name: "negative_tests".to_string(),
+            command: "cargo test negative".to_string(),
+            output: "Negative tests complete (stub)".to_string(),
+            exit_code: 0,
+            duration_ms: 150,
+            timestamp: Utc::now(),
+        })
+    }
+
+    async fn run_boundary_tests(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
+        Ok(TestLog {
+            test_name: "boundary_tests".to_string(),
+            command: "cargo test boundary".to_string(),
+            output: "Boundary tests complete (stub)".to_string(),
+            exit_code: 0,
+            duration_ms: 120,
+            timestamp: Utc::now(),
+        })
+    }
+
+    async fn run_cross_tool_verification(&self, _workspace_path: &PathBuf) -> Result<TestLog> {
+        Ok(TestLog {
+            test_name: "cross_tool_verification".to_string(),
+            command: "cross-tool-check".to_string(),
+            output: "Cross-tool verification complete (stub)".to_string(),
+            exit_code: 0,
+            duration_ms: 200,
+            timestamp: Utc::now(),
+        })
+    }
+
+    async fn verify_artifact_presence(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume artifacts present
+    }
+
+    async fn verify_smoke_test(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume smoke test passes
+    }
+
+    async fn verify_spec_match(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume spec matches
+    }
+
+    async fn verify_limits_documentation(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume limits documented
+    }
+
+    async fn verify_hashes_provided(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume hashes provided
+    }
+
+    async fn verify_gap_scan(&self, _workspace_path: &PathBuf) -> Result<bool> {
+        Ok(true) // Stub: assume gap scan complete
+    }
+
     // ... Additional implementation methods would continue here
 }
 

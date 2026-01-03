@@ -274,27 +274,29 @@ impl AISopAnalyzer {
     }
 
     // Helper methods
+    /// Enhanced: Get analyzed sections (structs are always present, not Optional)
     fn get_analyzed_sections(&self, sop: &SOPDocument) -> Vec<String> {
         let mut sections = vec!["Title".to_string(), "Purpose".to_string()];
 
-        if sop.scope.is_some() {
-            sections.push("Scope".to_string());
-        }
+        // Scope is always present as a struct
+        sections.push("Scope".to_string());
+
         if !sop.roles.is_empty() {
             sections.push("Roles".to_string());
         }
-        if sop.materials.is_some() {
-            sections.push("Materials".to_string());
-        }
-        if sop.architecture.is_some() {
-            sections.push("Architecture".to_string());
-        }
+
+        // Materials is always present as a struct
+        sections.push("Materials".to_string());
+
+        // Architecture is always present as a struct
+        sections.push("Architecture".to_string());
+
         if !sop.procedures.is_empty() {
             sections.push("Procedures".to_string());
         }
-        if sop.quality_checks.is_some() {
-            sections.push("Quality Checks".to_string());
-        }
+
+        // Quality checks is always present as a struct
+        sections.push("Quality Checks".to_string());
         if !sop.glossary.is_empty() {
             sections.push("Glossary".to_string());
         }

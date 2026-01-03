@@ -159,12 +159,12 @@ impl QualityAssuranceValidator {
 
         evidence.push("Pass A: Self-check verification initiated".to_string());
 
-        // Check 1: Verify all required phases completed
+        // Enhanced: Check 1: Verify all required phases completed
         let required_phases = vec![
             super::PhaseType::UserRequestIngestion,
-            super::PhaseType::TaskAllocationMatching,
+            super::PhaseType::AgentSelection,      // Was: TaskAllocationMatching
             super::PhaseType::TaskExecution,
-            super::PhaseType::CommunicationCoordination,
+            super::PhaseType::Communication,       // Was: CommunicationCoordination
         ];
 
         for phase in &required_phases {
