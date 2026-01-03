@@ -16,12 +16,22 @@ use crate::agents::AgentManager;
 use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
+/// Orchestrator state for tracking system status
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OrchestratorState {
+    pub active_tasks: usize,
+    pub completed_tasks: usize,
+    pub failed_tasks: usize,
+    pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
+}
+
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
     agent_manager: Arc<AgentManager>,
     message_broker: Arc<MessageBroker>,
     metrics_collector: Arc<MetricsCollector>,
     task_queue: Arc<RwLock<TaskQueue>>,
+    state: Arc<RwLock<OrchestratorState>>,
     running: Arc<RwLock<bool>>,
 }
 
@@ -134,6 +144,7 @@ impl OrchestratorEngine {
             message_broker: Arc::new(message_broker),
             metrics_collector: Arc::new(metrics_collector),
             task_queue: Arc::new(RwLock::new(TaskQueue::new())),
+            state: Arc::new(RwLock::new(OrchestratorState::default())),
             running: Arc::new(RwLock::new(false)),
         })
     }

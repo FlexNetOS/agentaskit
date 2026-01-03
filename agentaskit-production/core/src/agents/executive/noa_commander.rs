@@ -1071,57 +1071,235 @@ impl NoaCommander {
     }
     
     // Helper methods for decision evaluation
-    async fn assess_performance_impact(&self, _option: &serde_json::Value, _system_analysis: &serde_json::Value) -> Result<f64> {
-        // TODO: Implement performance impact assessment
-        Ok(0.8) // Placeholder
+    async fn assess_performance_impact(&self, option: &serde_json::Value, system_analysis: &serde_json::Value) -> Result<f64> {
+        // Calculate performance impact based on option strategy and current system state
+        let strategy = option.get("strategy")
+            .and_then(|v| v.as_str())
+            .unwrap_or("balanced");
+
+        let current_health = system_analysis.get("system_health")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.8);
+
+        let impact = match strategy {
+            "conservative" => 0.6 + (current_health * 0.2),  // Low risk, moderate improvement
+            "balanced" => 0.7 + (current_health * 0.15),     // Medium risk, good improvement
+            "aggressive" => 0.85 + (current_health * 0.1),   // High risk, best improvement if healthy
+            _ => 0.7,
+        };
+
+        Ok(impact.min(1.0))
     }
-    
+
     async fn assess_risk_level(&self, option: &serde_json::Value) -> Result<f64> {
         option.get("risk_level")
             .and_then(|v| v.as_f64())
             .map(Ok)
             .unwrap_or(Ok(0.5))
     }
-    
-    async fn assess_resource_efficiency(&self, _option: &serde_json::Value) -> Result<f64> {
-        // TODO: Implement resource efficiency assessment
-        Ok(0.7) // Placeholder
+
+    async fn assess_resource_efficiency(&self, option: &serde_json::Value) -> Result<f64> {
+        // Assess resource efficiency based on allocation strategies
+        let cpu_alloc = option.get("cpu_allocation")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.8);
+        let memory_alloc = option.get("memory_allocation")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.75);
+
+        // Optimal efficiency at ~80% utilization; penalize both under and over-utilization
+        let cpu_efficiency = 1.0 - (cpu_alloc - 0.8).abs() * 2.0;
+        let memory_efficiency = 1.0 - (memory_alloc - 0.8).abs() * 2.0;
+
+        Ok(((cpu_efficiency + memory_efficiency) / 2.0).max(0.0).min(1.0))
     }
-    
-    async fn assess_strategic_alignment(&self, _option: &serde_json::Value) -> Result<f64> {
-        // TODO: Implement strategic alignment assessment
-        Ok(0.75) // Placeholder
+
+    async fn assess_strategic_alignment(&self, option: &serde_json::Value) -> Result<f64> {
+        // Check alignment with strategic goals
+        let strategic_engine = self.strategic_engine.read().await;
+
+        let mut alignment_score = 0.5; // Base alignment
+
+        // Check if option supports stability goal
+        if option.get("strategy").and_then(|v| v.as_str()) == Some("conservative") {
+            if strategic_engine.strategic_goals.contains_key("system-stability") {
+                alignment_score += 0.2;
+            }
+        }
+
+        // Check if option supports performance optimization
+        if option.get("estimated_improvement").and_then(|v| v.as_f64()).unwrap_or(0.0) > 0.1 {
+            if strategic_engine.strategic_goals.contains_key("performance-optimization") {
+                alignment_score += 0.15;
+            }
+        }
+
+        // Check resource efficiency alignment
+        if option.get("strategy").and_then(|v| v.as_str()) == Some("balanced") {
+            if strategic_engine.strategic_goals.contains_key("resource-efficiency") {
+                alignment_score += 0.15;
+            }
+        }
+
+        Ok(alignment_score.min(1.0))
     }
-    
-    async fn assess_implementation_complexity(&self, _option: &serde_json::Value) -> Result<f64> {
-        // TODO: Implement complexity assessment
-        Ok(0.4) // Placeholder
+
+    async fn assess_implementation_complexity(&self, option: &serde_json::Value) -> Result<f64> {
+        // Assess complexity based on modification scope and dependencies
+        let mut complexity = 0.3; // Base complexity
+
+        // More components = more complexity
+        if let Some(components) = option.get("target_components") {
+            if let Some(arr) = components.as_array() {
+                complexity += arr.len() as f64 * 0.1;
+            }
+        }
+
+        // Rolling changes are less complex than immediate ones
+        if option.get("rollback_available").and_then(|v| v.as_bool()).unwrap_or(false) {
+            complexity -= 0.1;
+        }
+
+        // Scale factor affects complexity
+        if let Some(scale) = option.get("scale_factor").and_then(|v| v.as_f64()) {
+            complexity += (scale - 1.0).abs() * 0.2;
+        }
+
+        Ok(complexity.max(0.0).min(1.0))
     }
-    
+
     // Helper methods for system analysis
-    async fn calculate_system_health(&self, _performance_monitor: &PerformanceMonitor) -> f64 {
-        // TODO: Implement system health calculation
-        0.85 // Placeholder
+    async fn calculate_system_health(&self, performance_monitor: &PerformanceMonitor) -> f64 {
+        // Aggregate health from multiple metrics
+        let mut health_score = 1.0;
+        let mut metric_count = 0;
+
+        for (metric_name, metric_value) in &performance_monitor.current_metrics {
+            metric_count += 1;
+
+            // Check against thresholds
+            if let Some(threshold) = performance_monitor.performance_thresholds.get(metric_name) {
+                if metric_value.value >= threshold.critical_threshold {
+                    health_score -= 0.3;
+                } else if metric_value.value >= threshold.warning_threshold {
+                    health_score -= 0.1;
+                }
+            }
+        }
+
+        // Factor in metric quality
+        let high_quality_metrics = performance_monitor.current_metrics.values()
+            .filter(|m| matches!(m.quality, MetricQuality::High))
+            .count();
+        let quality_ratio = if metric_count > 0 {
+            high_quality_metrics as f64 / metric_count as f64
+        } else {
+            0.8
+        };
+
+        (health_score * quality_ratio).max(0.0).min(1.0)
     }
-    
-    async fn calculate_resource_utilization(&self, _resource_manager: &ResourceManager) -> f64 {
-        // TODO: Implement resource utilization calculation
-        0.65 // Placeholder
+
+    async fn calculate_resource_utilization(&self, resource_manager: &ResourceManager) -> f64 {
+        if resource_manager.resource_allocations.is_empty() {
+            return 0.5; // Default when no allocations tracked
+        }
+
+        let total_utilization: f64 = resource_manager.resource_allocations.values()
+            .map(|alloc| alloc.utilization)
+            .sum();
+
+        total_utilization / resource_manager.resource_allocations.len() as f64
     }
-    
-    async fn calculate_agent_performance(&self, _agent_coordinator: &AgentCoordinator) -> f64 {
-        // TODO: Implement agent performance calculation
-        0.8 // Placeholder
+
+    async fn calculate_agent_performance(&self, agent_coordinator: &AgentCoordinator) -> f64 {
+        if agent_coordinator.agent_assignments.is_empty() {
+            return 0.8; // Default performance
+        }
+
+        let total_performance: f64 = agent_coordinator.agent_assignments.values()
+            .map(|workload| workload.performance_score)
+            .sum();
+
+        total_performance / agent_coordinator.agent_assignments.len() as f64
     }
-    
+
     async fn calculate_current_load(&self) -> f64 {
-        // TODO: Implement current load calculation
-        0.7 // Placeholder
+        let agent_coordinator = self.agent_coordinator.read().await;
+
+        if agent_coordinator.agent_assignments.is_empty() {
+            return 0.5;
+        }
+
+        let total_utilization: f64 = agent_coordinator.agent_assignments.values()
+            .map(|workload| workload.capacity_utilization)
+            .sum();
+
+        total_utilization / agent_coordinator.agent_assignments.len() as f64
     }
-    
-    async fn analyze_performance_trends(&self, _performance_monitor: &PerformanceMonitor) -> serde_json::Value {
-        // TODO: Implement trend analysis
-        serde_json::json!({"trend": "stable", "confidence": 0.8})
+
+    async fn analyze_performance_trends(&self, performance_monitor: &PerformanceMonitor) -> serde_json::Value {
+        let history_len = performance_monitor.metric_history.iter()
+            .map(|(_, points)| points.len())
+            .max()
+            .unwrap_or(0);
+
+        if history_len < 2 {
+            return serde_json::json!({
+                "trend": "insufficient_data",
+                "confidence": 0.0,
+                "data_points": history_len
+            });
+        }
+
+        // Analyze trends across key metrics
+        let mut improving_count = 0;
+        let mut declining_count = 0;
+        let mut stable_count = 0;
+
+        for (metric_name, points) in &performance_monitor.metric_history {
+            if points.len() < 2 {
+                continue;
+            }
+
+            let recent = &points[points.len().saturating_sub(5)..];
+            let first_avg: f64 = recent.iter().take(2).map(|p| p.value).sum::<f64>() / 2.0;
+            let last_avg: f64 = recent.iter().rev().take(2).map(|p| p.value).sum::<f64>() / 2.0;
+
+            let change_ratio = if first_avg != 0.0 {
+                (last_avg - first_avg) / first_avg
+            } else {
+                0.0
+            };
+
+            if change_ratio > 0.05 {
+                improving_count += 1;
+            } else if change_ratio < -0.05 {
+                declining_count += 1;
+            } else {
+                stable_count += 1;
+            }
+        }
+
+        let total = improving_count + declining_count + stable_count;
+        let (trend, confidence) = if total == 0 {
+            ("unknown", 0.0)
+        } else if improving_count > declining_count && improving_count > stable_count {
+            ("improving", improving_count as f64 / total as f64)
+        } else if declining_count > improving_count && declining_count > stable_count {
+            ("declining", declining_count as f64 / total as f64)
+        } else {
+            ("stable", stable_count as f64 / total as f64)
+        };
+
+        serde_json::json!({
+            "trend": trend,
+            "confidence": confidence,
+            "data_points": history_len,
+            "improving_metrics": improving_count,
+            "declining_metrics": declining_count,
+            "stable_metrics": stable_count
+        })
     }
 }
 
