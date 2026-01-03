@@ -28,6 +28,13 @@ bash = "*"
 sccache = "*"
 
 # Rust tooling enhancements
+# NOTE: These Rust tools are installed via conda-forge, not cargo install.
+# LIMITATIONS:
+# - conda-forge may lag behind latest cargo versions (check https://anaconda.org/conda-forge/)
+# - Not all Rust tools are available in conda-forge; some may require cargo install fallback
+# - Version constraints: Using "*" allows conda-forge to provide best available version
+# - If specific versions are needed, consult conda-forge package versions before pinning
+# ALTERNATIVES: For latest versions, use `cargo install <tool>` or rustup components instead
 cargo-binstall = "*"  # Fast binary installation
 cargo-watch = "*"     # Auto-rebuild on file changes
 
@@ -90,6 +97,13 @@ dev = { features = ["dev"], solve-group = "default" }
 
 # Pixi activation - ensures consistent environment across all platforms
 [activation]
+# SECURITY NOTE:
+# - The script(s) listed here are executed automatically when entering a pixi shell.
+# - `configs/nushell/pixi-activate.nu` may source additional files such as
+#   `configs/nushell/env.nu`. Treat all of these Nushell scripts as trusted code.
+# - In shared or multi-user environments, ensure these files are only writable by
+#   trusted users (e.g., owner-writable, not group/world-writable) and consider
+#   enforcing integrity checks (e.g., checksums verified in CI) to detect tampering.
 scripts = ["configs/nushell/pixi-activate.nu"]
 
 # Auto-activate pixi environment for supported shells
