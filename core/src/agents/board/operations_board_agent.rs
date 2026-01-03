@@ -8,9 +8,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage,
 };
 

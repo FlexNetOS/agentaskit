@@ -1270,17 +1270,7 @@ impl Agent for MonitoringAgent {
         let state = self.state.read().await;
         let metrics_collector = self.metrics_collector.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: metrics_collector.metric_streams.len() as usize,
-            completed_tasks: metrics_collector.collection_stats.total_metrics_collected,
-            failed_tasks: metrics_collector.collection_stats.collection_errors,
-            average_response_time: Duration::from_millis(100),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

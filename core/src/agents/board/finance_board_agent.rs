@@ -8,8 +8,9 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1027,17 +1028,7 @@ impl Agent for FinanceBoardAgent {
         let state = self.state.read().await;
         let budget_manager = self.budget_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 8.0,                  // Placeholder
-            memory_usage: 512 * 1024 * 1024, // 512MB placeholder
-            task_queue_size: 0,
-            completed_tasks: budget_manager.budgets.len() as u64,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(180),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

@@ -1626,17 +1626,7 @@ impl Agent for DeploymentAgent {
         let state = self.state.read().await;
         let pipeline_engine = self.pipeline_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 30.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: pipeline_engine.active_pipelines.len() as usize,
-            completed_tasks: pipeline_engine.execution_metrics.successful_executions,
-            failed_tasks: pipeline_engine.execution_metrics.failed_executions,
-            average_response_time: Duration::from_millis(3000),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

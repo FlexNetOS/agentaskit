@@ -1126,17 +1126,7 @@ impl Agent for PriorityManager {
         let _scheduler = self.scheduler.read().await;
         let _priority_engine = self.priority_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: AgentStatus::Active,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0,
-            memory_usage: 256 * 1024 * 1024,
-            task_queue_size: 0,
-            completed_tasks: 0,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(50),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

@@ -1008,18 +1008,7 @@ impl Agent for CodeGenerationAgent {
         let state = self.state.read().await;
         let code_generator = self.code_generator.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0,                      // Placeholder
-            memory_usage: 2 * 1024 * 1024 * 1024, // 2GB placeholder
-            task_queue_size: code_generator.active_tasks.len() as usize,
-            completed_tasks: code_generator.generation_metrics.successful_generations,
-            failed_tasks: code_generator.generation_metrics.total_generations
-                - code_generator.generation_metrics.successful_generations,
-            average_response_time: Duration::from_millis(500),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

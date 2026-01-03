@@ -1268,18 +1268,7 @@ impl Agent for EmergencyResponder {
         let state = self.state.read().await;
         let crisis_manager = self.crisis_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 12.0,                 // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: crisis_manager.active_emergencies.len(),
-            completed_tasks: crisis_manager.metrics.resolved_emergencies,
-            failed_tasks: crisis_manager.metrics.total_emergencies
-                - crisis_manager.metrics.resolved_emergencies,
-            average_response_time: self.config.max_response_time,
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

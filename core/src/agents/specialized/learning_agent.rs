@@ -1424,18 +1424,7 @@ impl Agent for LearningAgent {
         let state = self.state.read().await;
         let model_manager = self.model_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 40.0,                      // Placeholder
-            memory_usage: 8 * 1024 * 1024 * 1024, // 8GB placeholder
-            task_queue_size: model_manager.active_trainings.len() as usize,
-            completed_tasks: model_manager.management_stats.successful_trainings,
-            failed_tasks: model_manager.management_stats.total_trainings
-                - model_manager.management_stats.successful_trainings,
-            average_response_time: Duration::from_millis(5000),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
