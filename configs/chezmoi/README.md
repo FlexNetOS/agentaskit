@@ -1,6 +1,6 @@
 # Chezmoi Dotfile Management
 
-AgentAskit includes [chezmoi](https://chezmoi.io/) for cross-platform dotfile management.
+AgentAsKit includes [chezmoi](https://chezmoi.io/) for cross-platform dotfile management.
 
 ## Quick Start
 
@@ -23,7 +23,7 @@ chezmoi apply
 
 ## Nushell Integration
 
-Add AgentAskit's nushell config to your dotfiles:
+Add AgentAsKit's nushell config to your dotfiles:
 
 ```bash
 # Add the config directory

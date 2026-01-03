@@ -1,5 +1,5 @@
 #!/usr/bin/env nu
-# AgentAskit Development Environment Bootstrap
+# AgentAsKit Development Environment Bootstrap
 # REF: ADR-0005 Modern Tooling Strategy
 # Cross-platform: Linux, macOS, Windows - single script
 
@@ -181,7 +181,7 @@ def install-python-tools [] {
 def configure-aider [project_root: string] {
     log-info "Configuring aider..."
 
-    let config = '# Aider configuration for AgentAskit
+    let config = '# Aider configuration for AgentAsKit
 auto-commits: true
 dirty-commits: false
 attribute-author: true
@@ -219,7 +219,7 @@ def setup-nushell-config [project_root: string] {
 
     mkdir $nu_config_dir
 
-    let loader = $'# AgentAskit nushell configuration loader
+    let loader = $'# AgentAsKit nushell configuration loader
 # Source this from your main config.nu
 
 $env.AGENTASKIT_ROOT = "($project_root)"
@@ -243,7 +243,7 @@ alias aat = cargo test --all
 def print-summary [project_root: string] {
     print ""
     print "============================================"
-    print "  AgentAskit Development Environment Setup"
+    print "  AgentAsKit Development Environment Setup"
     print "============================================"
     print ""
     log-info $"Project root: ($project_root)"
@@ -266,7 +266,7 @@ def main [
     --skip-build    # Skip building tools from source
     --skip-clone    # Skip cloning repositories
 ] {
-    print "AgentAskit Bootstrap Script (Nushell)"
+    print "AgentAsKit Bootstrap Script (Nushell)"
     print "====================================="
     print ""
 

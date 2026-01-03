@@ -1,9 +1,9 @@
-# AgentAskit Shell Setup Helper
+# AgentAsKit Shell Setup Helper
 # This script helps developers configure their shell to use Nu shell with pixi
 # REF: ADR-0005 Modern Tooling Strategy
 
 print "(ansi green_bold)═══════════════════════════════════════════════════════════════(ansi reset)"
-print "(ansi green_bold)     AgentAskit Shell Setup - Nu Shell + Pixi Integration(ansi reset)"
+print "(ansi green_bold)     AgentAsKit Shell Setup - Nu Shell + Pixi Integration(ansi reset)"
 print "(ansi green_bold)═══════════════════════════════════════════════════════════════(ansi reset)"
 print ""
 
@@ -28,7 +28,7 @@ def show-instructions [shell: string] {
     if ($shell == "bash") {
         print "Add this to your ~/.bashrc:"
         print "```bash"
-        print $"# AgentAskit - Nu shell integration"
+        print $"# AgentAsKit - Nu shell integration"
         print $"export AGENTASKIT_ROOT=\"($project_root)\""
         print $"alias agentaskit-shell='pixi shell --manifest-path ($project_root)/pixi.toml'"
         print $"alias aa='cd ($project_root) && pixi shell'"
@@ -36,7 +36,7 @@ def show-instructions [shell: string] {
     } else if ($shell == "zsh") {
         print "Add this to your ~/.zshrc:"
         print "```zsh"
-        print $"# AgentAskit - Nu shell integration"
+        print $"# AgentAsKit - Nu shell integration"
         print $"export AGENTASKIT_ROOT=\"($project_root)\""
         print $"alias agentaskit-shell='pixi shell --manifest-path ($project_root)/pixi.toml'"
         print $"alias aa='cd ($project_root) && pixi shell'"
@@ -44,7 +44,7 @@ def show-instructions [shell: string] {
     } else if ($shell == "fish") {
         print "Add this to your ~/.config/fish/config.fish:"
         print "```fish"
-        print $"# AgentAskit - Nu shell integration"
+        print $"# AgentAsKit - Nu shell integration"
         print $"set -gx AGENTASKIT_ROOT \"($project_root)\""
         print $"alias agentaskit-shell='pixi shell --manifest-path ($project_root)/pixi.toml'"
         print $"alias aa='cd ($project_root); and pixi shell'"
@@ -57,7 +57,7 @@ def show-instructions [shell: string] {
         }
         print $"Add this to your PowerShell profile: (ansi cyan)($profile_path)(ansi reset)"
         print "```powershell"
-        print $"# AgentAskit - Nu shell integration"
+        print $"# AgentAsKit - Nu shell integration"
         print $"$env:AGENTASKIT_ROOT = \"($project_root)\""
         print $"function agentaskit-shell {{ pixi shell --manifest-path ($project_root)/pixi.toml }}"
         print $"function aa {{ cd ($project_root); pixi shell }}"
@@ -70,7 +70,7 @@ def show-instructions [shell: string] {
         }
         print $"Add this to your Nu config: (ansi cyan)($nu_config)(ansi reset)"
         print "```nushell"
-        print $"# AgentAskit integration"
+        print $"# AgentAsKit integration"
         print $"source ($config_dir)/config.nu"
         print "```"
     }
@@ -78,7 +78,7 @@ def show-instructions [shell: string] {
     print ""
     print "(ansi green)Quick start after setup:(ansi reset)"
     print "  1. Restart your shell or source the config file"
-    print "  2. Navigate to the AgentAskit directory"
+    print "  2. Navigate to the AgentAsKit directory"
     print $"  3. Run: (ansi cyan_bold)pixi shell(ansi reset) to activate the environment"
     print $"  4. Run: (ansi cyan_bold)env info(ansi reset) to verify the setup"
     print ""
