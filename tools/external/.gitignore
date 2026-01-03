@@ -1,0 +1,5 @@
+# External tool repositories are cloned separately
+# Do not track as submodules
+*
+!.gitignore
+!README.md

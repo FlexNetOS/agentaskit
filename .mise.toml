@@ -1,0 +1,72 @@
+# mise configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# See: docs/decisions/adr/0005-modern-tooling-strategy.md
+
+[tools]
+# Rust toolchain (managed by rustup, mise tracks version)
+rust = "stable"
+
+# Node.js for frontend tooling and scripts
+node = "20"
+
+# Python for AI/ML workflows and scripts
+python = "3.11"
+
+[env]
+# Project root for scripts
+PROJECT_ROOT = "{{cwd}}"
+AGENTASKIT_ROOT = "{{cwd}}"
+
+# XDG compliance
+XDG_CONFIG_HOME = "{{env.HOME}}/.config"
+XDG_DATA_HOME = "{{env.HOME}}/.local/share"
+XDG_CACHE_HOME = "{{env.HOME}}/.cache"
+XDG_STATE_HOME = "{{env.HOME}}/.local/state"
+
+# Rust settings
+CARGO_HOME = "{{env.XDG_DATA_HOME}}/cargo"
+RUSTUP_HOME = "{{env.XDG_DATA_HOME}}/rustup"
+
+# Tool paths
+PATH = [
+  "{{cwd}}/tools/external/pixi/target/release",
+  "{{cwd}}/tools/external/nushell/target/release",
+  "{{cwd}}/tools/external/coreutils/target/release",
+  "{{cwd}}/tools/external/rusty-tags/target/release",
+  "{{env.PATH}}"
+]
+
+[tasks.build]
+description = "Build the AgentAskit core"
+run = "cargo build --release"
+dir = "{{cwd}}/agentaskit-production/core"
+
+[tasks.test]
+description = "Run all tests"
+run = "cargo test --all"
+dir = "{{cwd}}/agentaskit-production/core"
+
+[tasks.lint]
+description = "Run linting checks"
+run = """
+cargo clippy --all-targets --all-features -- -D warnings
+cargo fmt --all -- --check
+"""
+
+[tasks.build-tools]
+description = "Build external tools from source"
+run = """
+cd tools/external/pixi && cargo build --release
+cd tools/external/nushell && cargo build --release
+cd tools/external/coreutils && cargo build --release
+cd tools/external/rusty-tags && cargo build --release
+"""
+
+[tasks.xdg-audit]
+description = "Run XDG compliance audit"
+run = "xdg-ninja --json > tools/analysis/xdg_audit.json"
+
+[tasks.todo-validate]
+description = "Validate .todo file schema"
+run = "scripts/validate_sot.sh"
+dir = "{{cwd}}/agentaskit-production"
