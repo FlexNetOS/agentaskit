@@ -1025,41 +1025,194 @@ impl EmergencyResponder {
     // Helper methods
 
     async fn update_system_health(&self, system_state: &mut SystemHealthState) -> Result<()> {
-        // TODO: Collect real system health metrics
-        system_state.overall_health = 85.0; // Placeholder
-        system_state.active_alerts = 2;     // Placeholder
-        system_state.system_errors = 0;     // Placeholder
+        // Collect system health metrics from various sources
+        let mut total_health = 0.0;
+        let mut health_sources = 0;
+
+        // Collect agent health scores
+        for (agent_id, score) in &system_state.agent_health_scores {
+            total_health += score;
+            health_sources += 1;
+        }
+
+        // Add resource utilization impact
+        let mut resource_penalty = 0.0;
+        for (resource, utilization) in &system_state.resource_utilization {
+            if *utilization > 90.0 {
+                resource_penalty += 10.0;
+            } else if *utilization > 80.0 {
+                resource_penalty += 5.0;
+            }
+        }
+
+        // Calculate overall health
+        let base_health = if health_sources > 0 {
+            total_health / health_sources as f64
+        } else {
+            100.0 // Default to healthy if no agents tracked
+        };
+
+        system_state.overall_health = (base_health - resource_penalty).max(0.0).min(100.0);
         system_state.last_updated = Some(Instant::now());
+
         Ok(())
     }
 
     async fn evaluate_emergency_conditions(
         &self,
-        _conditions: &[EmergencyCondition],
-        _detector: &EmergencyDetector,
+        conditions: &[EmergencyCondition],
+        detector: &EmergencyDetector,
     ) -> Result<bool> {
-        // TODO: Implement condition evaluation
-        Ok(false) // Placeholder
+        // All conditions must be met for rule to trigger
+        for condition in conditions {
+            let current_value = detector.system_state.resource_utilization
+                .get(&condition.metric_name)
+                .copied()
+                .unwrap_or(0.0);
+
+            let condition_met = match condition.operator {
+                ComparisonOperator::GreaterThan => current_value > condition.threshold_value,
+                ComparisonOperator::LessThan => current_value < condition.threshold_value,
+                ComparisonOperator::Equals => (current_value - condition.threshold_value).abs() < f64::EPSILON,
+                ComparisonOperator::NotEquals => (current_value - condition.threshold_value).abs() >= f64::EPSILON,
+                ComparisonOperator::GreaterOrEqual => current_value >= condition.threshold_value,
+                ComparisonOperator::LessOrEqual => current_value <= condition.threshold_value,
+            };
+
+            if !condition_met {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
     }
 
-    async fn classify_emergency_type(&self, _detection: &EmergencyDetection) -> Result<EmergencyType> {
-        // TODO: Implement emergency type classification
-        Ok(EmergencyType::SystemFailure)
+    async fn classify_emergency_type(&self, detection: &EmergencyDetection) -> Result<EmergencyType> {
+        // Classify based on rule ID and affected components
+        let emergency_type = match detection.rule_id.as_str() {
+            rule if rule.contains("security") => EmergencyType::SecurityBreach,
+            rule if rule.contains("data") => EmergencyType::DataLoss,
+            rule if rule.contains("resource") || rule.contains("memory") || rule.contains("cpu") => {
+                EmergencyType::ResourceExhaustion
+            }
+            rule if rule.contains("network") => EmergencyType::NetworkOutage,
+            rule if rule.contains("agent") => EmergencyType::AgentFailure,
+            rule if rule.contains("performance") => EmergencyType::PerformanceDegradation,
+            rule if rule.contains("config") => EmergencyType::ConfigurationError,
+            rule if rule.contains("dependency") || rule.contains("service") => {
+                EmergencyType::ServiceDependencyFailure
+            }
+            _ => EmergencyType::SystemFailure,
+        };
+
+        Ok(emergency_type)
     }
 
-    async fn select_response_plan(&self, _emergency_type: &EmergencyType) -> Result<String> {
-        // TODO: Implement response plan selection
+    async fn select_response_plan(&self, emergency_type: &EmergencyType) -> Result<String> {
+        let crisis_manager = self.crisis_manager.read().await;
+
+        // Find matching response plan for emergency type
+        if let Some(plan) = crisis_manager.response_plans.get(emergency_type) {
+            return Ok(plan.plan_id.clone());
+        }
+
+        // Fall back to default plan
         Ok("default-response-plan".to_string())
     }
 
-    async fn assign_response_team(&self, _emergency_type: &EmergencyType) -> Result<Vec<AgentId>> {
-        // TODO: Implement response team assignment
-        Ok(Vec::new())
+    async fn assign_response_team(&self, emergency_type: &EmergencyType) -> Result<Vec<AgentId>> {
+        let crisis_manager = self.crisis_manager.read().await;
+
+        // Find available response teams
+        let mut assigned_agents = Vec::new();
+
+        for team in &crisis_manager.coordination_state.response_teams {
+            if matches!(team.status, TeamStatus::Standby | TeamStatus::Active) {
+                // Match team type to emergency type
+                let team_matches = match (emergency_type, &team.team_type) {
+                    (EmergencyType::SecurityBreach, TeamType::Technical) => true,
+                    (EmergencyType::SystemFailure, TeamType::Technical) => true,
+                    (EmergencyType::AgentFailure, TeamType::Technical) => true,
+                    (EmergencyType::DataLoss, TeamType::Recovery) => true,
+                    (EmergencyType::NetworkOutage, TeamType::Technical) => true,
+                    (_, TeamType::FirstResponse) => true, // First response handles all
+                    _ => false,
+                };
+
+                if team_matches {
+                    assigned_agents.extend(team.members.clone());
+                }
+            }
+        }
+
+        // If no teams available, assign the incident commander if available
+        if assigned_agents.is_empty() {
+            if let Some(commander) = &crisis_manager.coordination_state.incident_commander {
+                assigned_agents.push(*commander);
+            }
+        }
+
+        Ok(assigned_agents)
     }
 
-    async fn select_recovery_strategy(&self, _emergency_type: &EmergencyType) -> Result<String> {
-        // TODO: Implement recovery strategy selection
-        Ok("default-recovery-strategy".to_string())
+    async fn select_recovery_strategy(&self, emergency_type: &EmergencyType) -> Result<String> {
+        let recovery_coordinator = self.recovery_coordinator.read().await;
+
+        // Find best matching strategy based on emergency type and success rate
+        let mut best_strategy: Option<(&String, f64)> = None;
+
+        for (strategy_id, strategy) in &recovery_coordinator.recovery_strategies {
+            if strategy.applicable_emergencies.contains(emergency_type) {
+                if let Some((_, best_rate)) = best_strategy {
+                    if strategy.success_rate > best_rate {
+                        best_strategy = Some((strategy_id, strategy.success_rate));
+                    }
+                } else {
+                    best_strategy = Some((strategy_id, strategy.success_rate));
+                }
+            }
+        }
+
+        if let Some((strategy_id, _)) = best_strategy {
+            return Ok(strategy_id.clone());
+        }
+
+        // Fall back to default restart recovery
+        Ok("restart-recovery".to_string())
+    }
+
+    /// Determine affected components from emergency detection
+    fn determine_affected_components(&self, detection: &EmergencyDetection) -> Vec<String> {
+        let mut components = Vec::new();
+
+        // Extract from metric names in detection
+        for metric_name in detection.metric_values.keys() {
+            if metric_name.contains("agent") {
+                components.push("agent-subsystem".to_string());
+            }
+            if metric_name.contains("memory") || metric_name.contains("cpu") {
+                components.push("resource-management".to_string());
+            }
+            if metric_name.contains("network") {
+                components.push("network-layer".to_string());
+            }
+            if metric_name.contains("storage") || metric_name.contains("disk") {
+                components.push("storage-subsystem".to_string());
+            }
+        }
+
+        // Add from rule context
+        if detection.rule_id.contains("agent") {
+            components.push("agent-orchestration".to_string());
+        }
+
+        if components.is_empty() {
+            components.push("system-core".to_string());
+        }
+
+        components.sort();
+        components.dedup();
+        components
     }
 }
 
