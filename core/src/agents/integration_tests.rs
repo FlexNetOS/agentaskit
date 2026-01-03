@@ -158,7 +158,7 @@ impl Phase4IntegrationTest {
 
         // Test Executive → Specialized communication
         let code_gen_task = Task {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             name: "test_code_generation".to_string(),
             description: "Generate a simple function for testing".to_string(),
             task_type: "code_generation".to_string(),
@@ -205,7 +205,7 @@ impl Phase4IntegrationTest {
 
         // Test Board → Specialized communication (Analytics request)
         let analytics_task = Task {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             name: "test_analytics".to_string(),
             description: "Analyze test data".to_string(),
             task_type: "data_analytics".to_string(),
@@ -372,7 +372,7 @@ impl Phase4IntegrationTest {
 
         for (agent_name, task_name, params) in workflow_tasks {
             let task = Task {
-                id: TaskId::new(),
+                id: Uuid::new_v4(),
                 name: task_name.to_string(),
                 description: format!("Workflow step: {}", task_name),
                 task_type: agent_name.to_string(),
@@ -434,7 +434,7 @@ impl Phase4IntegrationTest {
         for i in 0..10 {
             let layer = &self.specialized_layer;
             let task = Task {
-                id: TaskId::new(),
+                id: Uuid::new_v4(),
                 name: format!("performance_test_{}", i),
                 description: "Performance testing task".to_string(),
                 task_type: "general".to_string(),
@@ -622,7 +622,7 @@ mod tests {
             .expect("Failed to create specialized layer");
 
         let task = Task {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             name: "test_task".to_string(),
             description: "Test task execution".to_string(),
             task_type: "testing".to_string(),
@@ -658,7 +658,7 @@ pub mod test_utils {
     /// Create a test task with standard parameters
     pub fn create_test_task(name: &str, agent_capability: &str) -> Task {
         Task {
-            id: TaskId::new(),
+            id: Uuid::new_v4(),
             name: name.to_string(),
             description: format!("Test task for {}", name),
             task_type: agent_capability.to_string(),
@@ -709,7 +709,7 @@ pub mod test_utils {
     pub fn generate_performance_tasks(count: usize) -> Vec<Task> {
         (0..count)
             .map(|i| Task {
-                id: TaskId::new(),
+                id: Uuid::new_v4(),
                 name: format!("perf_test_{}", i),
                 description: "Performance testing task".to_string(),
                 task_type: "performance".to_string(),

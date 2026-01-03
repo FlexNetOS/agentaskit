@@ -49,6 +49,11 @@ pub const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
     0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
 ]);
 
+/// Create a deterministic AgentId from a string name
+/// Uses UUID v5 (SHA-1 based) for consistent IDs across runs
+#[inline]
+pub fn agent_id_from_name(name: &str) -> AgentId {
+    AgentId::from_name(name)
 /// Enhanced: Common task identifier type with type safety
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -79,6 +84,35 @@ impl Default for TaskId {
 }
 
 /// Enhanced: Message identifier with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Enhanced: Common message identifier type with type safety
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct MessageId(pub Uuid);

@@ -2006,7 +2006,7 @@ impl ConnectorManager {
             connectors: HashMap::new(),
             connection_pool: Arc::new(ConnectionPool::new()),
             authentication_manager: Arc::new(AuthenticationManager::new()),
-            protocol_adapter: Arc::new(ProtocolAdapter::new()),
+            protocol_adapter: Arc::new(BasicProtocolAdapter),
             connector_factory: Arc::new(ConnectorFactory::new()),
             connection_monitor: Arc::new(ConnectionMonitor::new()),
             config,

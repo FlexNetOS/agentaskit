@@ -182,7 +182,7 @@ struct DeliveryFailure {
 }
 
 /// Communication performance metrics
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct CommunicationMetrics {
     /// Total messages sent
     pub messages_sent: u64,
