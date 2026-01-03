@@ -8,9 +8,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Legal Compliance Board Agent - Legal oversight and regulatory compliance
@@ -1107,20 +1108,10 @@ impl Agent for LegalComplianceBoardAgent {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let compliance_manager = self.compliance_manager.read().await;
+        let _state = self.state.read().await;
+        let _compliance_manager = self.compliance_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 3.0,                  // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: 0,
-            completed_tasks: compliance_manager.compliance_metrics.active_frameworks,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(120),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -1128,8 +1119,8 @@ impl Agent for LegalComplianceBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 

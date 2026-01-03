@@ -10,10 +10,11 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::agents::communication::CommunicationManager;
 use crate::agents::specialized::integration_agent::MessageBroker;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata,
     AgentRole, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    ResourceUsage, Task, TaskResult, TaskStatus,
+    ResourceUsage,
 };
 
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA
@@ -1436,20 +1437,10 @@ impl Agent for NoaCommander {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
+        let _state = self.state.read().await;
 
         // TODO: Calculate real health metrics
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0,                                   // Placeholder
-            memory_usage: 512 * 1024 * 1024,                   // 512MB placeholder
-            task_queue_size: 0,                                // Placeholder
-            completed_tasks: 0,                                // Placeholder
-            failed_tasks: 0,                                   // Placeholder
-            average_response_time: Duration::from_millis(100), // Placeholder
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -1461,8 +1452,8 @@ impl Agent for NoaCommander {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 

@@ -8,9 +8,10 @@ use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// System Orchestrator Agent - Operational workflow management
@@ -895,21 +896,11 @@ impl Agent for SystemOrchestrator {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let workflow_engine = self.workflow_engine.read().await;
-        let scheduler = self.scheduler.read().await;
+        let _state = self.state.read().await;
+        let _workflow_engine = self.workflow_engine.read().await;
+        let _scheduler = self.scheduler.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                 // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: scheduler.task_queue.len(),
-            completed_tasks: workflow_engine.metrics.completed_workflows,
-            failed_tasks: workflow_engine.metrics.failed_workflows,
-            average_response_time: workflow_engine.metrics.avg_execution_time,
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -919,8 +910,8 @@ impl Agent for SystemOrchestrator {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 
