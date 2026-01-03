@@ -17,6 +17,7 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Verify hashes and signatures
+        shell: pixi run bash -e {0}
         run: |
           nu -c '
             print "=== Verifying Hashes and Signatures ==="

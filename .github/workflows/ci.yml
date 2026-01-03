@@ -18,6 +18,7 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Lint with Nushell
+        shell: pixi run bash -e {0}
         run: |
           nu -c '
             print "Checking repo structure..."
@@ -56,6 +57,7 @@ jobs:
         uses: dtolnay/rust-action@stable
 
       - name: Build with Nushell
+        shell: pixi run bash -e {0}
         run: |
           nu -c '
             print $"Building on (sys host | get name)..."
@@ -76,6 +78,7 @@ jobs:
         uses: dtolnay/rust-action@stable
 
       - name: Test with Nushell
+        shell: pixi run bash -e {0}
         run: |
           nu -c '
             print "Running tests..."
@@ -97,6 +100,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Format and Clippy Check
+        shell: pixi run bash -e {0}
         run: |
           nu -c '
             print "Checking formatting..."
