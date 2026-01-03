@@ -25,7 +25,6 @@ use agentaskit_shared::{
 pub struct DeploymentAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -1403,7 +1402,6 @@ impl DeploymentAgent {
         Self {
             id,
             name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1635,7 +1633,7 @@ impl Agent for DeploymentAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 }
 
