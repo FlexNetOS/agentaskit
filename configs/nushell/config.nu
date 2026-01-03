@@ -12,26 +12,38 @@ $env.XDG_STATE_HOME = ($env.HOME | path join ".local" "state")
 $env.CARGO_HOME = ($env.XDG_DATA_HOME | path join "cargo")
 $env.RUSTUP_HOME = ($env.XDG_DATA_HOME | path join "rustup")
 
+# Direnv integration helper
+def --env "direnv-load" [] {
+    # Ensure direnv is available
+    if (which direnv | is-not-empty) {
+        let current_pwd = $env.PWD
+
+        # Avoid re-running direnv for the same directory
+        if ('DIRENV_LAST_PWD' in $env and $env.DIRENV_LAST_PWD == $current_pwd) {
+            return
+        }
+
+        # Export direnv environment
+        let direnv_export = (direnv export json | complete)
+        if $direnv_export.exit_code == 0 and ($direnv_export.stdout | str length) > 0 {
+            $direnv_export.stdout | from json | default {} | load-env
+            $env.DIRENV_LAST_PWD = $current_pwd
+        }
+    }
+}
+
 # Direnv integration hook
 # This runs before each prompt to load .envrc files
 $env.config = ($env.config | merge {
     hooks: {
         pre_prompt: [{ ||
-            # Check if direnv is available
-            if (which direnv | is-not-empty) {
-                # Export direnv environment
-                let direnv_export = (direnv export json | complete)
-                if $direnv_export.exit_code == 0 and ($direnv_export.stdout | str length) > 0 {
-                    $direnv_export.stdout | from json | default {} | load-env
-                }
-            }
+            # Load direnv environment for the current directory (if needed)
+            direnv-load
         }]
         env_change: {
             PWD: [{ |before, after|
                 # Trigger direnv on directory change
-                if (which direnv | is-not-empty) {
-                    direnv export json | from json | default {} | load-env
-                }
+                direnv-load
             }]
         }
     }
