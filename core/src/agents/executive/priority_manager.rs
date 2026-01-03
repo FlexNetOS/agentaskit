@@ -590,12 +590,12 @@ impl PriorityManager {
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 256 * 1024 * 1024, // 256MB
-                min_storage: 5 * 1024 * 1024,  // 5MB
-                max_cpu: 1.5,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 100 * 1024 * 1024,     // 100MB
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(100),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             tags: std::collections::HashMap::new(),
         };

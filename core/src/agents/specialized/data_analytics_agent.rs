@@ -698,7 +698,14 @@ impl DataAnalyticsAgent {
             health_status: HealthStatus::Unknown,
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
-            resource_requirements: ResourceRequirements::default(),
+            resource_requirements: ResourceRequirements {
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
+            },
             tags: HashMap::new(),
         };
 

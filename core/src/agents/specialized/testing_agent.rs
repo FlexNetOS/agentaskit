@@ -878,12 +878,12 @@ impl TestingAgent {
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Unknown,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024,  // 4GB
-                min_storage: 2 * 1024 * 1024 * 1024, // 2GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024,   // 32GB
-                max_storage: 100 * 1024 * 1024 * 1024, // 100GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: vec!["test-framework".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),

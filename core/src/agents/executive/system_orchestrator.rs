@@ -478,7 +478,7 @@ impl SystemOrchestrator {
         let metadata = AgentMetadata {
             id: AgentId::from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
             capabilities: vec![
                 "workflow-orchestration".to_string(),
                 "task-scheduling".to_string(),
@@ -488,16 +488,19 @@ impl SystemOrchestrator {
                 "coordination".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 5 * 1024 * 1024,  // 5MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 500 * 1024 * 1024,     // 500MB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(500),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {

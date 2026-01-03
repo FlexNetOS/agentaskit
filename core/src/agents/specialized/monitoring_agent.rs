@@ -1020,12 +1020,12 @@ impl MonitoringAgent {
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
-                min_storage: 50 * 1024 * 1024 * 1024, // 50GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024,    // 32GB
-                max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(102400),
+                network_bandwidth_mbps: Some(200.0),
+                gpu_required: false,
+                special_capabilities: vec!["metrics".to_string(), "time-series".to_string()],
             },
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),

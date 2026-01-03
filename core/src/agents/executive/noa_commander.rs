@@ -758,7 +758,7 @@ impl NoaCommander {
         let metadata = AgentMetadata {
             id: AgentId::from_name("noa-commander"),
             name: "NOA Commander".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
             capabilities: vec![
                 "strategic-planning".to_string(),
                 "resource-allocation".to_string(),
@@ -770,16 +770,19 @@ impl NoaCommander {
                 "risk-management".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 10 * 1024 * 1024,  // 10MB
-                max_cpu: 4.0,
-                max_memory: 8 * 1024 * 1024 * 1024, // 8GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: config.health_check_interval,
+            tags: std::collections::HashMap::new(),
         };
 
         Self {

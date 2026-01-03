@@ -599,12 +599,12 @@ impl ResourceAllocator {
             created_at: chrono::Utc::now(),
             last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 10 * 1024 * 1024, // 10MB
-                max_cpu: 2.0,
-                max_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                max_storage: 1024 * 1024 * 1024,    // 1GB
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
             tags: std::collections::HashMap::new(),
         };
@@ -827,11 +827,11 @@ impl ResourceAllocator {
         requirements: &ResourceRequirements,
     ) -> ResourceCapacity {
         ResourceCapacity {
-            cpu_cores: requirements.max_cpu as f64,
-            memory_bytes: requirements.max_memory,
-            storage_bytes: requirements.max_storage,
-            network_mbps: 100.0, // Default
-            gpu_units: 0,
+            cpu_cores: requirements.cpu_cores.unwrap_or(1) as f64,
+            memory_bytes: requirements.memory_mb.unwrap_or(512) * 1024 * 1024,
+            storage_bytes: requirements.storage_mb.unwrap_or(100) * 1024 * 1024,
+            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100.0),
+            gpu_units: if requirements.gpu_required { 1 } else { 0 },
             custom_units: HashMap::new(),
         }
     }
@@ -1049,12 +1049,12 @@ impl Agent for ResourceAllocator {
 
                 // Parse resource requirements from parameters
                 let requirements = ResourceRequirements {
-                    min_cpu: 0.1,
-                    min_memory: 128 * 1024 * 1024,
-                    min_storage: 1024 * 1024,
-                    max_cpu: 1.0,
-                    max_memory: 1024 * 1024 * 1024,
-                    max_storage: 100 * 1024 * 1024,
+                    cpu_cores: Some(1),
+                    memory_mb: Some(1024),
+                    storage_mb: Some(100),
+                    network_bandwidth_mbps: Some(50.0),
+                    gpu_required: false,
+                    special_capabilities: Vec::new(),
                 };
 
                 let allocation = self
