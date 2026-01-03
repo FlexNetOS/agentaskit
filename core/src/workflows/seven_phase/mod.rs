@@ -21,7 +21,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::AgentMessage;
-use agentaskit_shared::{AgentId, Task, TaskStatus};
+use agentaskit_shared::{AgentId, Task, TaskId, TaskStatus};
 use crate::workflows::{ChatRequest, TaskSubject, VerificationProtocol, VerificationStatus};
 
 pub mod phase_five;
@@ -574,8 +574,8 @@ impl SevenPhaseOrchestrator {
                 deliverable_specifications: Vec::new(),
                 target_locations: Vec::new(),
                 timeline: crate::workflows::ExecutionTimeline {
-                    start_date: Utc::now(),
-                    end_date: Utc::now() + chrono::Duration::days(1),
+                    start_time: Utc::now(),
+                    estimated_end_time: Utc::now() + chrono::Duration::days(1),
                     milestones: Vec::new(),
                     critical_path: Vec::new(),
                 },
