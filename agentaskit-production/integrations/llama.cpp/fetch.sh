@@ -1,5 +1,13 @@
 #!/bin/bash
 # Fetch and build llama.cpp
+#
+# SECURITY NOTE: This script fetches llama.cpp from an external repository
+# using a mutable ref (LLAMA_VERSION defaults to 'master'). For production
+# deployments, it is strongly recommended to:
+# 1. Pin to a specific trusted commit or tag instead of a branch
+# 2. Add integrity or signature verification
+# 3. Consider using a git submodule with a pinned commit
+# This reduces supply chain risk from compromised upstream repositories.
 set -e
 
 LLAMA_VERSION="${LLAMA_VERSION:-master}"
@@ -12,7 +20,9 @@ if [ -d "$VENDOR_DIR" ] && [ -d "$VENDOR_DIR/.git" ]; then
     cd "$VENDOR_DIR"
     git fetch origin
     git checkout "$LLAMA_VERSION"
-    git pull origin "$LLAMA_VERSION" || true
+    if ! git pull origin "$LLAMA_VERSION"; then
+        echo "Warning: 'git pull origin \"$LLAMA_VERSION\"' failed. Continuing with the currently checked-out revision." >&2
+    fi
 else
     echo "Cloning llama.cpp..."
     git clone https://github.com/ggerganov/llama.cpp.git "$VENDOR_DIR"

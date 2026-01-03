@@ -35,7 +35,7 @@ jobs:
           import sys
           
           try:
-              with open('slo/policies.yaml', 'r') as f:
+              with open('agentaskit-production/slo/policies.yaml', 'r') as f:
                   policy = yaml.safe_load(f)
               
               # Validate required fields
@@ -59,7 +59,7 @@ jobs:
           python -c "
           import yaml
           
-          with open('slo/policies.yaml', 'r') as f:
+          with open('agentaskit-production/slo/policies.yaml', 'r') as f:
               policy = yaml.safe_load(f)
           
           print('| SLO | Target | Type |')
@@ -72,8 +72,8 @@ jobs:
 
       - name: Verify alert rules exist
         run: |
-          if [ -f "alerts/alerting-rules.yaml" ]; then
+          if [ -f "agentaskit-production/alerts/alerting-rules.yaml" ]; then
             echo "✓ Alert rules file exists"
           else
-            echo "⚠️ Warning: alerts/alerting-rules.yaml not found"
+            echo "⚠️ Warning: agentaskit-production/alerts/alerting-rules.yaml not found"
           fi

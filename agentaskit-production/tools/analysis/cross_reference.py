@@ -12,12 +12,11 @@ Analyzes production code against archive versions (V2-V7) to identify:
 import argparse
 import hashlib
 import json
-import os
 import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 
 class CrossReferenceAnalyzer:
@@ -39,9 +38,14 @@ class CrossReferenceAnalyzer:
     def compute_file_hash(self, filepath: Path) -> str:
         """Compute SHA-256 hash of file contents."""
         try:
+            hash_obj = hashlib.sha256()
             with open(filepath, 'rb') as f:
-                return hashlib.sha256(f.read()).hexdigest()
-        except Exception:
+                # Read file in 1MB chunks to avoid loading large files entirely into memory
+                for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                    hash_obj.update(chunk)
+            return hash_obj.hexdigest()
+        except (OSError, IOError) as e:
+            print(f"Warning: failed to compute hash for {filepath}: {e}", file=sys.stderr)
             return ""
 
     def get_file_info(self, filepath: Path, base_dir: Path) -> dict:
