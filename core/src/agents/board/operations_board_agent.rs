@@ -23,6 +23,7 @@ use agentaskit_shared::{
 /// - Operational risk management and compliance
 /// - Resource efficiency and capacity planning
 /// - Operational governance and oversight
+#[derive(Debug)]
 pub struct OperationsBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

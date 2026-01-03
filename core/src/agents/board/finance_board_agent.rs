@@ -22,6 +22,7 @@ use agentaskit_shared::{
 /// - Revenue and profitability analysis
 /// - Investment decision support
 /// - Financial reporting and governance
+#[derive(Debug)]
 pub struct FinanceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

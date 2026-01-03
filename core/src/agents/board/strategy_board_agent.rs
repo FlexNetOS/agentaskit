@@ -23,6 +23,7 @@ use agentaskit_shared::{
 /// - Strategic decision support and recommendation
 /// - Risk assessment for strategic initiatives
 /// - Alignment of tactical decisions with strategic objectives
+#[derive(Debug)]
 pub struct StrategyBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

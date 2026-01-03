@@ -24,6 +24,7 @@ use agentaskit_shared::{
 /// - Identifying trends, patterns, and strategic opportunities
 /// - Supporting informed decision-making across the organization
 /// - Maintaining organizational knowledge and institutional memory
+#[derive(Debug)]
 pub struct DigestAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

@@ -37,7 +37,8 @@ pub mod self_improving;
 pub mod verification;
 
 // Re-export commonly used types for convenience
-pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
+pub use agents::{Agent, AgentLayer, AgentManager};
+pub use agentaskit_shared::AgentStatus;
 pub use communication::{Message, MessageBroker, MessageType, Priority as MessagePriority};
 pub use monitoring::{AgentMetrics, Alert, AlertLevel, MetricsCollector, SystemMetrics};
 pub use orchestration::{OrchestratorEngine, Priority, Task, TaskStatus, TaskType};

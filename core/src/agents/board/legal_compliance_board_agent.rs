@@ -23,6 +23,7 @@ use agentaskit_shared::{
 /// - Policy development and enforcement
 /// - Legal documentation and audit support
 /// - Compliance training and awareness programs
+#[derive(Debug)]
 pub struct LegalComplianceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

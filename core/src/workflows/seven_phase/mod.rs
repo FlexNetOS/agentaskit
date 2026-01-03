@@ -20,7 +20,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
+use crate::agents::AgentMessage;
+use agentaskit_shared::{AgentId, Task, TaskStatus};
 use crate::workflows::{ChatRequest, TaskSubject, VerificationProtocol, VerificationStatus};
 
 pub mod phase_five;
@@ -509,11 +510,13 @@ impl SevenPhaseOrchestrator {
                 verification_results: Vec::new(),
             },
             truth_gate_requirements: crate::workflows::TruthGateRequirements {
-                minimum_evidence_count: 3,
-                required_verification_passes: vec!["self_check".to_string()],
-                mathematical_proof_required: false,
-                external_validation_required: false,
-                consensus_threshold: 0.8,
+                artifact_presence: true,
+                smoke_test_passed: false,
+                spec_match_verified: false,
+                limits_documented: false,
+                hashes_provided: false,
+                gap_scan_complete: false,
+                triple_verification_complete: false,
             },
         })
     }

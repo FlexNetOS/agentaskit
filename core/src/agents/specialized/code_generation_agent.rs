@@ -722,17 +722,18 @@ impl CodeGenerationAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: code_generation_capabilities,
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(10240),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: vec!["llm".to_string(), "code-analysis".to_string()],
             },

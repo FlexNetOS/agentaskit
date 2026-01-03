@@ -583,7 +583,7 @@ struct PipelineExecution {
 }
 
 /// Pipeline status
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum PipelineStatus {
     Queued,
     Running,
@@ -607,7 +607,7 @@ struct StageResult {
 }
 
 /// Stage status
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum StageStatus {
     Pending,
     Running,
@@ -618,7 +618,7 @@ enum StageStatus {
 }
 
 /// Stage metrics
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct StageMetrics {
     pub execution_time: Duration,
     pub cpu_usage: f64,
@@ -1374,17 +1374,18 @@ impl DeploymentAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: deployment_capabilities,
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(10240),
-                network_bandwidth_mbps: Some(200.0),
+                network_bandwidth_mbps: Some(200),
                 gpu_required: false,
                 special_capabilities: vec!["kubernetes".to_string(), "docker".to_string()],
             },

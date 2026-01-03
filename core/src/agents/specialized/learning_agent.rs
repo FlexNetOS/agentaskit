@@ -1125,17 +1125,18 @@ impl LearningAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities,
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(8),
                 memory_mb: Some(16384),
                 storage_mb: Some(102400),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: true,
                 special_capabilities: vec!["gpu".to_string(), "ml-framework".to_string()],
             },
