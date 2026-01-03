@@ -760,6 +760,7 @@ impl EnhancedWorkflowProcessor {
                 created_at: Utc::now(),
                 started_at: None,
                 completed_at: None,
+            deadline: None,
                 timeout: Some(Utc::now() + step.estimated_duration),
                 retry_count: 0,
                 max_retries: 3,

@@ -100,7 +100,7 @@ impl BoardCoordinator {
             response_id: Uuid::new_v4(),
             escalation_id: escalation.escalation_id,
             resolution_strategy: "Board coordination response".to_string(),
-            assigned_agents: vec![AgentId::from_name("strategy-board-agent")],
+            assigned_agents: vec![agentaskit_shared::agent_utils::agent_id_from_name("strategy-board-agent")],
             expected_resolution_time: Duration::from_secs(3600), // 1 hour
             priority: Priority::High,
             follow_up_required: true,

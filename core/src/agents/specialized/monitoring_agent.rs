@@ -1258,7 +1258,7 @@ impl Agent for MonitoringAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Monitoring task failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

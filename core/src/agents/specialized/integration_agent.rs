@@ -1079,7 +1079,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Service registration failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1096,7 +1096,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("API route creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1113,7 +1113,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data transformation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1130,7 +1130,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Workflow execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1147,7 +1147,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("System connection failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1164,7 +1164,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Message publish failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1181,7 +1181,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Protocol conversion failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1189,12 +1189,12 @@ impl Agent for IntegrationAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Integration status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 

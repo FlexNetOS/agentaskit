@@ -1118,7 +1118,7 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Security scan failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1136,7 +1136,7 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Incident response failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1162,7 +1162,7 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Policy enforcement failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1178,7 +1178,7 @@ impl Agent for SecuritySpecialistAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Audit report generation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1186,12 +1186,12 @@ impl Agent for SecuritySpecialistAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Security status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 

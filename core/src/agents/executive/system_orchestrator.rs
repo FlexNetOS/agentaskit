@@ -476,7 +476,7 @@ impl Default for PerformanceThresholds {
 impl SystemOrchestrator {
     pub fn new(config: OrchestratorConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("system-orchestrator"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

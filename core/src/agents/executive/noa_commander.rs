@@ -755,7 +755,7 @@ enum BenchmarkTrend {
 impl NoaCommander {
     pub fn new(config: CommanderConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("noa-commander"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("noa-commander"),
             name: "NOA Commander".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

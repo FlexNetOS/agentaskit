@@ -1114,7 +1114,7 @@ impl Agent for TestingAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Testing failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

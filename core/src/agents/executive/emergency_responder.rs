@@ -770,7 +770,7 @@ enum ResolutionSource {
 impl EmergencyResponder {
     pub fn new(config: EmergencyResponderConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("emergency-responder"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("emergency-responder"),
             name: "Emergency Responder".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

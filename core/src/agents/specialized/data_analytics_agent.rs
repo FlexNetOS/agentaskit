@@ -1098,7 +1098,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1118,7 +1118,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data analysis failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1135,7 +1135,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Model training failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1152,7 +1152,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Visualization creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1169,7 +1169,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Report generation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1186,7 +1186,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Query execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1203,7 +1203,7 @@ impl Agent for DataAnalyticsAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Stream processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1211,12 +1211,12 @@ impl Agent for DataAnalyticsAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Analytics status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 
