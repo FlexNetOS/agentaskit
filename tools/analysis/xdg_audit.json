@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-03T15:51:54Z",
+  "timestamp": "YYYY-MM-DDTHH:MM:SSZ",
   "tool": "manual-audit",
   "xdg_paths": {
     "XDG_CONFIG_HOME": "/root/.config",
