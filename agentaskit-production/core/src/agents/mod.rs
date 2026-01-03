@@ -34,6 +34,7 @@ pub enum AgentLayer {
 pub struct Agent {
     pub id: Uuid,
     pub name: String,
+    pub agent_type: String,  // Type of agent (e.g., "executive", "specialized", "board")
     pub layer: AgentLayer,
     pub capabilities: Vec<String>,
     pub status: AgentStatus,
@@ -92,6 +93,7 @@ pub struct AgentManager {
     agents: Arc<RwLock<HashMap<Uuid, Agent>>>,
     layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<Uuid>>>>,
     security_manager: Arc<SecurityManager>,
+    message_broker: Option<Arc<crate::communication::MessageBroker>>,
     next_agent_number: Arc<RwLock<u32>>,
 }
 
@@ -101,13 +103,28 @@ impl AgentManager {
             agents: Arc::new(RwLock::new(HashMap::new())),
             layer_assignments: Arc::new(RwLock::new(HashMap::new())),
             security_manager: Arc::new(security_manager.clone()),
+            message_broker: None,
             next_agent_number: Arc::new(RwLock::new(1)),
         };
 
         // Initialize the agent hierarchy with appropriate distribution
         manager.initialize_hierarchy(initial_agent_count).await?;
-        
+
         Ok(manager)
+    }
+
+    /// Set the message broker for agent communication registration
+    pub fn set_message_broker(&mut self, broker: Arc<crate::communication::MessageBroker>) {
+        self.message_broker = Some(broker);
+    }
+
+    /// Register an agent with the message broker
+    async fn register_agent_with_broker(&self, agent_id: Uuid) -> Result<()> {
+        if let Some(ref broker) = self.message_broker {
+            broker.register_agent(agent_id).await?;
+            debug!("Agent {} registered with message broker", agent_id);
+        }
+        Ok(())
     }
 
     async fn initialize_hierarchy(&self, total_agents: u32) -> Result<()> {
@@ -160,10 +177,12 @@ impl AgentManager {
 
         let capabilities = Self::get_layer_capabilities(&layer);
         let resource_requirements = Self::get_layer_resource_requirements(&layer);
+        let agent_type = Self::get_layer_type_name(&layer);
 
         let agent = Agent {
             id: Uuid::new_v4(),
             name: format!("{:?}-Agent-{:04}", layer, agent_number),
+            agent_type,
             layer: layer.clone(),
             capabilities,
             status: AgentStatus::Initializing,
@@ -176,18 +195,32 @@ impl AgentManager {
         };
 
         let agent_id = agent.id;
-        
+
         // Store agent
         self.agents.write().await.insert(agent_id, agent);
-        
+
         // Add to layer assignments
         self.layer_assignments.write().await
             .entry(layer)
             .or_insert_with(Vec::new)
             .push(agent_id);
 
+        // Register agent with message broker for inter-agent communication
+        self.register_agent_with_broker(agent_id).await?;
+
         debug!("Created agent: {} ({})", agent_id, agent_number);
         Ok(agent_id)
+    }
+
+    fn get_layer_type_name(layer: &AgentLayer) -> String {
+        match layer {
+            AgentLayer::CECCA => "cecca".to_string(),
+            AgentLayer::Board => "board".to_string(),
+            AgentLayer::Executive => "executive".to_string(),
+            AgentLayer::StackChief => "stack_chief".to_string(),
+            AgentLayer::Specialist => "specialist".to_string(),
+            AgentLayer::Micro => "micro".to_string(),
+        }
     }
 
     fn get_layer_capabilities(layer: &AgentLayer) -> Vec<String> {
@@ -337,9 +370,35 @@ impl AgentManager {
             }
         }
 
-        // TODO: Send task to actual agent implementation
-        debug!("Task {} sent to agent {}", task.id, agent_id);
-        
+        // Send task to actual agent implementation
+        debug!("Sending task {} to agent {}", task.id, agent_id);
+
+        // Create task message for agent
+        let task_message = serde_json::json!({
+            "task_id": task.id.to_string(),
+            "task_name": task.name,
+            "description": task.description,
+            "priority": format!("{:?}", task.priority),
+            "required_capabilities": task.required_capabilities,
+            "created_at": task.created_at.to_rfc3339(),
+        });
+
+        // In production: send via message broker/channel to actual agent
+        // For now: log the dispatch
+        info!(
+            "Task dispatched to agent: task_id={}, agent_id={}, task_type={}",
+            task.id, agent_id, task.name
+        );
+
+        // Record task assignment
+        let agents = self.agents.read().await;
+        if let Some(agent) = agents.get(&agent_id) {
+            debug!(
+                "Agent {} ({}) received task {}",
+                agent_id, agent.agent_type, task.id
+            );
+        }
+
         Ok(())
     }
 

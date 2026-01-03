@@ -8,13 +8,14 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Strategy Board Agent - Strategic planning and decision-making
-/// 
+///
 /// The Strategy Board Agent is responsible for:
 /// - Long-term strategic planning and vision setting
 /// - Market analysis and competitive intelligence
@@ -26,19 +27,19 @@ pub struct StrategyBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Strategic planning engine
     planning_engine: Arc<RwLock<StrategyPlanningEngine>>,
-    
+
     /// Market analysis system
     market_analyzer: Arc<RwLock<MarketAnalyzer>>,
-    
+
     /// Strategic decision framework
     decision_framework: Arc<RwLock<StrategicDecisionFramework>>,
-    
+
     /// Goal management system
     goal_manager: Arc<RwLock<StrategyGoalManager>>,
-    
+
     /// Configuration
     config: StrategyBoardConfig,
 }
@@ -48,22 +49,22 @@ pub struct StrategyBoardAgent {
 pub struct StrategyBoardConfig {
     /// Strategic planning cycle duration
     pub planning_cycle: Duration,
-    
+
     /// Market analysis update frequency
     pub market_analysis_interval: Duration,
-    
+
     /// Goal review frequency
     pub goal_review_interval: Duration,
-    
+
     /// Strategy horizon (how far ahead to plan)
     pub strategy_horizon: Duration,
-    
+
     /// Risk tolerance level (0.0 = risk averse, 1.0 = risk seeking)
     pub risk_tolerance: f64,
-    
+
     /// Innovation priority weight
     pub innovation_weight: f64,
-    
+
     /// Stakeholder considerations
     pub stakeholder_weights: HashMap<String, f64>,
 }
@@ -92,16 +93,16 @@ impl Default for StrategyBoardConfig {
 struct StrategyPlanningEngine {
     /// Current strategic plan
     current_plan: Option<StrategicPlan>,
-    
+
     /// Strategic initiatives
     initiatives: HashMap<String, StrategicInitiative>,
-    
+
     /// Planning methodologies
     methodologies: Vec<PlanningMethodology>,
-    
+
     /// Planning history
     planning_history: VecDeque<PlanningSession>,
-    
+
     /// Strategic metrics
     metrics: StrategyMetrics,
 }
@@ -258,13 +259,13 @@ struct StrategyMetrics {
 struct MarketAnalyzer {
     /// Market intelligence data
     market_data: HashMap<String, MarketIntelligence>,
-    
+
     /// Competitive analysis
     competitive_landscape: Vec<CompetitorAnalysis>,
-    
+
     /// Market trends
     trends: Vec<MarketTrend>,
-    
+
     /// Analysis models
     analysis_models: Vec<AnalysisModel>,
 }
@@ -339,10 +340,10 @@ struct AnalysisModel {
 /// Types of analysis
 #[derive(Debug)]
 enum AnalysisType {
-    SWOT, // Strengths, Weaknesses, Opportunities, Threats
-    PEST, // Political, Economic, Social, Technological
+    SWOT,       // Strengths, Weaknesses, Opportunities, Threats
+    PEST,       // Political, Economic, Social, Technological
     FiveForces, // Porter's Five Forces
-    BlueOcean, // Blue Ocean Strategy
+    BlueOcean,  // Blue Ocean Strategy
     Custom(String),
 }
 
@@ -351,13 +352,13 @@ enum AnalysisType {
 struct StrategicDecisionFramework {
     /// Decision criteria
     decision_criteria: Vec<DecisionCriterion>,
-    
+
     /// Decision models
     decision_models: Vec<DecisionModel>,
-    
+
     /// Decision history
     decision_history: VecDeque<StrategicDecision>,
-    
+
     /// Framework metrics
     framework_metrics: DecisionMetrics,
 }
@@ -397,13 +398,13 @@ struct DecisionMetrics {
 struct StrategyGoalManager {
     /// Strategic goals
     goals: HashMap<String, StrategicGoal>,
-    
+
     /// Goal hierarchies
     goal_hierarchies: Vec<GoalHierarchy>,
-    
+
     /// Goal tracking metrics
     goal_metrics: GoalMetrics,
-    
+
     /// Alignment assessments
     alignment_assessments: Vec<AlignmentAssessment>,
 }
@@ -469,9 +470,9 @@ struct AlignmentAssessment {
 impl StrategyBoardAgent {
     pub fn new(config: StrategyBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("strategy-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("strategy-board-agent"),
             name: "Strategy Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "strategic-planning".to_string(),
                 "market-analysis".to_string(),
@@ -481,16 +482,19 @@ impl StrategyBoardAgent {
                 "stakeholder-alignment".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 50 * 1024 * 1024,  // 50MB
-                max_cpu: 1.5,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 2 * 1024 * 1024 * 1024, // 2GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(2048),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -514,7 +518,7 @@ impl StrategyBoardAgent {
         timeline: Duration,
     ) -> Result<String> {
         let mut planning_engine = self.planning_engine.write().await;
-        
+
         let plan_id = format!("plan-{}", Uuid::new_v4());
         let plan = StrategicPlan {
             plan_id: plan_id.clone(),
@@ -529,23 +533,26 @@ impl StrategyBoardAgent {
             last_updated: Instant::now(),
             status: PlanStatus::Draft,
         };
-        
+
         planning_engine.current_plan = Some(plan);
         planning_engine.metrics.total_plans += 1;
-        
+
         tracing::info!("Created strategic plan: {}", plan_id);
         Ok(plan_id)
     }
 
     /// Conduct market analysis
-    pub async fn conduct_market_analysis(&self, market_segment: String) -> Result<MarketIntelligence> {
+    pub async fn conduct_market_analysis(
+        &self,
+        market_segment: String,
+    ) -> Result<MarketIntelligence> {
         let mut market_analyzer = self.market_analyzer.write().await;
-        
+
         // TODO: Implement real market analysis
         let intelligence = MarketIntelligence {
             market_segment: market_segment.clone(),
             market_size: 1000000.0, // Placeholder
-            growth_rate: 0.15, // 15% growth
+            growth_rate: 0.15,      // 15% growth
             key_players: vec!["Competitor A".to_string(), "Competitor B".to_string()],
             market_dynamics: vec![
                 "Digital transformation".to_string(),
@@ -561,10 +568,15 @@ impl StrategyBoardAgent {
             ],
             last_updated: Instant::now(),
         };
-        
-        market_analyzer.market_data.insert(market_segment, intelligence.clone());
-        
-        tracing::info!("Completed market analysis for: {}", intelligence.market_segment);
+
+        market_analyzer
+            .market_data
+            .insert(market_segment, intelligence.clone());
+
+        tracing::info!(
+            "Completed market analysis for: {}",
+            intelligence.market_segment
+        );
         Ok(intelligence)
     }
 
@@ -575,7 +587,7 @@ impl StrategyBoardAgent {
         alternatives: Vec<String>,
     ) -> Result<StrategicDecision> {
         let mut decision_framework = self.decision_framework.write().await;
-        
+
         // TODO: Implement decision-making algorithm
         let decision = StrategicDecision {
             decision_id: Uuid::new_v4(),
@@ -587,10 +599,12 @@ impl StrategyBoardAgent {
             decided_at: Instant::now(),
             decision_maker: self.metadata.id,
         };
-        
-        decision_framework.decision_history.push_back(decision.clone());
+
+        decision_framework
+            .decision_history
+            .push_back(decision.clone());
         decision_framework.framework_metrics.total_decisions += 1;
-        
+
         tracing::info!("Made strategic decision: {}", decision.decision_id);
         Ok(decision)
     }
@@ -605,7 +619,7 @@ impl StrategyBoardAgent {
         target_date: Option<Instant>,
     ) -> Result<String> {
         let mut goal_manager = self.goal_manager.write().await;
-        
+
         let goal_id = format!("goal-{}", Uuid::new_v4());
         let goal = StrategicGoal {
             goal_id: goal_id.clone(),
@@ -621,10 +635,10 @@ impl StrategyBoardAgent {
             dependencies: Vec::new(),
             contributing_initiatives: Vec::new(),
         };
-        
+
         goal_manager.goals.insert(goal_id.clone(), goal);
         goal_manager.goal_metrics.total_goals += 1;
-        
+
         tracing::info!("Set strategic goal: {}", goal_id);
         Ok(goal_id)
     }
@@ -633,7 +647,7 @@ impl StrategyBoardAgent {
     pub async fn get_strategy_status(&self) -> Result<StrategyStatus> {
         let planning_engine = self.planning_engine.read().await;
         let goal_manager = self.goal_manager.read().await;
-        
+
         Ok(StrategyStatus {
             has_active_plan: planning_engine.current_plan.is_some(),
             total_initiatives: planning_engine.initiatives.len(),
@@ -668,28 +682,30 @@ impl Agent for StrategyBoardAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Strategy Board Agent");
-        
+
         // Initialize planning methodologies
         let mut planning_engine = self.planning_engine.write().await;
-        self.initialize_planning_methodologies(&mut planning_engine).await?;
-        
+        self.initialize_planning_methodologies(&mut planning_engine)
+            .await?;
+
         // Initialize decision framework
         let mut decision_framework = self.decision_framework.write().await;
-        self.initialize_decision_criteria(&mut decision_framework).await?;
-        
+        self.initialize_decision_criteria(&mut decision_framework)
+            .await?;
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Strategy Board Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Strategy Board Agent");
-        
+
         // Start strategic planning cycle
         let planning_engine = self.planning_engine.clone();
         let planning_cycle = self.config.planning_cycle;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(planning_cycle);
             loop {
@@ -699,11 +715,11 @@ impl Agent for StrategyBoardAgent {
                 }
             }
         });
-        
+
         // Start market analysis
         let market_analyzer = self.market_analyzer.clone();
         let analysis_interval = self.config.market_analysis_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(analysis_interval);
             loop {
@@ -713,16 +729,16 @@ impl Agent for StrategyBoardAgent {
                 }
             }
         });
-        
+
         tracing::info!("Strategy Board Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Strategy Board Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Strategy Board Agent stopped successfully");
         Ok(())
     }
@@ -731,7 +747,7 @@ impl Agent for StrategyBoardAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -746,97 +762,87 @@ impl Agent for StrategyBoardAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "create-strategic-plan" => {
-                let vision = task.parameters.get("vision")
+                let vision = task
+                    .input_data
+                    .get("vision")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Default vision")
                     .to_string();
-                
-                let plan_id = self.create_strategic_plan(
-                    vision,
-                    "Default mission".to_string(),
-                    Vec::new(),
-                    self.config.strategy_horizon,
-                ).await?;
-                
+
+                let plan_id = self
+                    .create_strategic_plan(
+                        vision,
+                        "Default mission".to_string(),
+                        Vec::new(),
+                        self.config.strategy_horizon,
+                    )
+                    .await?;
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({"plan_id": plan_id, "created": true}),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    output_data: Some(serde_json::json!({"plan_id": plan_id, "created": true})),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "conduct-market-analysis" => {
-                let market_segment = task.parameters.get("market_segment")
+                let market_segment = task
+                    .input_data
+                    .get("market_segment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("general")
                     .to_string();
-                
+
                 let intelligence = self.conduct_market_analysis(market_segment).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "market_segment": intelligence.market_segment,
                         "market_size": intelligence.market_size,
                         "growth_rate": intelligence.growth_rate,
                         "opportunities_count": intelligence.opportunities.len(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
                 let status = self.get_strategy_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "has_active_plan": status.has_active_plan,
                         "total_initiatives": status.total_initiatives,
                         "active_goals": status.active_goals,
                         "strategic_alignment": status.strategic_alignment,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Strategy planning failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let planning_engine = self.planning_engine.read().await;
-        
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 5.0, // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: 0,
-            completed_tasks: planning_engine.metrics.total_plans,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(200),
-        })
+        let _state = self.state.read().await;
+        let _planning_engine = self.planning_engine.read().await;
+
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -844,8 +850,8 @@ impl Agent for StrategyBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 
@@ -883,13 +889,16 @@ impl StrategyBoardAgent {
                 success_rate: 0.80,
             },
         ];
-        
+
         planning_engine.methodologies = methodologies;
-        
-        tracing::info!("Initialized {} planning methodologies", planning_engine.methodologies.len());
+
+        tracing::info!(
+            "Initialized {} planning methodologies",
+            planning_engine.methodologies.len()
+        );
         Ok(())
     }
-    
+
     /// Initialize decision criteria
     async fn initialize_decision_criteria(
         &self,
@@ -932,17 +941,22 @@ impl StrategyBoardAgent {
                 enabled: true,
             },
         ];
-        
+
         decision_framework.decision_criteria = criteria;
-        
-        tracing::info!("Initialized {} decision criteria", decision_framework.decision_criteria.len());
+
+        tracing::info!(
+            "Initialized {} decision criteria",
+            decision_framework.decision_criteria.len()
+        );
         Ok(())
     }
-    
+
     /// Run strategic planning cycle (background task)
-    async fn run_planning_cycle(planning_engine: Arc<RwLock<StrategyPlanningEngine>>) -> Result<()> {
+    async fn run_planning_cycle(
+        planning_engine: Arc<RwLock<StrategyPlanningEngine>>,
+    ) -> Result<()> {
         let mut planning_engine = planning_engine.write().await;
-        
+
         // TODO: Implement strategic planning cycle
         // This would involve:
         // 1. Review current plan status
@@ -950,15 +964,15 @@ impl StrategyBoardAgent {
         // 3. Update strategic objectives
         // 4. Adjust resource allocations
         // 5. Communicate updates to stakeholders
-        
+
         tracing::debug!("Strategic planning cycle completed");
         Ok(())
     }
-    
+
     /// Run market analysis (background task)
     async fn run_market_analysis(market_analyzer: Arc<RwLock<MarketAnalyzer>>) -> Result<()> {
         let mut market_analyzer = market_analyzer.write().await;
-        
+
         // TODO: Implement market analysis
         // This would involve:
         // 1. Collect market data from various sources
@@ -966,7 +980,7 @@ impl StrategyBoardAgent {
         // 3. Identify trends and opportunities
         // 4. Update threat assessments
         // 5. Generate market intelligence reports
-        
+
         tracing::debug!("Market analysis cycle completed");
         Ok(())
     }

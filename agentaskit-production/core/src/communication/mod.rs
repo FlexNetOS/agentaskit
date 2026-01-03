@@ -39,6 +39,7 @@ pub struct Message {
     pub message_type: MessageType,
     pub priority: Priority,
     pub payload: serde_json::Value,
+    pub metadata: HashMap<String, serde_json::Value>, // Additional message metadata
     pub correlation_id: Option<Uuid>, // For request-response pairing
     pub timestamp: chrono::DateTime<chrono::Utc>,
     pub timeout: Option<chrono::DateTime<chrono::Utc>>,
@@ -59,6 +60,7 @@ impl Message {
             message_type,
             priority,
             payload,
+            metadata: HashMap::new(),
             correlation_id: None,
             timestamp: chrono::Utc::now(),
             timeout: None,
@@ -242,17 +244,39 @@ impl MessageBroker {
         // Send the request
         self.send_message(request.clone()).await?;
 
-        // TODO: Implement response waiting mechanism
-        // For now, return a mock response
-        let response = Message::new(
-            request.to.unwrap_or_default(),
-            Some(request.from),
-            MessageType::Response,
-            Priority::Normal,
-            serde_json::json!({"status": "received"}),
-        ).as_response(&request);
+        // Implement response waiting mechanism with timeout
+        let request_id = request.id;
+        let timeout_duration = tokio::time::Duration::from_secs(30);
+        let start = tokio::time::Instant::now();
 
-        Ok(response)
+        // Poll for response with timeout
+        loop {
+            // Check message queue for matching response
+            let queue = self.message_queue.read().await;
+            if let Some(response) = queue.iter().find(|msg| {
+                msg.message_type == MessageType::Response &&
+                msg.metadata.get("in_reply_to").and_then(|v| v.as_str()) == Some(&request_id.to_string())
+            }) {
+                return Ok(response.clone());
+            }
+            drop(queue);
+
+            // Check timeout
+            if start.elapsed() > timeout_duration {
+                // Return timeout response
+                warn!("Request {} timed out after {:?}", request_id, timeout_duration);
+                return Ok(Message::new(
+                    request.to.unwrap_or_default(),
+                    Some(request.from),
+                    MessageType::Response,
+                    Priority::Normal,
+                    serde_json::json!({"status": "timeout", "request_id": request_id.to_string()}),
+                ).as_response(&request));
+            }
+
+            // Wait before checking again
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        }
     }
 
     pub async fn broadcast(&self, message: Message) -> Result<()> {
@@ -288,15 +312,26 @@ impl MessageBroker {
 
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down message broker");
-        
+
         *self.running.write().await = false;
-        
+
         // Clear all channels
         self.agent_channels.write().await.clear();
         self.message_queue.write().await.clear();
-        
+
         info!("Message broker shutdown complete");
         Ok(())
+    }
+
+    /// Alias for send_message (used by protocol implementations)
+    pub async fn send(&self, message: Message) -> Result<()> {
+        self.send_message(message).await
+    }
+
+    /// Get pending messages from queue (used by protocol implementations)
+    pub async fn get_pending_messages(&self) -> Result<Vec<Message>> {
+        let queue = self.message_queue.read().await;
+        Ok(queue.clone())
     }
 }
 

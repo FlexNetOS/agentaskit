@@ -261,8 +261,41 @@ impl AutonomousOrchestrator {
     
     /// Run a single verification check
     async fn run_verification_check(&self) -> Result<bool> {
-        // TODO: Implement actual verification logic
-        Ok(true)
+        debug!("Running verification check for orchestrator {}", self.id);
+
+        // Perform comprehensive verification checks
+        let mut all_checks_passed = true;
+
+        // Check 1: Verify task queue integrity
+        let state = self.state.read().await;
+        if state.total_tasks > 0 && state.completed_tasks > state.total_tasks {
+            warn!("Verification failed: Invalid task counts");
+            all_checks_passed = false;
+        }
+
+        // Check 2: Verify workspace exists
+        if !self.workspace_path.exists() {
+            error!("Verification failed: Workspace path does not exist");
+            all_checks_passed = false;
+        }
+
+        // Check 3: Verify system health
+        if state.failed_tasks > 0 && state.total_tasks > 0 {
+            let failure_rate = state.failed_tasks as f64 / state.total_tasks as f64;
+            if failure_rate > 0.5 {
+                warn!("Verification: High failure rate detected: {:.1}%", failure_rate * 100.0);
+                // Note but don't fail - this is informational
+            }
+        }
+
+        // Check 4: Verify configuration consistency
+        if self.config.max_concurrent_tasks == 0 {
+            error!("Verification failed: Invalid configuration - max_concurrent_tasks cannot be 0");
+            all_checks_passed = false;
+        }
+
+        debug!("Verification check complete: passed={}", all_checks_passed);
+        Ok(all_checks_passed)
     }
     
     /// Calculate checksum for output

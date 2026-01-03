@@ -1,11 +1,11 @@
 //! AgentAsKit Shared Components
-//! 
+//!
 //! This crate provides shared data models, protocols, types, and utilities
 //! used across all AgentAsKit systems including:
 //! - Core multi-agent system
 //! - FlexNetOS execution infrastructure  
 //! - NOA deployment orchestration
-//! 
+//!
 //! The shared components ensure consistency and interoperability between
 //! all AgentAsKit subsystems while following the "Heal, Don't Harm" principle.
 
@@ -22,8 +22,7 @@ pub use types::*;
 
 // Re-export utilities with namespace
 pub use utils::{
-    agent_utils, task_utils, config_utils, health_utils, 
-    metrics_utils, flexnetos_utils, noa_utils
+    agent_utils, config_utils, flexnetos_utils, health_utils, metrics_utils, noa_utils, task_utils,
 };
 
 /// Version information for the shared components
@@ -36,10 +35,12 @@ pub fn init() -> crate::types::AgentAsKitResult<()> {
 }
 
 /// Initialize shared components with custom configuration
-pub fn init_with_config(config: crate::types::AgentAsKitConfig) -> crate::types::AgentAsKitResult<()> {
+pub fn init_with_config(
+    config: crate::types::AgentAsKitConfig,
+) -> crate::types::AgentAsKitResult<()> {
     // Validate configuration
     crate::utils::config_utils::validate_config(&config)?;
-    
+
     // Initialize shared resources with configuration
     Ok(())
 }

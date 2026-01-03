@@ -1,5 +1,5 @@
 //! Phase 1: User Request Ingestion & Initial Processing
-//! 
+//!
 //! This module handles the initial processing of user chat requests including:
 //! - Request validation and security checking
 //! - Classification and routing to appropriate agent layers
@@ -7,8 +7,8 @@
 //! - Performance metrics baseline establishment
 
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::workflows::ChatRequest;
@@ -64,9 +64,9 @@ pub enum RequestCategory {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ComplexityEstimate {
-    Simple,      // Single agent, < 1 minute
-    Moderate,    // 2-5 agents, < 10 minutes
-    Complex,     // 5-50 agents, < 1 hour
+    Simple,        // Single agent, < 1 minute
+    Moderate,      // 2-5 agents, < 10 minutes
+    Complex,       // 5-50 agents, < 1 hour
     HighlyComplex, // 50+ agents, > 1 hour
 }
 
@@ -99,18 +99,18 @@ pub enum SystemImpact {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UserImpact {
-    Single,     // Single user affected
-    Multiple,   // Multiple users affected
-    Department, // Department-wide impact
+    Single,       // Single user affected
+    Multiple,     // Multiple users affected
+    Department,   // Department-wide impact
     Organization, // Organization-wide impact
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BusinessImpact {
-    Minimal,     // No business process impact
-    Low,         // Minor efficiency impact
-    Medium,      // Significant process improvement
-    High,        // Major business value or risk
+    Minimal, // No business process impact
+    Low,     // Minor efficiency impact
+    Medium,  // Significant process improvement
+    High,    // Major business value or risk
 }
 
 /// Session context for multi-turn conversations
@@ -191,10 +191,10 @@ pub struct SecurityStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SecurityLevel {
-    Public,      // No sensitive data
-    Internal,    // Internal company data
+    Public,       // No sensitive data
+    Internal,     // Internal company data
     Confidential, // Confidential data
-    Restricted,  // Highly sensitive data
+    Restricted,   // Highly sensitive data
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -258,7 +258,10 @@ impl UserRequestProcessor {
 
         // Step 1: Security validation
         let validation_start = std::time::Instant::now();
-        let security_status = self.security_validator.validate_request(chat_request).await?;
+        let security_status = self
+            .security_validator
+            .validate_request(chat_request)
+            .await?;
         let validation_time = validation_start.elapsed();
 
         if !security_status.is_valid {
@@ -273,14 +276,20 @@ impl UserRequestProcessor {
 
         // Step 3: Request classification
         let classification_start = std::time::Instant::now();
-        let classification = self.request_classifier.classify_request(chat_request).await?;
+        let classification = self
+            .request_classifier
+            .classify_request(chat_request)
+            .await?;
         let classification_time = classification_start.elapsed();
 
         // Step 4: Priority assignment
         let priority_assignment = self.assign_priority(&classification, chat_request).await?;
 
         // Step 5: Session management
-        let session_context = self.session_manager.get_or_create_session(chat_request).await?;
+        let session_context = self
+            .session_manager
+            .get_or_create_session(chat_request)
+            .await?;
 
         // Step 6: Performance baseline
         let total_time = start_time.elapsed();
@@ -290,7 +299,7 @@ impl UserRequestProcessor {
             validation_time_ms: validation_time.as_millis() as u64,
             classification_time_ms: classification_time.as_millis() as u64,
             total_phase1_time_ms: total_time.as_millis() as u64,
-            memory_usage_mb: 0.0, // TODO: Implement actual memory monitoring
+            memory_usage_mb: 0.0,   // TODO: Implement actual memory monitoring
             cpu_usage_percent: 0.0, // TODO: Implement actual CPU monitoring
         };
 
@@ -329,15 +338,22 @@ impl UserRequestProcessor {
         // - Intent identification
         // - Parameter extraction
         let mut entities = Vec::new();
-        
+
         // Simple keyword extraction for now
-        let keywords = ["workflow", "agent", "performance", "optimization", "test", "implement"];
+        let keywords = [
+            "workflow",
+            "agent",
+            "performance",
+            "optimization",
+            "test",
+            "implement",
+        ];
         for keyword in keywords {
             if message.to_lowercase().contains(keyword) {
                 entities.push(keyword.to_string());
             }
         }
-        
+
         Ok(entities)
     }
 
@@ -374,7 +390,14 @@ impl UserRequestProcessor {
         }
 
         // Factor 3: Keywords indicating urgency
-        let urgent_keywords = ["critical", "urgent", "error", "failure", "broken", "emergency"];
+        let urgent_keywords = [
+            "critical",
+            "urgent",
+            "error",
+            "failure",
+            "broken",
+            "emergency",
+        ];
         for keyword in urgent_keywords {
             if chat_request.message.to_lowercase().contains(keyword) {
                 priority_score += 2.0;
@@ -399,7 +422,10 @@ impl UserRequestProcessor {
 
         Ok(PriorityAssignment {
             assigned_priority,
-            justification: format!("Priority score: {:.1} based on complexity and content analysis", priority_score),
+            justification: format!(
+                "Priority score: {:.1} based on complexity and content analysis",
+                priority_score
+            ),
             urgency_factors,
             impact_assessment,
             escalation_threshold: 8.0,
@@ -444,7 +470,9 @@ impl SecurityValidator {
         };
 
         Ok(SecurityStatus {
-            is_valid: detected_threats.iter().all(|t| matches!(t.severity, ThreatSeverity::Low | ThreatSeverity::Medium)),
+            is_valid: detected_threats
+                .iter()
+                .all(|t| matches!(t.severity, ThreatSeverity::Low | ThreatSeverity::Medium)),
             security_level: SecurityLevel::Internal,
             detected_threats,
             sanitization_applied: true,
@@ -455,28 +483,49 @@ impl SecurityValidator {
 
 impl RequestClassifier {
     /// Classify request into categories
-    pub async fn classify_request(&self, chat_request: &ChatRequest) -> Result<RequestClassification> {
+    pub async fn classify_request(
+        &self,
+        chat_request: &ChatRequest,
+    ) -> Result<RequestClassification> {
         let message = chat_request.message.to_lowercase();
-        
+
         // Determine primary category
-        let primary_category = if message.contains("workflow") || message.contains("7-phase") || message.contains("orchestration") {
+        let primary_category = if message.contains("workflow")
+            || message.contains("7-phase")
+            || message.contains("orchestration")
+        {
             RequestCategory::SystemOperation
-        } else if message.contains("performance") || message.contains("optimization") || message.contains("speed") {
+        } else if message.contains("performance")
+            || message.contains("optimization")
+            || message.contains("speed")
+        {
             RequestCategory::PerformanceOptimization
-        } else if message.contains("implement") || message.contains("code") || message.contains("technical") {
+        } else if message.contains("implement")
+            || message.contains("code")
+            || message.contains("technical")
+        {
             RequestCategory::Technical
         } else if message.contains("complex") || message.contains("comprehensive") {
             RequestCategory::Complex
-        } else if message.contains("learn") || message.contains("explain") || message.contains("how") {
+        } else if message.contains("learn")
+            || message.contains("explain")
+            || message.contains("how")
+        {
             RequestCategory::Educational
-        } else if message.contains("create") || message.contains("generate") || message.contains("design") {
+        } else if message.contains("create")
+            || message.contains("generate")
+            || message.contains("design")
+        {
             RequestCategory::Creative
         } else {
             RequestCategory::Technical // Default
         };
 
         // Estimate complexity
-        let complexity_estimate = if message.contains("928") || message.contains("agent") || message.contains("orchestration") {
+        let complexity_estimate = if message.contains("928")
+            || message.contains("agent")
+            || message.contains("orchestration")
+        {
             ComplexityEstimate::HighlyComplex
         } else if message.contains("system") || message.contains("comprehensive") {
             ComplexityEstimate::Complex
@@ -511,7 +560,7 @@ impl RequestClassifier {
         Ok(RequestClassification {
             primary_category,
             secondary_categories: Vec::new(), // TODO: Implement secondary classification
-            confidence_score: 0.85, // TODO: Implement actual confidence calculation
+            confidence_score: 0.85,           // TODO: Implement actual confidence calculation
             complexity_estimate,
             resource_requirements,
         })
@@ -520,8 +569,13 @@ impl RequestClassifier {
 
 impl SessionManager {
     /// Get or create session context
-    pub async fn get_or_create_session(&self, chat_request: &ChatRequest) -> Result<SessionContext> {
-        let session_id = chat_request.session_id.clone()
+    pub async fn get_or_create_session(
+        &self,
+        chat_request: &ChatRequest,
+    ) -> Result<SessionContext> {
+        let session_id = chat_request
+            .session_id
+            .clone()
             .unwrap_or_else(|| format!("session-{}", uuid::Uuid::new_v4()));
 
         // TODO: Implement actual session retrieval from storage

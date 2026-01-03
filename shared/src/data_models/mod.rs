@@ -1,7 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
 
 /// Common agent identifier type used across all AgentAsKit systems
 pub type AgentId = Uuid;
@@ -18,13 +18,15 @@ pub enum AgentStatus {
     Busy,
     Error,
     Maintenance,
+    Terminating,
     Shutdown,
 }
 
-/// Universal task status enumeration
+/// Universal task status enumeration (unified from core and shared)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TaskStatus {
     Pending,
+    Assigned,     // Added from core/orchestration
     InProgress,
     Completed,
     Failed,
@@ -32,14 +34,17 @@ pub enum TaskStatus {
     Timeout,
 }
 
-/// Priority levels used across all systems
+/// Priority levels used across all systems (unified from core and shared)
+/// Lower numeric values = higher priority
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Priority {
-    Low = 1,
-    Normal = 2,
-    High = 3,
-    Critical = 4,
-    Emergency = 5,
+    Emergency = 0,    // Highest priority - from core/orchestration ordering
+    Critical = 1,
+    High = 2,
+    Medium = 3,       // Added from core/orchestration
+    Normal = 4,
+    Low = 5,
+    Maintenance = 6,  // Added from core/orchestration - lowest priority
 }
 
 /// Health status for NOA monitoring integration
@@ -79,7 +84,7 @@ pub struct ResourceRequirements {
     pub special_capabilities: Vec<String>,
 }
 
-/// Common task structure used across FlexNetOS and NOA
+/// Common task structure used across FlexNetOS and NOA (unified from core and shared)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
     pub id: TaskId,
@@ -95,12 +100,25 @@ pub struct Task {
     pub created_at: DateTime<Utc>,
     pub started_at: Option<DateTime<Utc>>,
     pub completed_at: Option<DateTime<Utc>>,
+    pub deadline: Option<DateTime<Utc>>,  // Added from core/orchestration
     pub timeout: Option<DateTime<Utc>>,
     pub retry_count: u32,
     pub max_retries: u32,
     pub error_message: Option<String>,
     pub tags: HashMap<String, String>,
     pub required_capabilities: Vec<String>,
+}
+
+impl Task {
+    /// Get task parameters (compatibility alias for input_data)
+    pub fn parameters(&self) -> &serde_json::Value {
+        &self.input_data
+    }
+
+    /// Set task parameters (compatibility alias for input_data)
+    pub fn set_parameters(&mut self, params: serde_json::Value) {
+        self.input_data = params;
+    }
 }
 
 /// Task execution result
@@ -255,11 +273,11 @@ pub struct AgentContext {
 /// Agent role in the system hierarchy
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum AgentRole {
-    Executive,     // High-level coordination and decision-making
-    Board,         // Strategic and governance functions
-    Specialized,   // Domain-specific expertise
-    Worker,        // Task execution
-    Monitor,       // Observation and reporting
+    Executive,   // High-level coordination and decision-making
+    Board,       // Strategic and governance functions
+    Specialized, // Domain-specific expertise
+    Worker,      // Task execution
+    Monitor,     // Observation and reporting
 }
 
 impl Default for AgentRole {

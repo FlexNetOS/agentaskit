@@ -2,11 +2,14 @@
 // Provides comprehensive data processing, analytics, visualization, reporting,
 // and business intelligence capabilities for data-driven insights
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -19,7 +22,8 @@ use uuid::Uuid;
 pub struct DataAnalyticsAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<AgentCapability>,
+    capabilities: Vec<String>,
+    metadata: AgentMetadata,
     config: DataAnalyticsConfig,
     data_processor: Arc<DataProcessor>,
     analytics_engine: Arc<AnalyticsEngine>,
@@ -596,11 +600,7 @@ impl Default for DataAnalyticsConfig {
                 ],
                 interactive_dashboards: true,
                 real_time_updates: true,
-                export_formats: vec![
-                    ExportFormat::PNG,
-                    ExportFormat::PDF,
-                    ExportFormat::HTML,
-                ],
+                export_formats: vec![ExportFormat::PNG, ExportFormat::PDF, ExportFormat::HTML],
                 color_schemes: vec!["default".to_string(), "dark".to_string()],
                 responsive_design: true,
                 accessibility_features: true,
@@ -663,29 +663,57 @@ impl DataAnalyticsAgent {
     pub fn new(config: Option<DataAnalyticsConfig>) -> Self {
         let config = config.unwrap_or_default();
         let id = Uuid::new_v4();
-        
+
         let data_processor = Arc::new(DataProcessor::new(config.processing_config.clone()));
         let analytics_engine = Arc::new(AnalyticsEngine::new(config.analytics_config.clone()));
         let ml_pipeline = Arc::new(MLPipeline::new(config.ml_config.clone()));
-        let visualization_engine = Arc::new(VisualizationEngine::new(config.visualization_config.clone()));
+        let visualization_engine = Arc::new(VisualizationEngine::new(
+            config.visualization_config.clone(),
+        ));
         let reporting_engine = Arc::new(ReportingEngine::new(config.reporting_config.clone()));
-        let data_warehouse = Arc::new(RwLock::new(DataWarehouse::new(config.warehouse_config.clone())));
+        let data_warehouse = Arc::new(RwLock::new(DataWarehouse::new(
+            config.warehouse_config.clone(),
+        )));
         let stream_processor = Arc::new(StreamProcessor::new(config.streaming_config.clone()));
         let query_optimizer = Arc::new(QueryOptimizer::new(config.performance_config.clone()));
+
+        let capabilities = vec![
+            "data-processing".to_string(),
+            "statistical-analysis".to_string(),
+            "machine-learning".to_string(),
+            "data-visualization".to_string(),
+            "report-generation".to_string(),
+            "stream-processing".to_string(),
+            "data-warehouse".to_string(),
+            "query-optimization".to_string(),
+        ];
+
+        let metadata = AgentMetadata {
+            id,
+            name: "DataAnalytics".to_string(),
+            agent_type: "Specialized".to_string(),
+            version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            resource_requirements: ResourceRequirements {
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(1024),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
+            },
+            tags: HashMap::new(),
+        };
 
         Self {
             id,
             name: "DataAnalytics".to_string(),
-            capabilities: vec![
-                AgentCapability::DataProcessing,
-                AgentCapability::StatisticalAnalysis,
-                AgentCapability::MachineLearning,
-                AgentCapability::DataVisualization,
-                AgentCapability::ReportGeneration,
-                AgentCapability::StreamProcessing,
-                AgentCapability::DataWarehouse,
-                AgentCapability::QueryOptimization,
-            ],
+            capabilities,
+            metadata,
             config,
             data_processor,
             analytics_engine,
@@ -702,7 +730,10 @@ impl DataAnalyticsAgent {
 
     /// Process data with comprehensive transformation pipeline
     pub async fn process_data(&self, dataset: DataSet) -> AgentResult<ProcessingResult> {
-        info!("Processing dataset: {} with {} records", dataset.name, dataset.record_count);
+        info!(
+            "Processing dataset: {} with {} records",
+            dataset.name, dataset.record_count
+        );
 
         let processing_id = Uuid::new_v4();
         let job = ProcessingJob {
@@ -716,33 +747,75 @@ impl DataAnalyticsAgent {
         };
 
         // Store processing job
-        self.data_processor.active_jobs.lock().await.insert(processing_id, job);
+        self.data_processor
+            .active_jobs
+            .lock()
+            .await
+            .insert(processing_id, job);
 
         // Execute processing pipeline
         let result = self.data_processor.execute_pipeline(dataset).await?;
 
         // Update job completion
-        if let Some(mut job) = self.data_processor.active_jobs.lock().await.get_mut(&processing_id) {
+        if let Some(mut job) = self
+            .data_processor
+            .active_jobs
+            .lock()
+            .await
+            .get_mut(&processing_id)
+        {
             job.status = JobStatus::Completed;
             job.completed_at = Some(chrono::Utc::now());
             job.progress = 100.0;
         }
 
-        info!("Data processing completed for dataset with {} records processed", result.records_processed);
+        info!(
+            "Data processing completed for dataset with {} records processed",
+            result.records_processed
+        );
         Ok(result)
     }
 
     /// Perform comprehensive statistical analysis
-    pub async fn analyze_data(&self, dataset_id: &str, analysis_type: AnalysisType) -> AgentResult<AnalysisResult> {
-        info!("Performing {} analysis on dataset: {}", analysis_type, dataset_id);
+    pub async fn analyze_data(
+        &self,
+        dataset_id: &str,
+        analysis_type: AnalysisType,
+    ) -> AgentResult<AnalysisResult> {
+        info!(
+            "Performing {} analysis on dataset: {}",
+            analysis_type, dataset_id
+        );
 
         let result = match analysis_type {
-            AnalysisType::Descriptive => self.analytics_engine.descriptive_analysis(dataset_id).await?,
-            AnalysisType::Correlation => self.analytics_engine.correlation_analysis(dataset_id).await?,
-            AnalysisType::TimeSeries => self.analytics_engine.time_series_analysis(dataset_id).await?,
-            AnalysisType::Clustering => self.analytics_engine.clustering_analysis(dataset_id).await?,
-            AnalysisType::AnomalyDetection => self.analytics_engine.anomaly_detection(dataset_id).await?,
-            AnalysisType::PredictiveModeling => self.analytics_engine.predictive_modeling(dataset_id).await?,
+            AnalysisType::Descriptive => {
+                self.analytics_engine
+                    .descriptive_analysis(dataset_id)
+                    .await?
+            }
+            AnalysisType::Correlation => {
+                self.analytics_engine
+                    .correlation_analysis(dataset_id)
+                    .await?
+            }
+            AnalysisType::TimeSeries => {
+                self.analytics_engine
+                    .time_series_analysis(dataset_id)
+                    .await?
+            }
+            AnalysisType::Clustering => {
+                self.analytics_engine
+                    .clustering_analysis(dataset_id)
+                    .await?
+            }
+            AnalysisType::AnomalyDetection => {
+                self.analytics_engine.anomaly_detection(dataset_id).await?
+            }
+            AnalysisType::PredictiveModeling => {
+                self.analytics_engine
+                    .predictive_modeling(dataset_id)
+                    .await?
+            }
         };
 
         info!("Analysis completed for dataset: {}", dataset_id);
@@ -750,30 +823,57 @@ impl DataAnalyticsAgent {
     }
 
     /// Train machine learning model
-    pub async fn train_model(&self, training_request: ModelTrainingRequest) -> AgentResult<TrainingResult> {
-        info!("Training {} model: {}", training_request.algorithm, training_request.model_name);
+    pub async fn train_model(
+        &self,
+        training_request: ModelTrainingRequest,
+    ) -> AgentResult<TrainingResult> {
+        info!(
+            "Training {} model: {}",
+            training_request.algorithm, training_request.model_name
+        );
 
         let result = self.ml_pipeline.train_model(training_request).await?;
 
-        info!("Model training completed with accuracy: {:.4}", result.performance_metrics.get("accuracy").unwrap_or(&0.0));
+        info!(
+            "Model training completed with accuracy: {:.4}",
+            result.performance_metrics.get("accuracy").unwrap_or(&0.0)
+        );
         Ok(result)
     }
 
     /// Generate visualization
-    pub async fn create_visualization(&self, viz_request: VisualizationRequest) -> AgentResult<VisualizationResult> {
-        info!("Creating {} visualization: {}", viz_request.chart_type, viz_request.title);
+    pub async fn create_visualization(
+        &self,
+        viz_request: VisualizationRequest,
+    ) -> AgentResult<VisualizationResult> {
+        info!(
+            "Creating {} visualization: {}",
+            viz_request.chart_type, viz_request.title
+        );
 
-        let result = self.visualization_engine.generate_visualization(viz_request).await?;
+        let result = self
+            .visualization_engine
+            .generate_visualization(viz_request)
+            .await?;
 
         info!("Visualization created with ID: {}", result.visualization_id);
         Ok(result)
     }
 
     /// Generate comprehensive report
-    pub async fn generate_report(&self, report_request: ReportRequest) -> AgentResult<ReportResult> {
-        info!("Generating report: {} ({})", report_request.title, report_request.template);
+    pub async fn generate_report(
+        &self,
+        report_request: ReportRequest,
+    ) -> AgentResult<ReportResult> {
+        info!(
+            "Generating report: {} ({})",
+            report_request.title, report_request.template
+        );
 
-        let result = self.reporting_engine.generate_report(report_request).await?;
+        let result = self
+            .reporting_engine
+            .generate_report(report_request)
+            .await?;
 
         info!("Report generated with ID: {}", result.report_id);
         Ok(result)
@@ -785,21 +885,35 @@ impl DataAnalyticsAgent {
 
         // Optimize query
         let optimized_query = self.query_optimizer.optimize_query(query).await?;
-        
-        // Execute query
-        let result = self.data_warehouse.read().await.execute_query(optimized_query).await?;
 
-        info!("Query executed successfully, returned {} rows", result.row_count);
+        // Execute query
+        let result = self
+            .data_warehouse
+            .read()
+            .await
+            .execute_query(optimized_query)
+            .await?;
+
+        info!(
+            "Query executed successfully, returned {} rows",
+            result.row_count
+        );
         Ok(result)
     }
 
     /// Process streaming data
-    pub async fn process_stream(&self, stream_config: StreamConfig) -> AgentResult<StreamProcessingResult> {
+    pub async fn process_stream(
+        &self,
+        stream_config: StreamConfig,
+    ) -> AgentResult<StreamProcessingResult> {
         info!("Starting stream processing: {}", stream_config.stream_id);
 
         let result = self.stream_processor.start_stream(stream_config).await?;
 
-        info!("Stream processing started with ID: {}", result.processing_id);
+        info!(
+            "Stream processing started with ID: {}",
+            result.processing_id
+        );
         Ok(result)
     }
 
@@ -833,10 +947,10 @@ impl DataAnalyticsAgent {
         // Start automated model retraining task
         let ml_config = config.ml_config.clone();
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(ml_config.retraining_frequency)
-            );
-            
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+                ml_config.retraining_frequency,
+            ));
+
             loop {
                 interval.tick().await;
                 if let Err(e) = ml_pipeline.check_model_performance().await {
@@ -848,9 +962,9 @@ impl DataAnalyticsAgent {
         // Start data quality monitoring task
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(1800) // 30 minutes
+                std::time::Duration::from_secs(1800), // 30 minutes
             );
-            
+
             loop {
                 interval.tick().await;
                 if let Err(e) = data_processor.monitor_data_quality().await {
@@ -863,9 +977,9 @@ impl DataAnalyticsAgent {
         let reporting_engine = Arc::clone(&self.reporting_engine);
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(300) // 5 minutes
+                std::time::Duration::from_secs(300), // 5 minutes
             );
-            
+
             loop {
                 interval.tick().await;
                 if let Err(e) = reporting_engine.process_scheduled_reports().await {
@@ -882,13 +996,7 @@ impl DataAnalyticsAgent {
 #[async_trait]
 impl Agent for DataAnalyticsAgent {
     fn metadata(&self) -> &AgentMetadata {
-        &AgentMetadata {
-            id: self.id,
-            name: self.name.clone(),
-            capabilities: self.capabilities().to_vec(),
-            version: "1.0.0".to_string(),
-            description: "Data Analytics Agent for comprehensive data processing and analysis".to_string(),
-        }
+        &self.metadata
     }
 
     async fn state(&self) -> AgentStatus {
@@ -896,58 +1004,28 @@ impl Agent for DataAnalyticsAgent {
         if *active {
             AgentStatus::Active
         } else {
-            AgentStatus::Idle
+            AgentStatus::Inactive
         }
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        info!("Initializing Data Analytics Agent {}", self.name);
-        
-        // Initialize all analytics components
-        self.data_processor.initialize().await?;
-        self.analytics_engine.initialize().await?;
-        self.ml_pipeline.initialize().await?;
-        self.visualization_engine.initialize().await?;
-        self.reporting_engine.initialize().await?;
-        self.stream_processor.initialize().await?;
-        self.query_optimizer.initialize().await?;
-
-        info!("Data Analytics Agent {} initialized successfully", self.name);
-        Ok(())
-    }
-
     fn capabilities(&self) -> &[String] {
-        static CAPABILITIES: &[String] = &[
-            "DataProcessing".to_string(),
-            "StatisticalAnalysis".to_string(), 
-            "MachineLearning".to_string(),
-            "DataVisualization".to_string(),
-            "ReportGeneration".to_string(),
-            "StreamProcessing".to_string(),
-            "DataWarehouse".to_string(),
-            "QueryOptimization".to_string(),
-        ];
-        CAPABILITIES
+        &self.capabilities
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state().await;
-        let task_queue_size = self.tasks.lock().await.len() as usize;
-        
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 0.0, // Would be measured in real implementation
-            memory_usage: 0, // Would be measured in real implementation
-            task_queue_size,
-            completed_tasks: 0, // Would track in real implementation
-            failed_tasks: 0, // Would track in real implementation
-            average_response_time: Duration::from_millis(100), // Would calculate in real implementation
-        })
+
+        // Return appropriate health status based on agent state
+        match state {
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
+            AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         info!("Updating Data Analytics Agent configuration");
         // Would parse and apply configuration updates
         Ok(())
@@ -955,10 +1033,10 @@ impl Agent for DataAnalyticsAgent {
 
     async fn start(&mut self) -> AgentResult<()> {
         info!("Starting Data Analytics Agent {}", self.name);
-        
+
         let mut active = self.active.lock().await;
         if *active {
-            return Err(AgentError::AlreadyRunning);
+            return Err(anyhow::anyhow!("Agent already running"));
         }
 
         // Initialize all analytics components
@@ -980,10 +1058,10 @@ impl Agent for DataAnalyticsAgent {
 
     async fn stop(&mut self) -> AgentResult<()> {
         info!("Stopping Data Analytics Agent {}", self.name);
-        
+
         let mut active = self.active.lock().await;
         if !*active {
-            return Err(AgentError::NotRunning);
+            return Err(anyhow::anyhow!("Agent not running"));
         }
 
         // Stop all analytics components
@@ -1000,143 +1078,164 @@ impl Agent for DataAnalyticsAgent {
         Ok(())
     }
 
-    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskStatus> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         debug!("Executing task: {} ({})", task.name, task.task_type);
 
         // Store task
         self.tasks.lock().await.insert(task.id, task.clone());
 
-        let result = match task.task_type.as_str() {
+        let status = match task.task_type.as_str() {
             "data_processing" => {
                 // Parse dataset from parameters
-                let dataset_data = task.parameters.get("dataset")
-                    .ok_or(AgentError::MissingParameter("dataset".to_string()))?;
-                
+                let dataset_data = task
+                    .input_data
+                    .get("dataset")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset"))?;
+
                 let dataset = DataSet::default(); // Would deserialize from actual data
-                
+
                 match self.process_data(dataset).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "data_analysis" => {
-                let dataset_id = task.parameters.get("dataset_id")
-                    .ok_or(AgentError::MissingParameter("dataset_id".to_string()))?;
-                let analysis_type_str = task.parameters.get("analysis_type")
-                    .ok_or(AgentError::MissingParameter("analysis_type".to_string()))?;
-                
+                let dataset_id = task
+                    .input_data
+                    .get("dataset_id")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset_id"))?;
+                let analysis_type_str = task
+                    .input_data
+                    .get("analysis_type")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: analysis_type"))?;
+
                 let analysis_type = AnalysisType::Descriptive; // Would parse from string
-                
+
                 match self.analyze_data(dataset_id, analysis_type).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data analysis failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "model_training" => {
                 // Parse training request from parameters
-                let training_data = task.parameters.get("training_request")
-                    .ok_or(AgentError::MissingParameter("training_request".to_string()))?;
-                
+                let training_data = task
+                    .input_data
+                    .get("training_request")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: training_request"))?;
+
                 let training_request = ModelTrainingRequest::default(); // Would deserialize
-                
+
                 match self.train_model(training_request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Model training failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "visualization" => {
                 // Parse visualization request from parameters
-                let viz_data = task.parameters.get("visualization_request")
-                    .ok_or(AgentError::MissingParameter("visualization_request".to_string()))?;
-                
+                let viz_data = task
+                    .input_data
+                    .get("visualization_request")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: visualization_request"))?;
+
                 let viz_request = VisualizationRequest::default(); // Would deserialize
-                
+
                 match self.create_visualization(viz_request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Visualization creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "report_generation" => {
                 // Parse report request from parameters
-                let report_data = task.parameters.get("report_request")
-                    .ok_or(AgentError::MissingParameter("report_request".to_string()))?;
-                
+                let report_data = task
+                    .input_data
+                    .get("report_request")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: report_request"))?;
+
                 let report_request = ReportRequest::default(); // Would deserialize
-                
+
                 match self.generate_report(report_request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Report generation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "query_execution" => {
                 // Parse query from parameters
-                let query_data = task.parameters.get("query")
-                    .ok_or(AgentError::MissingParameter("query".to_string()))?;
-                
+                let query_data = task
+                    .input_data
+                    .get("query")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: query"))?;
+
                 let query = DataQuery::default(); // Would deserialize
-                
+
                 match self.execute_query(query).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Query execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "stream_processing" => {
                 // Parse stream config from parameters
-                let stream_data = task.parameters.get("stream_config")
-                    .ok_or(AgentError::MissingParameter("stream_config".to_string()))?;
-                
+                let stream_data = task
+                    .input_data
+                    .get("stream_config")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: stream_config"))?;
+
                 let stream_config = StreamConfig::default(); // Would deserialize
-                
+
                 match self.process_stream(stream_config).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Stream processing failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
-            "status_check" => {
-                match self.get_analytics_status().await {
-                    Ok(_) => TaskStatus::Completed,
-                    Err(e) => {
-                        error!("Analytics status check failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
-                    }
+            "status_check" => match self.get_analytics_status().await {
+                Ok(_) => TaskStatus::Completed,
+                Err(e) => {
+                    error!("Analytics status check failed: {}", e);
+                    TaskStatus::Failed
                 }
-            }
+            },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 
-        debug!("Task {} completed with status: {:?}", task.name, result);
-        Ok(result)
+        debug!("Task {} completed with status: {:?}", task.name, status);
+
+        Ok(TaskResult {
+            task_id: task.id,
+            status,
+            output_data: None,
+            error_message: None,
+            completed_at: chrono::Utc::now(),
+        })
     }
 
     async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: MessageId::new(),
                     request_id: id,
@@ -1777,19 +1876,29 @@ pub struct EnrichmentEngine;
 pub struct DataQualityMonitor;
 
 impl TransformationPipeline {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 impl ValidationEngine {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 impl CleansingEngine {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 impl EnrichmentEngine {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 impl DataQualityMonitor {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
 }
 
 impl AnalyticsEngine {
@@ -1848,7 +1957,9 @@ impl AnalyticsEngine {
             results: HashMap::new(),
             statistics: StatisticalSummary::default(),
             visualizations: vec!["correlation_matrix.png".to_string()],
-            insights: vec!["Strong positive correlation found between variables X and Y".to_string()],
+            insights: vec![
+                "Strong positive correlation found between variables X and Y".to_string(),
+            ],
             confidence_level: 0.99,
         })
     }
@@ -1861,7 +1972,10 @@ impl AnalyticsEngine {
             dataset_id: dataset_id.to_string(),
             results: HashMap::new(),
             statistics: StatisticalSummary::default(),
-            visualizations: vec!["time_series_plot.png".to_string(), "seasonality.png".to_string()],
+            visualizations: vec![
+                "time_series_plot.png".to_string(),
+                "seasonality.png".to_string(),
+            ],
             insights: vec!["Seasonal pattern detected with 7-day cycle".to_string()],
             confidence_level: 0.95,
         })
@@ -1875,7 +1989,10 @@ impl AnalyticsEngine {
             dataset_id: dataset_id.to_string(),
             results: HashMap::new(),
             statistics: StatisticalSummary::default(),
-            visualizations: vec!["cluster_plot.png".to_string(), "elbow_curve.png".to_string()],
+            visualizations: vec![
+                "cluster_plot.png".to_string(),
+                "elbow_curve.png".to_string(),
+            ],
             insights: vec!["Optimal cluster count: 4".to_string()],
             confidence_level: 0.92,
         })
@@ -1903,7 +2020,10 @@ impl AnalyticsEngine {
             dataset_id: dataset_id.to_string(),
             results: HashMap::new(),
             statistics: StatisticalSummary::default(),
-            visualizations: vec!["prediction_plot.png".to_string(), "feature_importance.png".to_string()],
+            visualizations: vec![
+                "prediction_plot.png".to_string(),
+                "feature_importance.png".to_string(),
+            ],
             insights: vec!["Model achieves 94.2% accuracy on test set".to_string()],
             confidence_level: 0.94,
         })
@@ -1935,7 +2055,10 @@ impl MLPipeline {
     }
 
     pub async fn train_model(&self, request: ModelTrainingRequest) -> AgentResult<TrainingResult> {
-        info!("Training model: {} using {}", request.model_name, request.algorithm);
+        info!(
+            "Training model: {} using {}",
+            request.model_name, request.algorithm
+        );
         Ok(TrainingResult {
             training_id: Uuid::new_v4(),
             model_name: request.model_name,
@@ -1989,8 +2112,14 @@ impl VisualizationEngine {
         Ok(())
     }
 
-    pub async fn generate_visualization(&self, request: VisualizationRequest) -> AgentResult<VisualizationResult> {
-        info!("Generating {} visualization: {}", request.chart_type, request.title);
+    pub async fn generate_visualization(
+        &self,
+        request: VisualizationRequest,
+    ) -> AgentResult<VisualizationResult> {
+        info!(
+            "Generating {} visualization: {}",
+            request.chart_type, request.title
+        );
         Ok(VisualizationResult {
             visualization_id: Uuid::new_v4(),
             title: request.title,
@@ -2286,45 +2415,201 @@ pub struct StreamMetrics {
 }
 
 // Component implementations
-impl StatisticalEngine { pub fn new() -> Self { Self } }
-impl TimeSeriesAnalyzer { pub fn new() -> Self { Self } }
-impl ClusteringEngine { pub fn new() -> Self { Self } }
-impl AnomalyDetector { pub fn new() -> Self { Self } }
-impl CorrelationAnalyzer { pub fn new() -> Self { Self } }
-impl AnalysisCache { pub fn new() -> Self { Self } }
-impl FeatureEngineer { pub fn new() -> Self { Self } }
-impl ModelTrainer { pub fn new() -> Self { Self } }
-impl ModelEvaluator { pub fn new() -> Self { Self } }
-impl HyperparameterTuner { pub fn new() -> Self { Self } }
-impl ModelRegistry { pub fn new() -> Self { Self } }
-impl ExperimentTracker { pub fn new() -> Self { Self } }
-impl AutoMLEngine { pub fn new() -> Self { Self } }
-impl DashboardManager { pub fn new() -> Self { Self } }
-impl ThemeManager { pub fn new() -> Self { Self } }
-impl ExportEngine { pub fn new() -> Self { Self } }
-impl InteractionHandler { pub fn new() -> Self { Self } }
-impl RealTimeUpdater { pub fn new() -> Self { Self } }
-impl TemplateEngine { pub fn new() -> Self { Self } }
-impl ReportScheduler { pub fn new() -> Self { Self } }
-impl DistributionManager { pub fn new() -> Self { Self } }
-impl ReportCache { pub fn new() -> Self { Self } }
-impl ExecutiveSummarizer { pub fn new() -> Self { Self } }
-impl StorageEngine { pub fn new() -> Self { Self } }
-impl IndexManager { pub fn new() -> Self { Self } }
-impl PartitionManager { pub fn new() -> Self { Self } }
-impl QueryPlanner { pub fn new() -> Self { Self } }
-impl LineageTracker { pub fn new() -> Self { Self } }
-impl BackupManager { pub fn new() -> Self { Self } }
-impl WindowManager { pub fn new() -> Self { Self } }
-impl WatermarkGenerator { pub fn new() -> Self { Self } }
-impl CheckpointManager { pub fn new() -> Self { Self } }
-impl FaultHandler { pub fn new() -> Self { Self } }
-impl StreamMetricsCollector { pub fn new() -> Self { Self } }
-impl CostEstimator { pub fn new() -> Self { Self } }
-impl ExecutionPlanner { pub fn new() -> Self { Self } }
-impl CacheManager { pub fn new() -> Self { Self } }
-impl StatisticsCollector { pub fn new() -> Self { Self } }
-impl PerformanceMonitor { pub fn new() -> Self { Self } }
+impl StatisticalEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TimeSeriesAnalyzer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ClusteringEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AnomalyDetector {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl CorrelationAnalyzer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AnalysisCache {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl FeatureEngineer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ModelTrainer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ModelEvaluator {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl HyperparameterTuner {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ModelRegistry {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ExperimentTracker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AutoMLEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DashboardManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ThemeManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ExportEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl InteractionHandler {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl RealTimeUpdater {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TemplateEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ReportScheduler {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DistributionManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ReportCache {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ExecutiveSummarizer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl StorageEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl IndexManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl PartitionManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl QueryPlanner {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl LineageTracker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl BackupManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl WindowManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl WatermarkGenerator {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl CheckpointManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl FaultHandler {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl StreamMetricsCollector {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl CostEstimator {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ExecutionPlanner {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl CacheManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl StatisticsCollector {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl PerformanceMonitor {
+    pub fn new() -> Self {
+        Self
+    }
+}
 
 // This comprehensive implementation provides the Data Analytics Agent with
 // full data processing, analytics, ML pipeline, visualization, reporting,

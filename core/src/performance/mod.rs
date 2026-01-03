@@ -9,7 +9,7 @@ use std::time::Instant;
 /// Reads optimization directives from the Python orchestrator and applies them.
 pub fn apply_orchestrated_optimizations() {
     let directive_path = Path::new("core/src/performance/optimization_directive.txt");
-    
+
     if directive_path.exists() {
         println!("[PERF-001] Reading optimization directives...");
         match fs::read_to_string(directive_path) {
@@ -17,9 +17,11 @@ pub fn apply_orchestrated_optimizations() {
                 for line in content.lines() {
                     if line.starts_with("TASK_THROUGHPUT_LOW") {
                         // Real implementation would modify a global config or call a C-API
-                        println!("[PERF-001] Applying optimization: Increasing core thread pool size.");
+                        println!(
+                            "[PERF-001] Applying optimization: Increasing core thread pool size."
+                        );
                         // Placeholder for actual Rust logic
-                        std::thread::sleep(std::time::Duration::from_millis(10)); 
+                        std::thread::sleep(std::time::Duration::from_millis(10));
                     } else if line.starts_with("P99_LATENCY_HIGH") {
                         println!("[PERF-001] Applying optimization: Re-initializing memory allocator for low-latency mode.");
                         // Placeholder for actual Rust logic
@@ -33,7 +35,7 @@ pub fn apply_orchestrated_optimizations() {
                     eprintln!("[PERF-001] Warning: Could not clear directive file: {}", e);
                 }
                 println!("[PERF-001] Optimization cycle complete.");
-            },
+            }
             Err(e) => eprintln!("[PERF-001] Error reading directive file: {}", e),
         }
     } else {

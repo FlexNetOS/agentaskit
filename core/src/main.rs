@@ -1,36 +1,36 @@
 //! AgentAsKit Production Main Application
-//! 
+//!
 //! Unified entry point that combines all capabilities into a single
 //! production-ready system following the "Heal, Don't Harm" principle.
 
 use anyhow::Result;
 use clap::{Arg, Command};
 use std::path::PathBuf;
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber;
 
 mod agents;
-mod orchestration;
 mod communication;
-mod security;
 mod monitoring;
+mod orchestration;
 mod performance;
+mod security;
 
 // Autonomous development modules
-mod verification;
 mod autonomous;
 mod self_improving;
+mod verification;
 
-use orchestration::OrchestratorEngine;
 use agents::AgentManager;
 use communication::MessageBroker;
-use security::SecurityManager;
 use monitoring::MetricsCollector;
+use orchestration::OrchestratorEngine;
+use security::SecurityManager;
 
 // Import autonomous development capabilities
-use verification::NoaVerificationSystem;
 use autonomous::AutonomousPipeline;
 use self_improving::SelfImprovingOrchestrator;
+use verification::NoaVerificationSystem;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -43,52 +43,61 @@ async fn main() -> Result<()> {
         .version("0.1.0")
         .author("AgentAsKit Contributors")
         .about("Multi-Agent AgenticAI Task Deployment Kit")
-        .arg(Arg::new("config")
-            .short('c')
-            .long("config")
-            .value_name("FILE")
-            .help("Configuration file path")
-            .value_parser(clap::value_parser!(PathBuf)))
-        .arg(Arg::new("mode")
-            .short('m')
-            .long("mode")
-            .value_name("MODE")
-            .help("Operating mode: autonomous, supervised, or interactive")
-            .default_value("supervised"))
-        .arg(Arg::new("agents")
-            .short('a')
-            .long("agents")
-            .value_name("COUNT")
-            .help("Initial agent count")
-            .value_parser(clap::value_parser!(u32))
-            .default_value("10"))
-        .subcommand(Command::new("start")
-            .about("Start the agent orchestration system"))
-        .subcommand(Command::new("deploy")
-            .about("Deploy agent configurations")
-            .arg(Arg::new("manifest")
-                .short('f')
-                .long("manifest")
+        .arg(
+            Arg::new("config")
+                .short('c')
+                .long("config")
                 .value_name("FILE")
-                .help("Deployment manifest file")
-                .required(true)
-                .value_parser(clap::value_parser!(PathBuf))))
-        .subcommand(Command::new("monitor")
-            .about("Monitor system status"))
-        .subcommand(Command::new("shutdown")
-            .about("Gracefully shutdown the system"))
-        .subcommand(Command::new("verify")
-            .about("Execute NOA Triple-Verification")
-            .arg(Arg::new("workspace")
-                .short('w')
-                .long("workspace")
-                .value_name("PATH")
-                .help("Workspace path for verification")
-                .value_parser(clap::value_parser!(PathBuf))))
-        .subcommand(Command::new("autonomous")
-            .about("Start autonomous development mode"))
-        .subcommand(Command::new("self-improve")
-            .about("Activate self-improving orchestration"))
+                .help("Configuration file path")
+                .value_parser(clap::value_parser!(PathBuf)),
+        )
+        .arg(
+            Arg::new("mode")
+                .short('m')
+                .long("mode")
+                .value_name("MODE")
+                .help("Operating mode: autonomous, supervised, or interactive")
+                .default_value("supervised"),
+        )
+        .arg(
+            Arg::new("agents")
+                .short('a')
+                .long("agents")
+                .value_name("COUNT")
+                .help("Initial agent count")
+                .value_parser(clap::value_parser!(u32))
+                .default_value("10"),
+        )
+        .subcommand(Command::new("start").about("Start the agent orchestration system"))
+        .subcommand(
+            Command::new("deploy")
+                .about("Deploy agent configurations")
+                .arg(
+                    Arg::new("manifest")
+                        .short('f')
+                        .long("manifest")
+                        .value_name("FILE")
+                        .help("Deployment manifest file")
+                        .required(true)
+                        .value_parser(clap::value_parser!(PathBuf)),
+                ),
+        )
+        .subcommand(Command::new("monitor").about("Monitor system status"))
+        .subcommand(Command::new("shutdown").about("Gracefully shutdown the system"))
+        .subcommand(
+            Command::new("verify")
+                .about("Execute NOA Triple-Verification")
+                .arg(
+                    Arg::new("workspace")
+                        .short('w')
+                        .long("workspace")
+                        .value_name("PATH")
+                        .help("Workspace path for verification")
+                        .value_parser(clap::value_parser!(PathBuf)),
+                ),
+        )
+        .subcommand(Command::new("autonomous").about("Start autonomous development mode"))
+        .subcommand(Command::new("self-improve").about("Activate self-improving orchestration"))
         .get_matches();
 
     match matches.subcommand() {
@@ -110,10 +119,14 @@ async fn main() -> Result<()> {
             shutdown_system().await?;
         }
         Some(("verify", sub_matches)) => {
-            let workspace_path = sub_matches.get_one::<PathBuf>("workspace")
+            let workspace_path = sub_matches
+                .get_one::<PathBuf>("workspace")
                 .map(|p| p.clone())
                 .unwrap_or_else(|| std::env::current_dir().unwrap());
-            info!("Executing NOA Triple-Verification for workspace: {:?}", workspace_path);
+            info!(
+                "Executing NOA Triple-Verification for workspace: {:?}",
+                workspace_path
+            );
             execute_verification(&workspace_path).await?;
         }
         Some(("autonomous", _)) => {
@@ -145,11 +158,8 @@ async fn start_system(matches: &clap::ArgMatches) -> Result<()> {
     let message_broker = MessageBroker::new().await?;
     let metrics_collector = MetricsCollector::new().await?;
     let agent_manager = AgentManager::new(agent_count, &security_manager).await?;
-    let orchestrator = OrchestratorEngine::new(
-        agent_manager,
-        message_broker,
-        metrics_collector,
-    ).await?;
+    let orchestrator =
+        OrchestratorEngine::new(agent_manager, message_broker, metrics_collector).await?;
 
     info!("System components initialized successfully");
     info!("Operating mode: {}", mode);
@@ -188,15 +198,22 @@ async fn deploy_agents(manifest_path: &PathBuf) -> Result<()> {
         info!("Found {} agents in manifest", agents_list.len());
 
         for (idx, agent_spec) in agents_list.iter().enumerate() {
-            let agent_name = agent_spec.get("name")
+            let agent_name = agent_spec
+                .get("name")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
-            let agent_type = agent_spec.get("type")
+            let agent_type = agent_spec
+                .get("type")
                 .and_then(|v| v.as_str())
                 .unwrap_or("generic");
 
-            info!("Deploying agent {}/{}: {} (type: {})",
-                  idx + 1, agents_list.len(), agent_name, agent_type);
+            info!(
+                "Deploying agent {}/{}: {} (type: {})",
+                idx + 1,
+                agents_list.len(),
+                agent_name,
+                agent_type
+            );
 
             // In production: instantiate and register agents with AgentManager
             // For now, log the deployment intent
@@ -277,16 +294,18 @@ async fn shutdown_system() -> Result<()> {
 
 async fn execute_verification(workspace_path: &PathBuf) -> Result<()> {
     info!("Initializing NOA Triple-Verification system");
-    
+
     let mut verification_system = NoaVerificationSystem::new();
-    let result = verification_system.execute_verification(workspace_path).await?;
-    
+    let result = verification_system
+        .execute_verification(workspace_path)
+        .await?;
+
     if result {
         info!("✅ NOA Triple-Verification PASSED");
     } else {
         error!("❌ NOA Triple-Verification FAILED");
     }
-    
+
     Ok(())
 }
 
@@ -335,7 +354,7 @@ async fn start_self_improvement() -> Result<()> {
         max_concurrent_tasks: 4,
         learning_rate: 0.01,
         improvement_threshold: 0.05,
-        verification_frequency: 3600,  // seconds
+        verification_frequency: 3600, // seconds
         healing_retry_limit: 3,
     };
 
@@ -357,6 +376,4 @@ async fn start_self_improvement() -> Result<()> {
 
     info!("✅ Self-improvement mode activated");
     Ok(())
-}
-
 }

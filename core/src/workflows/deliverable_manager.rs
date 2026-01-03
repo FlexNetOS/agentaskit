@@ -3,16 +3,15 @@
 //! Automated deliverable specification generation, target location determination,
 //! file organization, and backup integration.
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use super::{
-    Deliverable, DeliverableType, TargetLocation, LocationType,
-    FileSpecification, RequestPriority,
+    Deliverable, DeliverableType, FileSpecification, LocationType, RequestPriority, TargetLocation,
 };
 
 /// Deliverable Manager for comprehensive deliverable handling
@@ -25,7 +24,7 @@ pub struct DeliverableManager {
 impl DeliverableManager {
     pub fn new(base_production_path: PathBuf) -> Self {
         let mut organization_rules = HashMap::new();
-        
+
         // Define organization rules for each location type
         organization_rules.insert(
             LocationType::ProductionDirectory,
@@ -35,7 +34,7 @@ impl DeliverableManager {
                 "Follow Rust workspace structure".to_string(),
             ],
         );
-        
+
         organization_rules.insert(
             LocationType::DocsSubdirectory,
             vec![
@@ -44,7 +43,7 @@ impl DeliverableManager {
                 "Use descriptive filenames with dates".to_string(),
             ],
         );
-        
+
         organization_rules.insert(
             LocationType::TestDirectory,
             vec![
@@ -63,14 +62,11 @@ impl DeliverableManager {
 
     /// Plan deliverable locations based on specification
     pub fn plan(&self, spec: &DeliverableSpec) -> Result<PlannedDeliverable> {
-        let target_location = self.determine_target_location(
-            &spec.deliverable_type,
-            &spec.priority,
-            &spec.category,
-        )?;
+        let target_location =
+            self.determine_target_location(&spec.deliverable_type, &spec.priority, &spec.category)?;
 
         let file_specs = self.generate_file_specifications(&spec.deliverable_type)?;
-        
+
         let backup_locations = if self.backup_enabled {
             self.determine_backup_locations(&target_location)?
         } else {
@@ -108,7 +104,8 @@ impl DeliverableManager {
         let base_path = self.get_base_path_for_location(&location_type);
         let relative_path = self.generate_relative_path(deliverable_type, category)?;
         let filename_pattern = self.generate_filename_pattern(deliverable_type)?;
-        let org_rules = self.organization_rules
+        let org_rules = self
+            .organization_rules
             .get(&location_type)
             .cloned()
             .unwrap_or_default();
@@ -132,12 +129,12 @@ impl DeliverableManager {
             LocationType::TestDirectory => self.base_production_path.join("tests"),
             LocationType::ConfigDirectory => self.base_production_path.join("configs"),
             LocationType::ScriptsDirectory => self.base_production_path.join("scripts"),
-            LocationType::ArchiveDirectory => {
-                self.base_production_path.parent().unwrap_or(&self.base_production_path).join("archive")
-            }
-            LocationType::TempDirectory => {
-                self.base_production_path.join("temp")
-            }
+            LocationType::ArchiveDirectory => self
+                .base_production_path
+                .parent()
+                .unwrap_or(&self.base_production_path)
+                .join("archive"),
+            LocationType::TempDirectory => self.base_production_path.join("temp"),
         }
     }
 
@@ -263,7 +260,8 @@ impl DeliverableManager {
             return Ok(Vec::new());
         }
 
-        let archive_base = self.base_production_path
+        let archive_base = self
+            .base_production_path
             .parent()
             .unwrap_or(&self.base_production_path)
             .join("archive");
@@ -286,7 +284,10 @@ impl DeliverableManager {
     }
 
     /// Validate deliverable against organization rules
-    pub fn validate_deliverable(&self, deliverable: &PlannedDeliverable) -> Result<ValidationResult> {
+    pub fn validate_deliverable(
+        &self,
+        deliverable: &PlannedDeliverable,
+    ) -> Result<ValidationResult> {
         let mut violations = Vec::new();
         let mut warnings = Vec::new();
 
@@ -344,7 +345,10 @@ impl DeliverableManager {
             let timestamp = Utc::now().format("%Y%m%d_%H%M%S");
             let backup_filename = format!(
                 "{}_{}.backup",
-                source_path.file_name().unwrap_or_default().to_string_lossy(),
+                source_path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy(),
                 timestamp
             );
             let backup_path = backup_location.join(backup_filename);
@@ -416,7 +420,7 @@ mod tests {
     #[test]
     fn test_deliverable_manager() {
         let manager = DeliverableManager::new(PathBuf::from("agentaskit-production"));
-        
+
         let spec = DeliverableSpec {
             name: "test_module".to_string(),
             description: "Test module".to_string(),
@@ -426,7 +430,10 @@ mod tests {
         };
 
         let planned = manager.plan(&spec).unwrap();
-        assert_eq!(planned.target_location.location_type, LocationType::ProductionDirectory);
+        assert_eq!(
+            planned.target_location.location_type,
+            LocationType::ProductionDirectory
+        );
         assert!(planned.target_location.relative_path.contains("workflow"));
     }
 }

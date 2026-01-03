@@ -7,14 +7,14 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Testing Agent - Comprehensive automated testing and quality assurance
-/// 
+///
 /// The Testing Agent is responsible for:
 /// - Test generation and execution
 /// - Quality assurance automation
@@ -26,19 +26,19 @@ pub struct TestingAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Test execution engine
     test_engine: Arc<RwLock<TestEngine>>,
-    
+
     /// Coverage analyzer
     coverage_analyzer: Arc<RwLock<CoverageAnalyzer>>,
-    
+
     /// Test generator
     test_generator: Arc<RwLock<TestGenerator>>,
-    
+
     /// Test orchestrator
     test_orchestrator: Arc<RwLock<TestOrchestrator>>,
-    
+
     /// Configuration
     config: TestingConfig,
 }
@@ -48,22 +48,22 @@ pub struct TestingAgent {
 pub struct TestingConfig {
     /// Test types to execute
     pub test_types: Vec<TestType>,
-    
+
     /// Test execution timeout
     pub test_timeout: Duration,
-    
+
     /// Coverage thresholds
     pub coverage_thresholds: CoverageThresholds,
-    
+
     /// Performance test parameters
     pub performance_params: PerformanceTestParams,
-    
+
     /// Test environment settings
     pub test_environments: Vec<TestEnvironment>,
-    
+
     /// Test reporting configuration
     pub reporting_config: ReportingConfig,
-    
+
     /// Test scheduling
     pub scheduling_config: SchedulingConfig,
 }
@@ -97,9 +97,9 @@ pub struct CoverageThresholds {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PerformanceTestParams {
     pub max_response_time: Duration,
-    pub target_throughput: u64,        // requests per second
-    pub max_memory_usage: u64,         // bytes
-    pub max_cpu_usage: f64,            // percentage
+    pub target_throughput: u64, // requests per second
+    pub max_memory_usage: u64,  // bytes
+    pub max_cpu_usage: f64,     // percentage
     pub concurrent_users: u32,
     pub test_duration: Duration,
     pub ramp_up_time: Duration,
@@ -203,17 +203,15 @@ impl Default for TestingConfig {
                 test_duration: Duration::from_secs(300), // 5 minutes
                 ramp_up_time: Duration::from_secs(60),   // 1 minute
             },
-            test_environments: vec![
-                TestEnvironment {
-                    name: "local".to_string(),
-                    description: "Local development environment".to_string(),
-                    environment_type: EnvironmentType::Local,
-                    configuration: HashMap::new(),
-                    setup_scripts: Vec::new(),
-                    teardown_scripts: Vec::new(),
-                    enabled: true,
-                }
-            ],
+            test_environments: vec![TestEnvironment {
+                name: "local".to_string(),
+                description: "Local development environment".to_string(),
+                environment_type: EnvironmentType::Local,
+                configuration: HashMap::new(),
+                setup_scripts: Vec::new(),
+                teardown_scripts: Vec::new(),
+                enabled: true,
+            }],
             reporting_config: ReportingConfig {
                 output_formats: vec![OutputFormat::HTML, OutputFormat::JSON],
                 include_screenshots: true,
@@ -243,16 +241,16 @@ impl Default for TestingConfig {
 struct TestEngine {
     /// Active test executions
     active_executions: HashMap<String, TestExecution>,
-    
+
     /// Test execution history
     execution_history: VecDeque<TestExecutionRecord>,
-    
+
     /// Test runners
     test_runners: HashMap<TestType, TestRunner>,
-    
+
     /// Execution queue
     execution_queue: VecDeque<QueuedTest>,
-    
+
     /// Test metrics
     execution_metrics: ExecutionMetrics,
 }
@@ -538,13 +536,13 @@ struct TypeMetrics {
 struct CoverageAnalyzer {
     /// Coverage reports
     coverage_reports: VecDeque<CoverageReport>,
-    
+
     /// Coverage metrics
     coverage_metrics: CoverageMetrics,
-    
+
     /// Coverage targets
     coverage_targets: HashMap<String, CoverageTarget>,
-    
+
     /// Analysis tools
     analysis_tools: Vec<CoverageTool>,
 }
@@ -601,8 +599,8 @@ struct CoverageMetrics {
     pub current_line_coverage: f64,
     pub current_branch_coverage: f64,
     pub current_function_coverage: f64,
-    pub coverage_trend: f64,       // positive = improving, negative = declining
-    pub target_achievement: f64,   // percentage of targets met
+    pub coverage_trend: f64,     // positive = improving, negative = declining
+    pub target_achievement: f64, // percentage of targets met
     pub total_reports_generated: u64,
 }
 
@@ -644,13 +642,13 @@ enum CoverageToolType {
 struct TestGenerator {
     /// Generation models
     generation_models: HashMap<String, GenerationModel>,
-    
+
     /// Generated tests
     generated_tests: HashMap<String, GeneratedTestSuite>,
-    
+
     /// Generation templates
     test_templates: HashMap<TestType, Vec<TestTemplate>>,
-    
+
     /// Generation metrics
     generation_metrics: GenerationMetrics,
 }
@@ -724,13 +722,13 @@ struct GenerationMetrics {
 struct TestOrchestrator {
     /// Orchestration workflows
     workflows: HashMap<String, TestWorkflow>,
-    
+
     /// Workflow executions
     active_workflows: HashMap<String, WorkflowExecution>,
-    
+
     /// Orchestration metrics
     orchestration_metrics: OrchestrationMetrics,
-    
+
     /// Dependencies
     test_dependencies: HashMap<String, Vec<String>>,
 }
@@ -860,29 +858,36 @@ struct OrchestrationMetrics {
 impl TestingAgent {
     pub fn new(config: Option<TestingConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Testing Agent".to_string();
+        let capabilities = vec![
+            "test-execution".to_string(),
+            "test-generation".to_string(),
+            "coverage-analysis".to_string(),
+            "performance-testing".to_string(),
+            "security-testing".to_string(),
+            "test-orchestration".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("testing-agent"),
-            name: "Testing Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "test-execution".to_string(),
-                "test-generation".to_string(),
-                "coverage-analysis".to_string(),
-                "performance-testing".to_string(),
-                "security-testing".to_string(),
-                "test-orchestration".to_string(),
-            ],
+            id,
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                min_storage: 2 * 1024 * 1024 * 1024,     // 2GB
-                max_cpu: 8.0,
-                max_memory: 32 * 1024 * 1024 * 1024, // 32GB
-                max_storage: 100 * 1024 * 1024 * 1024, // 100GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: vec!["test-framework".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -904,11 +909,11 @@ impl TestingAgent {
         environment: String,
     ) -> Result<TestExecution> {
         tracing::info!("Executing test suite: {}", test_suite.name);
-        
+
         let mut test_engine = self.test_engine.write().await;
-        
+
         let execution_id = format!("exec-{}", Uuid::new_v4());
-        
+
         let execution = TestExecution {
             execution_id: execution_id.clone(),
             test_suite,
@@ -920,35 +925,41 @@ impl TestingAgent {
             results: Vec::new(),
             errors: Vec::new(),
         };
-        
-        test_engine.active_executions.insert(execution_id.clone(), execution);
+
+        test_engine
+            .active_executions
+            .insert(execution_id.clone(), execution);
         test_engine.execution_metrics.total_executions += 1;
-        
+
         // TODO: Implement actual test execution
         tokio::time::sleep(Duration::from_secs(1)).await;
-        
+
         // Update execution status
         if let Some(execution) = test_engine.active_executions.get_mut(&execution_id) {
             execution.status = ExecutionStatus::Completed;
             execution.progress = 100.0;
         }
-        
+
         test_engine.execution_metrics.successful_executions += 1;
-        
+
         // Get the execution for return
-        let execution = test_engine.active_executions.get(&execution_id).unwrap().clone();
-        
+        let execution = test_engine
+            .active_executions
+            .get(&execution_id)
+            .unwrap()
+            .clone();
+
         Ok(execution)
     }
     pub async fn get_testing_status(&self) -> Result<TestingStatus> {
         let test_engine = self.test_engine.read().await;
         let coverage_analyzer = self.coverage_analyzer.read().await;
-        
+
         Ok(TestingStatus {
             active_executions: test_engine.active_executions.len(),
             total_executions: test_engine.execution_metrics.total_executions,
             success_rate: if test_engine.execution_metrics.total_executions > 0 {
-                test_engine.execution_metrics.successful_executions as f64 
+                test_engine.execution_metrics.successful_executions as f64
                     / test_engine.execution_metrics.total_executions as f64
             } else {
                 0.0
@@ -985,34 +996,13 @@ impl Agent for TestingAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Testing Agent");
-        
-        // Initialize test runners
-        let mut test_engine = self.test_engine.write().await;
-        self.initialize_test_runners(&mut test_engine).await?;
-        
-        // Initialize coverage tools
-        let mut coverage_analyzer = self.coverage_analyzer.write().await;
-        self.initialize_coverage_tools(&mut coverage_analyzer).await?;
-        
-        // Initialize test generators
-        let mut test_generator = self.test_generator.write().await;
-        self.initialize_test_generators(&mut test_generator).await?;
-        
-        *self.state.write().await = AgentStatus::Active;
-        
-        tracing::info!("Testing Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Testing Agent");
-        
+
         // Start continuous testing if enabled
         if self.config.scheduling_config.continuous_testing {
             let test_engine = self.test_engine.clone();
-            
+
             tokio::spawn(async move {
                 let mut interval = tokio::time::interval(Duration::from_secs(300)); // 5 minutes
                 loop {
@@ -1023,26 +1013,29 @@ impl Agent for TestingAgent {
                 }
             });
         }
-        
+
         tracing::info!("Testing Agent started successfully");
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Testing Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Testing Agent stopped successfully");
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
-                Ok(Some(AgentMessage::Response {
+
+                Ok(Some(crate::agents::AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
@@ -1054,20 +1047,24 @@ impl Agent for TestingAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "run-tests" => {
-                let test_type = task.parameters.get("test_type")
+                let test_type = task
+                    .input_data
+                    .get("test_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unit");
-                
-                let environment = task.parameters.get("environment")
+
+                let environment = task
+                    .input_data
+                    .get("environment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("local")
                     .to_string();
-                
+
                 // Create a basic test suite
                 let test_suite = TestSuite {
                     suite_id: Uuid::new_v4().to_string(),
@@ -1081,64 +1078,59 @@ impl Agent for TestingAgent {
                     priority: Priority::Medium,
                     timeout: Duration::from_secs(300),
                 };
-                
+
                 let execution = self.execute_test_suite(test_suite, environment).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "execution_id": execution.execution_id,
                         "status": format!("{:?}", execution.status),
                         "progress": execution.progress,
                         "results_count": execution.results.len(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
                 let status = self.get_testing_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_executions": status.active_executions,
                         "total_executions": status.total_executions,
                         "success_rate": status.success_rate,
                         "current_coverage": status.current_coverage,
                         "tests_run": status.tests_run,
                         "queue_size": status.queue_size,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Testing failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let test_engine = self.test_engine.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0, // Placeholder
+            cpu_usage: 25.0,                      // Placeholder
             memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
             task_queue_size: test_engine.execution_queue.len() as usize,
             completed_tasks: test_engine.execution_metrics.successful_executions,
@@ -1147,13 +1139,19 @@ impl Agent for TestingAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Testing Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
         &self.metadata.capabilities
+    }
+
+    async fn initialize(&mut self) -> AgentResult<()> {
+        tracing::info!("Initializing Testing Agent");
+        *self.state.write().await = AgentStatus::Active;
+        Ok(())
     }
 }
 
@@ -1172,16 +1170,19 @@ impl TestingAgent {
                 status: RunnerStatus::Available,
                 current_execution: None,
             };
-            
+
             test_engine.test_runners.insert(test_type.clone(), runner);
         }
-        
+
         tracing::info!("Initialized {} test runners", self.config.test_types.len());
         Ok(())
     }
-    
+
     /// Initialize coverage tools
-    async fn initialize_coverage_tools(&self, coverage_analyzer: &mut CoverageAnalyzer) -> Result<()> {
+    async fn initialize_coverage_tools(
+        &self,
+        coverage_analyzer: &mut CoverageAnalyzer,
+    ) -> Result<()> {
         // Initialize coverage tools
         let tool = CoverageTool {
             tool_id: "llvm-cov".to_string(),
@@ -1191,13 +1192,13 @@ impl TestingAgent {
             configuration: HashMap::new(),
             enabled: true,
         };
-        
+
         coverage_analyzer.analysis_tools.push(tool);
-        
+
         tracing::info!("Initialized coverage analysis tools");
         Ok(())
     }
-    
+
     /// Initialize test generators
     async fn initialize_test_generators(&self, test_generator: &mut TestGenerator) -> Result<()> {
         // Initialize generation models
@@ -1210,19 +1211,21 @@ impl TestingAgent {
             coverage_improvement: 0.25,
             generation_speed: Duration::from_secs(5),
         };
-        
-        test_generator.generation_models.insert("unit".to_string(), model);
-        
+
+        test_generator
+            .generation_models
+            .insert("unit".to_string(), model);
+
         tracing::info!("Initialized test generation models");
         Ok(())
     }
-    
+
     /// Run continuous testing (background task)
     async fn run_continuous_testing(test_engine: Arc<RwLock<TestEngine>>) -> Result<()> {
         let _test_engine = test_engine.read().await;
-        
+
         // TODO: Implement continuous testing logic
-        
+
         tracing::debug!("Continuous testing cycle completed");
         Ok(())
     }

@@ -7,14 +7,14 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Deployment Agent - Comprehensive CI/CD and deployment automation
-/// 
+///
 /// The Deployment Agent is responsible for:
 /// - Continuous Integration and Deployment
 /// - Environment management and provisioning
@@ -23,22 +23,25 @@ use agentaskit_shared::{
 /// - Deployment monitoring and validation
 /// - Blue-green and canary deployments
 pub struct DeploymentAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// CI/CD pipeline engine
     pipeline_engine: Arc<RwLock<PipelineEngine>>,
-    
+
     /// Environment manager
     environment_manager: Arc<RwLock<EnvironmentManager>>,
-    
+
     /// Release orchestrator
     release_orchestrator: Arc<RwLock<ReleaseOrchestrator>>,
-    
+
     /// Infrastructure manager
     infrastructure_manager: Arc<RwLock<InfrastructureManager>>,
-    
+
     /// Configuration
     config: DeploymentConfig,
 }
@@ -48,22 +51,22 @@ pub struct DeploymentAgent {
 pub struct DeploymentConfig {
     /// Deployment strategies
     pub deployment_strategies: Vec<DeploymentStrategy>,
-    
+
     /// Environment configurations
     pub environments: HashMap<String, EnvironmentConfig>,
-    
+
     /// Pipeline configurations
     pub pipeline_config: PipelineConfig,
-    
+
     /// Infrastructure settings
     pub infrastructure_config: InfrastructureConfig,
-    
+
     /// Rollback configuration
     pub rollback_config: RollbackConfig,
-    
+
     /// Monitoring settings
     pub monitoring_config: MonitoringConfig,
-    
+
     /// Security settings
     pub security_config: SecurityConfig,
 }
@@ -550,23 +553,22 @@ impl Default for DeploymentConfig {
 struct PipelineEngine {
     /// Active pipelines
     active_pipelines: HashMap<String, PipelineExecution>,
-    
+
     /// Pipeline history
     pipeline_history: VecDeque<PipelineRecord>,
-    
+
     /// Pipeline templates
     pipeline_templates: HashMap<String, PipelineTemplate>,
-    
+
     /// Execution metrics
     execution_metrics: PipelineMetrics,
-    
+
     /// Build artifacts
     artifacts: HashMap<String, BuildArtifact>,
 }
 
 /// Pipeline execution
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct PipelineExecution {
     pub execution_id: String,
     pub pipeline_name: String,
@@ -592,7 +594,7 @@ enum PipelineStatus {
 }
 
 /// Stage result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct StageResult {
     pub stage_name: String,
     pub status: StageStatus,
@@ -660,9 +662,9 @@ struct PipelineMetrics {
     pub failed_executions: u64,
     pub average_execution_time: Duration,
     pub stage_success_rates: HashMap<String, f64>,
-    pub deployment_frequency: f64, // deployments per day
-    pub lead_time: Duration,       // time from commit to production
-    pub change_failure_rate: f64,  // percentage of deployments causing failures
+    pub deployment_frequency: f64,       // deployments per day
+    pub lead_time: Duration,             // time from commit to production
+    pub change_failure_rate: f64,        // percentage of deployments causing failures
     pub mean_time_to_recovery: Duration, // time to recover from failures
 }
 
@@ -695,13 +697,13 @@ enum ArtifactType {
 struct EnvironmentManager {
     /// Managed environments
     environments: HashMap<String, EnvironmentInstance>,
-    
+
     /// Environment history
     environment_history: VecDeque<EnvironmentEvent>,
-    
+
     /// Resource usage tracking
     resource_usage: HashMap<String, ResourceUsageTracker>,
-    
+
     /// Environment metrics
     environment_metrics: EnvironmentMetrics,
 }
@@ -978,16 +980,16 @@ struct EnvironmentMetrics {
 struct ReleaseOrchestrator {
     /// Active releases
     active_releases: HashMap<String, ReleaseExecution>,
-    
+
     /// Release history
     release_history: VecDeque<ReleaseRecord>,
-    
+
     /// Release strategies
     release_strategies: HashMap<String, ReleaseStrategy>,
-    
+
     /// Rollback manager
     rollback_manager: RollbackManager,
-    
+
     /// Release metrics
     release_metrics: ReleaseMetrics,
 }
@@ -1197,13 +1199,13 @@ struct ReleaseMetrics {
 struct InfrastructureManager {
     /// Infrastructure state
     infrastructure_state: HashMap<String, InfrastructureInstance>,
-    
+
     /// Terraform state manager
     terraform_manager: TerraformManager,
-    
+
     /// Cloud providers
     cloud_providers: HashMap<String, CloudProviderClient>,
-    
+
     /// Infrastructure metrics
     infrastructure_metrics: InfrastructureMetrics,
 }
@@ -1360,32 +1362,47 @@ struct InfrastructureMetrics {
 impl DeploymentAgent {
     pub fn new(config: Option<DeploymentConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Deployment Agent".to_string();
+        let capabilities = vec![
+            "ci-cd-pipelines".to_string(),
+            "environment-management".to_string(),
+            "release-orchestration".to_string(),
+            "infrastructure-management".to_string(),
+            "deployment-automation".to_string(),
+            "rollback-management".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("deployment-agent"),
-            name: "Deployment Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "ci-cd-pipelines".to_string(),
-                "environment-management".to_string(),
-                "release-orchestration".to_string(),
-                "infrastructure-management".to_string(),
-                "deployment-automation".to_string(),
-                "rollback-management".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 2.0,
-                min_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                min_storage: 10 * 1024 * 1024 * 1024, // 10GB
-                max_cpu: 16.0,
-                max_memory: 64 * 1024 * 1024 * 1024, // 64GB
-                max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(200.0),
+                gpu_required: false,
+                special_capabilities: vec!["kubernetes".to_string(), "docker".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [
+                ("deployment".to_string(), "deployment".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1404,11 +1421,11 @@ impl DeploymentAgent {
         trigger_source: String,
     ) -> Result<PipelineExecution> {
         tracing::info!("Executing pipeline: {}", pipeline_name);
-        
+
         let mut pipeline_engine = self.pipeline_engine.write().await;
-        
+
         let execution_id = format!("pipe-{}", Uuid::new_v4());
-        
+
         let execution = PipelineExecution {
             execution_id: execution_id.clone(),
             pipeline_name: pipeline_name.clone(),
@@ -1421,25 +1438,31 @@ impl DeploymentAgent {
             environment_variables: HashMap::new(),
             artifacts_generated: Vec::new(),
         };
-        
-        pipeline_engine.active_pipelines.insert(execution_id.clone(), execution);
+
+        pipeline_engine
+            .active_pipelines
+            .insert(execution_id.clone(), execution);
         pipeline_engine.execution_metrics.total_executions += 1;
-        
+
         // TODO: Implement actual pipeline execution
         tokio::time::sleep(Duration::from_secs(2)).await;
-        
+
         // Update execution status
         if let Some(execution) = pipeline_engine.active_pipelines.get_mut(&execution_id) {
             execution.status = PipelineStatus::Completed;
             execution.overall_progress = 100.0;
             execution.current_stage = None;
         }
-        
+
         pipeline_engine.execution_metrics.successful_executions += 1;
-        
+
         // Get the execution for return
-        let execution = pipeline_engine.active_pipelines.get(&execution_id).unwrap().clone();
-        
+        let execution = pipeline_engine
+            .active_pipelines
+            .get(&execution_id)
+            .unwrap()
+            .clone();
+
         Ok(execution)
     }
 
@@ -1448,12 +1471,12 @@ impl DeploymentAgent {
         let pipeline_engine = self.pipeline_engine.read().await;
         let environment_manager = self.environment_manager.read().await;
         let release_orchestrator = self.release_orchestrator.read().await;
-        
+
         Ok(DeploymentStatus {
             active_pipelines: pipeline_engine.active_pipelines.len(),
             total_executions: pipeline_engine.execution_metrics.total_executions,
             success_rate: if pipeline_engine.execution_metrics.total_executions > 0 {
-                pipeline_engine.execution_metrics.successful_executions as f64 
+                pipeline_engine.execution_metrics.successful_executions as f64
                     / pipeline_engine.execution_metrics.total_executions as f64
             } else {
                 0.0
@@ -1490,33 +1513,12 @@ impl Agent for DeploymentAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Deployment Agent");
-        
-        // Initialize pipeline templates
-        let mut pipeline_engine = self.pipeline_engine.write().await;
-        self.initialize_pipeline_templates(&mut pipeline_engine).await?;
-        
-        // Initialize cloud providers
-        let mut infrastructure_manager = self.infrastructure_manager.write().await;
-        self.initialize_cloud_providers(&mut infrastructure_manager).await?;
-        
-        // Initialize release strategies
-        let mut release_orchestrator = self.release_orchestrator.write().await;
-        self.initialize_release_strategies(&mut release_orchestrator).await?;
-        
-        *self.state.write().await = AgentStatus::Active;
-        
-        tracing::info!("Deployment Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Deployment Agent");
-        
+
         // Start pipeline monitoring
         let pipeline_engine = self.pipeline_engine.clone();
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(60));
             loop {
@@ -1526,27 +1528,27 @@ impl Agent for DeploymentAgent {
                 }
             }
         });
-        
+
         tracing::info!("Deployment Agent started successfully");
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Deployment Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Deployment Agent stopped successfully");
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1557,78 +1559,77 @@ impl Agent for DeploymentAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "deploy" => {
-                let pipeline_name = task.parameters.get("pipeline")
+                let pipeline_name = task
+                    .input_data
+                    .get("pipeline")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-pipeline")
                     .to_string();
-                
-                let trigger_source = task.parameters.get("trigger")
+
+                let trigger_source = task
+                    .input_data
+                    .get("trigger")
                     .and_then(|v| v.as_str())
                     .unwrap_or("manual")
                     .to_string();
-                
+
                 let execution = self.execute_pipeline(pipeline_name, trigger_source).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "execution_id": execution.execution_id,
                         "pipeline_name": execution.pipeline_name,
                         "status": format!("{:?}", execution.status),
                         "progress": execution.overall_progress,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
                 let status = self.get_deployment_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_pipelines": status.active_pipelines,
                         "total_executions": status.total_executions,
                         "success_rate": status.success_rate,
                         "active_environments": status.active_environments,
                         "deployment_frequency": status.deployment_frequency,
                         "rollback_rate": status.rollback_rate,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Deployment failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let pipeline_engine = self.pipeline_engine.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 30.0, // Placeholder
+            cpu_usage: 30.0,                      // Placeholder
             memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
             task_queue_size: pipeline_engine.active_pipelines.len() as usize,
             completed_tasks: pipeline_engine.execution_metrics.successful_executions,
@@ -1637,19 +1638,22 @@ impl Agent for DeploymentAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Deployment Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.capabilities
     }
 }
 
 impl DeploymentAgent {
     /// Initialize pipeline templates
-    async fn initialize_pipeline_templates(&self, pipeline_engine: &mut PipelineEngine) -> Result<()> {
+    async fn initialize_pipeline_templates(
+        &self,
+        pipeline_engine: &mut PipelineEngine,
+    ) -> Result<()> {
         // Initialize basic pipeline metrics
         pipeline_engine.execution_metrics = PipelineMetrics {
             total_executions: 0,
@@ -1662,13 +1666,16 @@ impl DeploymentAgent {
             change_failure_rate: 0.05, // 5%
             mean_time_to_recovery: Duration::from_mins(30),
         };
-        
+
         tracing::info!("Initialized pipeline templates and metrics");
         Ok(())
     }
-    
+
     /// Initialize cloud providers
-    async fn initialize_cloud_providers(&self, infrastructure_manager: &mut InfrastructureManager) -> Result<()> {
+    async fn initialize_cloud_providers(
+        &self,
+        infrastructure_manager: &mut InfrastructureManager,
+    ) -> Result<()> {
         // Initialize infrastructure metrics
         infrastructure_manager.infrastructure_metrics = InfrastructureMetrics {
             total_resources: 0,
@@ -1678,13 +1685,16 @@ impl DeploymentAgent {
             cost_per_resource: 0.0,
             infrastructure_efficiency: 0.85,
         };
-        
+
         tracing::info!("Initialized cloud providers and infrastructure");
         Ok(())
     }
-    
+
     /// Initialize release strategies
-    async fn initialize_release_strategies(&self, release_orchestrator: &mut ReleaseOrchestrator) -> Result<()> {
+    async fn initialize_release_strategies(
+        &self,
+        release_orchestrator: &mut ReleaseOrchestrator,
+    ) -> Result<()> {
         // Initialize release metrics
         release_orchestrator.release_metrics = ReleaseMetrics {
             total_releases: 0,
@@ -1697,17 +1707,17 @@ impl DeploymentAgent {
             deployment_frequency: 0.0,
             change_failure_rate: 0.05, // 5%
         };
-        
+
         tracing::info!("Initialized release strategies and metrics");
         Ok(())
     }
-    
+
     /// Monitor pipelines (background task)
     async fn monitor_pipelines(pipeline_engine: Arc<RwLock<PipelineEngine>>) -> Result<()> {
         let _pipeline_engine = pipeline_engine.read().await;
-        
+
         // TODO: Implement pipeline monitoring logic
-        
+
         tracing::debug!("Pipeline monitoring cycle completed");
         Ok(())
     }

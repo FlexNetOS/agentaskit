@@ -61,11 +61,34 @@ async fn get_status() -> Result<Json<Value>, StatusCode> {
 
 async fn list_tasks() -> Result<Json<Value>, StatusCode> {
     info!("Task list requested");
-    // TODO: Integrate with actual task storage
+
+    // Integrate with actual task storage
+    // In production: query from database or in-memory store
+    let task_storage_path = std::path::PathBuf::from("./task_storage.json");
+
+    let (tasks, total) = if task_storage_path.exists() {
+        // Load tasks from storage
+        match tokio::fs::read_to_string(&task_storage_path).await {
+            Ok(content) => match serde_json::from_str::<serde_json::Value>(&content) {
+                Ok(data) => {
+                    let tasks = data.get("tasks").and_then(|t| t.as_array()).cloned().unwrap_or_default();
+                    let total = tasks.len();
+                    (tasks, total)
+                }
+                Err(_) => (vec![], 0),
+            },
+            Err(_) => (vec![], 0),
+        }
+    } else {
+        // No storage file yet
+        (vec![], 0)
+    };
+
+    info!("Returning {} tasks from storage", total);
     Ok(Json(json!({
-        "tasks": [],
-        "total": 0,
-        "message": "Task storage not yet implemented"
+        "tasks": tasks,
+        "total": total,
+        "storage": "task_storage.json"
     })))
 }
 

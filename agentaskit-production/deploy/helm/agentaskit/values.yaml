@@ -1,0 +1,172 @@
+# Default values for agentaskit
+# REF: DEP-K8S - K8s manifests & Helm charts
+
+# Number of replicas
+replicaCount: 3
+
+# Container image configuration
+image:
+  repository: ghcr.io/flexnetos/agentaskit
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations and labels
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+podLabels: {}
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Service configuration
+service:
+  type: ClusterIP
+  httpPort: 80
+  grpcPort: 9000
+  metricsPort: 9090
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.agentaskit.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: agentaskit-tls
+      hosts:
+        - api.agentaskit.example.com
+
+# Resource limits and requests
+resources:
+  requests:
+    cpu: "500m"
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+
+# Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agentaskit
+          topologyKey: kubernetes.io/hostname
+
+# Topology spread constraints
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: agentaskit
+
+# Probes configuration
+probes:
+  liveness:
+    enabled: true
+    path: /health/live
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    path: /health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  startup:
+    enabled: true
+    path: /health/startup
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+
+# Application configuration
+config:
+  env: "production"
+  logLevel: "info"
+  logFormat: "json"
+  httpPort: 8080
+  grpcPort: 9000
+  metricsPort: 9090
+  maxConnections: 10000
+  requestTimeoutMs: 30000
+  workerThreads: 8
+  maxAgents: 1000
+  agentStartupTimeoutMs: 100
+  agentResponseTimeoutMs: 50
+  tripleVerification: true
+  modelDMerge: true
+  capabilityTokens: true
+
+# OpenTelemetry configuration
+otel:
+  enabled: true
+  endpoint: "http://otel-collector:4317"
+  serviceName: "agentaskit"
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Extra environment variables
+extraEnv: []
+
+# Extra volumes
+extraVolumes: []
+
+# Extra volume mounts
+extraVolumeMounts: []

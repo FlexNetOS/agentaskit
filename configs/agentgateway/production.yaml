@@ -1,0 +1,103 @@
+# AgentasKit Agentgateway Production Configuration Template
+# Customize this for your production environment
+
+version: v1
+
+# Static configuration
+static:
+  admin:
+    address: "0.0.0.0:15000"
+
+  logging:
+    level: info
+    format: json
+
+# Listeners with TLS
+listeners:
+  - name: mcp-listener
+    protocol: mcp
+    address: "0.0.0.0:443"
+    tls:
+      certFile: /etc/agentgateway/certs/server.crt
+      keyFile: /etc/agentgateway/certs/server.key
+
+  - name: a2a-listener
+    protocol: a2a
+    address: "0.0.0.0:8443"
+    tls:
+      certFile: /etc/agentgateway/certs/server.crt
+      keyFile: /etc/agentgateway/certs/server.key
+
+# Production targets (configure via environment or secrets)
+targets: []
+  # Add your production targets here
+  # - name: production-mcp-server
+  #   type: sse
+  #   host: "https://mcp.internal.example.com"
+
+# Routes
+routes: []
+  # Configure production routes
+
+# MCP Authentication
+mcpAuthentication:
+  issuer: "${OAUTH_ISSUER_URL}"
+  jwksUrl: "${OAUTH_JWKS_URL}"
+  resourceMetadata:
+    resource: "${MCP_RESOURCE_URL}"
+    scopesSupported:
+      - "read:tools"
+      - "write:tools"
+      - "read:resources"
+    bearerMethodsSupported:
+      - header
+
+# Policies
+policies:
+  # Production rate limiting
+  - name: production-rate-limit
+    type: ratelimit
+    config:
+      requests_per_second: 1000
+      burst: 1500
+      per_user:
+        requests_per_second: 100
+        burst: 150
+
+  # Production authorization
+  - name: production-auth
+    type: authorization
+    config:
+      rules:
+        # Require valid JWT
+        - name: require-auth
+          expression: "has(jwt.sub)"
+          action: allow
+
+        # Deny unauthenticated
+        - name: deny-unauth
+          expression: "true"
+          action: deny
+
+  # Audit logging
+  - name: audit-policy
+    type: audit
+    config:
+      logLevel: info
+      includeRequest: true
+      includeResponse: false
+      redactHeaders:
+        - Authorization
+        - X-API-Key
+
+# Telemetry
+telemetry:
+  enabled: true
+  otlp:
+    endpoint: "${OTLP_ENDPOINT}"
+  metrics:
+    enabled: true
+    path: /metrics
+  tracing:
+    enabled: true
+    samplingRate: 0.1

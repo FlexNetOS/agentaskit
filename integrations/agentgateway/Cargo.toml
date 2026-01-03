@@ -1,0 +1,47 @@
+[package]
+name = "agentaskit-gateway-integration"
+version = "0.1.0"
+edition = "2021"
+authors = ["AgentasKit Contributors"]
+license = "MIT OR Apache-2.0"
+description = "Integration bridge between AgentasKit and Agentgateway"
+
+[workspace]
+# This is a standalone package, not part of the parent workspace
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.0", features = ["full", "process"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "2.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# HTTP client for gateway communication
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# gRPC for XDS communication
+tonic = { version = "0.14", features = ["transport"] }
+prost = "0.14"
+
+# Configuration
+config = "0.13"
+toml = "0.8"
+
+# Process management
+which = "7.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.0"

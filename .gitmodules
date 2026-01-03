@@ -1,0 +1,6 @@
+[submodule "agentgateway"]
+	path = agentgateway
+	url = https://github.com/FlexNetOS/agentgateway.git
+[submodule "wiki-rs"]
+	path = wiki-rs
+	url = https://github.com/FlexNetOS/wiki-rs.git

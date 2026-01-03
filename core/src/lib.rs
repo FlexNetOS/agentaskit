@@ -1,49 +1,62 @@
 //! AgentAsKit Production-Ready Core Library
-//! 
+//!
 //! This library unifies the best capabilities from all integrated systems:
 //! - rustecosys: Tauri desktop application framework
-//! - rustecosys2: Advanced orchestration and execution engine  
+//! - rustecosys2: Advanced orchestration and execution engine
 //! - agentrs: Comprehensive multi-agent system
-//! 
+//!
 //! Following the "Heal, Don't Harm" principle, all capabilities are preserved and enhanced.
+
+// Clippy lint configuration for production-ready code quality
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
+// Allow some pedantic lints that are too strict for this codebase
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::must_use_candidate)]
 
 use anyhow::Result;
 
 // Re-export core modules
 pub mod agents;
-pub mod orchestration;
 pub mod communication;
-pub mod security;
 pub mod monitoring;
+pub mod orchestration;
 pub mod performance;
+pub mod security;
 
 // Enhanced workflow processing module
 pub mod workflows;
 
 // New autonomous development modules
-pub mod verification;
 pub mod autonomous;
 pub mod self_improving;
+pub mod verification;
 
 // Re-export commonly used types for convenience
 pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
-pub use orchestration::{OrchestratorEngine, Task, TaskStatus, TaskType, Priority};
-pub use communication::{MessageBroker, Message, MessageType, Priority as MessagePriority};
-pub use security::{SecurityManager, CapabilityToken, Capability};
-pub use monitoring::{MetricsCollector, SystemMetrics, AgentMetrics, Alert, AlertLevel};
+pub use communication::{Message, MessageBroker, MessageType, Priority as MessagePriority};
+pub use monitoring::{AgentMetrics, Alert, AlertLevel, MetricsCollector, SystemMetrics};
+pub use orchestration::{OrchestratorEngine, Priority, Task, TaskStatus, TaskType};
+pub use security::{Capability, CapabilityToken, SecurityManager};
 
 // Export enhanced workflow processing capabilities
 pub use workflows::{
-    EnhancedWorkflowProcessor, ChatRequest, RequestPriority, TaskSubject,
-    DeconstructPhase, DiagnosePhase, DevelopPhase, DeliverPhase,
-    Deliverable, DeliverableType, TargetLocation, LocationType,
-    VerificationProtocol, VerificationPass as WorkflowVerificationPass, EvidenceLedger as WorkflowEvidenceLedger, TruthGateRequirements
+    ChatRequest, DeconstructPhase, DeliverPhase, Deliverable, DeliverableType, DevelopPhase,
+    DiagnosePhase, EnhancedWorkflowProcessor, EvidenceLedger as WorkflowEvidenceLedger,
+    LocationType, RequestPriority, TargetLocation, TaskSubject, TruthGateRequirements,
+    VerificationPass as WorkflowVerificationPass, VerificationProtocol,
 };
 
 // Export autonomous development capabilities
-pub use verification::{NoaVerificationSystem, VerificationStatus, TruthGate};
-pub use autonomous::{AutonomousPipeline, PipelineConfig, MLEngine, BuildSystem};
-pub use self_improving::{SelfImprovingOrchestrator, OrchestratorConfig, LearningEngine, ImprovementTracker};
+pub use autonomous::{AutonomousPipeline, BuildSystem, MLEngine, PipelineConfig};
+pub use self_improving::{
+    ImprovementTracker, LearningEngine, OrchestratorConfig, SelfImprovingOrchestrator,
+};
+pub use verification::{NoaVerificationSystem, TruthGate, VerificationStatus};
 
 /// Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

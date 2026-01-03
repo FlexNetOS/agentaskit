@@ -248,14 +248,18 @@ pub mod coordination {
         };
         
         communication_manager.send_message(request).await?;
-        
-        // TODO: Wait for response and handle coordination
-        // This would involve setting up a response handler and timeout
-        
+
+        // NOTE: Real coordination would wait for a response correlated to `message_id`,
+        // potentially with timeout handling via a response channel. That behavior is
+        // not yet implemented here, so we return an immediate acknowledgment that the
+        // decision request has been initiated and handed off to the NOA Commander.
+        // The timeout parameter is preserved for future implementation.
+        let _ = timeout; // Silence unused variable warning
         Ok(serde_json::json!({
             "status": "coordinated",
             "decision_initiated": true,
             "coordinator": "noa-commander",
+            "message_id": message_id.to_string(),
         }))
     }
     

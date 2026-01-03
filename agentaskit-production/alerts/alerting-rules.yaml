@@ -1,0 +1,101 @@
+groups:
+  - name: agentaskit-slo-alerts
+    interval: 30s
+    rules:
+      # Latency SLO - p95 response time
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.050
+        for: 5m
+        labels:
+          severity: warning
+          slo: latency
+        annotations:
+          summary: "p95 latency exceeds 50ms SLO"
+          description: "Current p95 latency is {{ $value | humanizeDuration }}"
+
+      - alert: CriticalLatencyP99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.500
+        for: 2m
+        labels:
+          severity: critical
+          slo: latency
+        annotations:
+          summary: "p99 latency exceeds 500ms critical threshold"
+
+      # Error Rate SLO
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          slo: error_rate
+        annotations:
+          summary: "Error rate exceeds 1% SLO"
+          description: "Current error rate is {{ $value | humanizePercentage }}"
+
+      - alert: CriticalErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          slo: error_rate
+        annotations:
+          summary: "Error rate exceeds 5% critical threshold"
+
+      # Saturation Alerts
+      - alert: HighCPUSaturation
+        expr: avg(node_cpu_seconds_total{mode="idle"}) < 0.30
+        for: 10m
+        labels:
+          severity: warning
+          slo: saturation
+        annotations:
+          summary: "CPU saturation above 70%"
+
+      - alert: HighMemorySaturation
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          slo: saturation
+        annotations:
+          summary: "Memory saturation above 85%"
+
+      # Availability
+      - alert: ServiceUnavailable
+        expr: up{job="agentaskit"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "AgentAskit service is down"
+
+  - name: agentaskit-burn-rate
+    interval: 1m
+    rules:
+      # Multi-window burn rate for error budget
+      - alert: ErrorBudgetBurnRateHigh
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[1h])) / sum(rate(http_requests_total[1h]))
+          ) > (14.4 * 0.001)
+        for: 5m
+        labels:
+          severity: warning
+          alert_type: burn_rate
+        annotations:
+          summary: "Error budget burn rate is too high (1h window)"
+          description: "At current rate, monthly error budget will be exhausted"
+
+      - alert: ErrorBudgetExhausted
+        expr: |
+          (
+            1 - (sum(increase(http_requests_total{status=~"5.."}[30d])) / sum(increase(http_requests_total[30d])))
+          ) < 0.001
+        for: 5m
+        labels:
+          severity: critical
+          alert_type: burn_rate
+        annotations:
+          summary: "Monthly error budget is exhausted"

@@ -2,11 +2,14 @@
 // Provides comprehensive system integration, API management, data transformation,
 // workflow orchestration, and external system connectivity capabilities
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -16,6 +19,9 @@ use uuid::Uuid;
 /// Integration Agent - Domain expert for system integration and API management
 #[derive(Clone)]
 pub struct IntegrationAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     config: IntegrationConfig,
     api_gateway: Arc<ApiGateway>,
@@ -392,7 +398,7 @@ impl std::fmt::Display for DataFormat {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TransformationEngine {
     JsonPath,
-    Xslt, 
+    Xslt,
     Jq,
     Custom(String),
 }
@@ -540,7 +546,12 @@ impl Default for IntegrationConfig {
                 },
                 cors_config: CorsConfig {
                     allowed_origins: vec!["*".to_string()],
-                    allowed_methods: vec!["GET".to_string(), "POST".to_string(), "PUT".to_string(), "DELETE".to_string()],
+                    allowed_methods: vec![
+                        "GET".to_string(),
+                        "POST".to_string(),
+                        "PUT".to_string(),
+                        "DELETE".to_string(),
+                    ],
                     allowed_headers: vec!["Content-Type".to_string(), "Authorization".to_string()],
                     max_age: 3600,
                     credentials: true,
@@ -680,37 +691,56 @@ impl IntegrationAgent {
     pub fn new(config: Option<IntegrationConfig>) -> Self {
         let config = config.unwrap_or_default();
         let id = Uuid::new_v4();
-        
+
+        let capabilities = vec![
+            "api-gateway".to_string(),
+            "service-discovery".to_string(),
+            "data-transformation".to_string(),
+            "workflow-orchestration".to_string(),
+            "system-integration".to_string(),
+            "message-broking".to_string(),
+            "protocol-handling".to_string(),
+            "integration-monitoring".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: "Integration".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "api_gateway".to_string(),
-                "service_discovery".to_string(),
-                "data_transformation".to_string(),
-                "workflow_orchestration".to_string(),
-                "system_integration".to_string(),
-                "message_broking".to_string(),
-                "protocol_handling".to_string(),
-                "integration_monitoring".to_string(),
-            ],
+            agent_type: "Specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: None,
-            resource_requirements: ResourceRequirements::default(),
-            health_check_interval: std::time::Duration::from_secs(30),
+            capabilities: capabilities.clone(),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            resource_requirements: ResourceRequirements {
+                cpu_cores: Some(2),
+                memory_mb: Some(2048),
+                storage_mb: Some(512),
+                network_bandwidth_mbps: Some(200.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
+            },
+            tags: std::collections::HashMap::new(),
         };
-        
+
         let api_gateway = Arc::new(ApiGateway::new(config.api_config.clone()));
-        let service_registry = Arc::new(RwLock::new(ServiceRegistry::new(config.registry_config.clone())));
+        let service_registry = Arc::new(RwLock::new(ServiceRegistry::new(
+            config.registry_config.clone(),
+        )));
         let data_transformer = Arc::new(DataTransformer::new(config.transformation_config.clone()));
-        let workflow_orchestrator = Arc::new(WorkflowOrchestrator::new(config.workflow_config.clone()));
+        let workflow_orchestrator =
+            Arc::new(WorkflowOrchestrator::new(config.workflow_config.clone()));
         let connector_manager = Arc::new(ConnectorManager::new(config.connector_config.clone()));
         let message_broker = Arc::new(MessageBroker::new(config.messaging_config.clone()));
         let protocol_handler = Arc::new(ProtocolHandler::new(config.protocol_config.clone()));
-        let integration_monitor = Arc::new(IntegrationMonitor::new(config.monitoring_config.clone()));
+        let integration_monitor =
+            Arc::new(IntegrationMonitor::new(config.monitoring_config.clone()));
 
         Self {
+            id,
+            name: "Integration".to_string(),
+            capabilities,
             metadata,
             config,
             api_gateway,
@@ -727,13 +757,22 @@ impl IntegrationAgent {
     }
 
     /// Register a service in the service registry
-    pub async fn register_service(&self, service: ServiceRegistration) -> AgentResult<ServiceEntry> {
-        info!("Registering service: {} at {}", service.name, service.endpoint);
+    pub async fn register_service(
+        &self,
+        service: ServiceRegistration,
+    ) -> AgentResult<ServiceEntry> {
+        info!(
+            "Registering service: {} at {}",
+            service.name, service.endpoint
+        );
 
         let mut registry = self.service_registry.write().await;
         let entry = registry.register_service(service).await?;
 
-        info!("Service registered successfully with ID: {}", entry.service_id);
+        info!(
+            "Service registered successfully with ID: {}",
+            entry.service_id
+        );
         Ok(entry)
     }
 
@@ -748,37 +787,73 @@ impl IntegrationAgent {
     }
 
     /// Transform data between formats
-    pub async fn transform_data(&self, transformation_request: DataTransformationRequest) -> AgentResult<TransformationResult> {
-        info!("Transforming data from {} to {}", transformation_request.source_format, transformation_request.target_format);
+    pub async fn transform_data(
+        &self,
+        transformation_request: DataTransformationRequest,
+    ) -> AgentResult<TransformationResult> {
+        info!(
+            "Transforming data from {} to {}",
+            transformation_request.source_format, transformation_request.target_format
+        );
 
-        let result = self.data_transformer.transform(transformation_request).await?;
+        let result = self
+            .data_transformer
+            .transform(transformation_request)
+            .await?;
 
-        info!("Data transformation completed, processed {} bytes", result.output_size);
+        info!(
+            "Data transformation completed, processed {} bytes",
+            result.output_size
+        );
         Ok(result)
     }
 
     /// Execute integration workflow
-    pub async fn execute_workflow(&self, workflow_request: WorkflowExecutionRequest) -> AgentResult<WorkflowExecution> {
+    pub async fn execute_workflow(
+        &self,
+        workflow_request: WorkflowExecutionRequest,
+    ) -> AgentResult<WorkflowExecution> {
         info!("Executing workflow: {}", workflow_request.workflow_id);
 
-        let execution = self.workflow_orchestrator.execute_workflow(workflow_request).await?;
+        let execution = self
+            .workflow_orchestrator
+            .execute_workflow(workflow_request)
+            .await?;
 
-        info!("Workflow execution started with ID: {}", execution.execution_id);
+        info!(
+            "Workflow execution started with ID: {}",
+            execution.execution_id
+        );
         Ok(execution)
     }
 
     /// Connect to external system
-    pub async fn connect_system(&self, connection_request: SystemConnectionRequest) -> AgentResult<SystemConnection> {
-        info!("Connecting to system: {} via {}", connection_request.system_name, connection_request.protocol);
+    pub async fn connect_system(
+        &self,
+        connection_request: SystemConnectionRequest,
+    ) -> AgentResult<SystemConnection> {
+        info!(
+            "Connecting to system: {} via {}",
+            connection_request.system_name, connection_request.protocol
+        );
 
-        let connection = self.connector_manager.establish_connection(connection_request).await?;
+        let connection = self
+            .connector_manager
+            .establish_connection(connection_request)
+            .await?;
 
-        info!("System connection established with ID: {}", connection.connection_id);
+        info!(
+            "System connection established with ID: {}",
+            connection.connection_id
+        );
         Ok(connection)
     }
 
     /// Publish message to broker
-    pub async fn publish_message(&self, message_request: MessagePublishRequest) -> AgentResult<MessagePublishResult> {
+    pub async fn publish_message(
+        &self,
+        message_request: MessagePublishRequest,
+    ) -> AgentResult<MessagePublishResult> {
         info!("Publishing message to topic: {}", message_request.topic);
 
         let result = self.message_broker.publish_message(message_request).await?;
@@ -788,10 +863,19 @@ impl IntegrationAgent {
     }
 
     /// Handle protocol conversion
-    pub async fn convert_protocol(&self, conversion_request: ProtocolConversionRequest) -> AgentResult<ProtocolConversionResult> {
-        info!("Converting protocol from {} to {}", conversion_request.source_protocol, conversion_request.target_protocol);
+    pub async fn convert_protocol(
+        &self,
+        conversion_request: ProtocolConversionRequest,
+    ) -> AgentResult<ProtocolConversionResult> {
+        info!(
+            "Converting protocol from {} to {}",
+            conversion_request.source_protocol, conversion_request.target_protocol
+        );
 
-        let result = self.protocol_handler.convert_protocol(conversion_request).await?;
+        let result = self
+            .protocol_handler
+            .convert_protocol(conversion_request)
+            .await?;
 
         info!("Protocol conversion completed successfully");
         Ok(result)
@@ -835,10 +919,10 @@ impl IntegrationAgent {
         // Start service health monitoring
         let registry_config = config.registry_config.clone();
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(registry_config.health_check_interval)
-            );
-            
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+                registry_config.health_check_interval,
+            ));
+
             loop {
                 interval.tick().await;
                 let registry = service_registry.read().await;
@@ -851,9 +935,9 @@ impl IntegrationAgent {
         // Start workflow cleanup task
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(300) // 5 minutes
+                std::time::Duration::from_secs(300), // 5 minutes
             );
-            
+
             loop {
                 interval.tick().await;
                 if let Err(e) = workflow_orchestrator.cleanup_completed_workflows().await {
@@ -866,9 +950,9 @@ impl IntegrationAgent {
         let integration_monitor = Arc::clone(&self.integration_monitor);
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(
-                std::time::Duration::from_secs(60) // 1 minute
+                std::time::Duration::from_secs(60), // 1 minute
             );
-            
+
             loop {
                 interval.tick().await;
                 if let Err(e) = integration_monitor.collect_metrics().await {
@@ -888,24 +972,44 @@ impl Agent for IntegrationAgent {
         &self.metadata
     }
 
-    fn capabilities(&self) -> &[String] {
-        &[]
-    }
-
     async fn state(&self) -> AgentStatus {
-        AgentStatus::Active
+        let active = self.active.lock().await;
+        if *active {
+            AgentStatus::Active
+        } else {
+            AgentStatus::Inactive
+        }
     }
 
-    async fn initialize(&mut self) -> Result<()> {
+    fn capabilities(&self) -> &[String] {
+        &self.capabilities
+    }
+
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let state = self.state().await;
+
+        // Return appropriate health status based on agent state
+        match state {
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
+            AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            _ => Ok(HealthStatus::Unknown),
+        }
+    }
+
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
+        info!("Updating Integration Agent configuration");
+        // Would parse and apply configuration updates
         Ok(())
     }
 
-    async fn start(&mut self) -> Result<()> {
-        info!("Starting Integration Agent {}", self.metadata.name);
-        
+    async fn start(&mut self) -> AgentResult<()> {
+        info!("Starting Integration Agent {}", self.name);
+
         let mut active = self.active.lock().await;
         if *active {
-            return Err(AgentError::AlreadyRunning.into());
+            return Err(anyhow::anyhow!("Agent already running"));
         }
 
         // Initialize all integration components
@@ -925,16 +1029,16 @@ impl Agent for IntegrationAgent {
         self.start_background_processing().await?;
 
         *active = true;
-        info!("Integration Agent {} started successfully", self.metadata.name);
+        info!("Integration Agent {} started successfully", self.name);
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
-        info!("Stopping Integration Agent {}", self.metadata.name);
-        
+    async fn stop(&mut self) -> AgentResult<()> {
+        info!("Stopping Integration Agent {}", self.name);
+
         let mut active = self.active.lock().await;
         if !*active {
-            return Err(AgentError::NotRunning.into());
+            return Err(anyhow::anyhow!("Agent not running"));
         }
 
         // Stop all integration components
@@ -951,216 +1055,194 @@ impl Agent for IntegrationAgent {
         self.integration_monitor.shutdown().await?;
 
         *active = false;
-        info!("Integration Agent {} stopped successfully", self.metadata.name);
+        info!("Integration Agent {} stopped successfully", self.name);
         Ok(())
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         debug!("Executing task: {} ({})", task.name, task.task_type);
 
         // Store task
         self.tasks.lock().await.insert(task.id, task.clone());
 
-        let result = match task.task_type.as_str() {
+        let status = match task.task_type.as_str() {
             "service_registration" => {
                 // Parse service registration from parameters
-                let service_data = task.parameters.get("service")
-                    .ok_or(AgentError::MissingParameter("service".to_string()))?;
-                
+                let service_data = task
+                    .input_data
+                    .get("service")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: service"))?;
+
                 let service = ServiceRegistration::default(); // Would deserialize from actual data
-                
+
                 match self.register_service(service).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Service registration failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "api_route_creation" => {
                 // Parse route config from parameters
-                let route_data = task.parameters.get("route")
-                    .ok_or(AgentError::MissingParameter("route".to_string()))?;
-                
+                let route_data = task
+                    .input_data
+                    .get("route")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: route"))?;
+
                 let route = ApiRouteConfig::default(); // Would deserialize
-                
+
                 match self.create_api_route(route).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("API route creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "data_transformation" => {
                 // Parse transformation request from parameters
-                let transform_data = task.parameters.get("transformation")
-                    .ok_or(AgentError::MissingParameter("transformation".to_string()))?;
-                
+                let transform_data = task
+                    .input_data
+                    .get("transformation")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: transformation"))?;
+
                 let request = DataTransformationRequest::default(); // Would deserialize
-                
+
                 match self.transform_data(request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data transformation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "workflow_execution" => {
                 // Parse workflow request from parameters
-                let workflow_data = task.parameters.get("workflow")
-                    .ok_or(AgentError::MissingParameter("workflow".to_string()))?;
-                
+                let workflow_data = task
+                    .input_data
+                    .get("workflow")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: workflow"))?;
+
                 let request = WorkflowExecutionRequest::default(); // Would deserialize
-                
+
                 match self.execute_workflow(request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Workflow execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "system_connection" => {
                 // Parse connection request from parameters
-                let connection_data = task.parameters.get("connection")
-                    .ok_or(AgentError::MissingParameter("connection".to_string()))?;
-                
+                let connection_data = task
+                    .input_data
+                    .get("connection")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: connection"))?;
+
                 let request = SystemConnectionRequest::default(); // Would deserialize
-                
+
                 match self.connect_system(request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("System connection failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "message_publish" => {
                 // Parse message request from parameters
-                let message_data = task.parameters.get("message")
-                    .ok_or(AgentError::MissingParameter("message".to_string()))?;
-                
+                let message_data = task
+                    .input_data
+                    .get("message")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: message"))?;
+
                 let request = MessagePublishRequest::default(); // Would deserialize
-                
+
                 match self.publish_message(request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Message publish failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "protocol_conversion" => {
                 // Parse conversion request from parameters
-                let conversion_data = task.parameters.get("conversion")
-                    .ok_or(AgentError::MissingParameter("conversion".to_string()))?;
-                
+                let conversion_data = task
+                    .input_data
+                    .get("conversion")
+                    .ok_or_else(|| anyhow::anyhow!("Missing parameter: conversion"))?;
+
                 let request = ProtocolConversionRequest::default(); // Would deserialize
-                
+
                 match self.convert_protocol(request).await {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Protocol conversion failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
-            "status_check" => {
-                match self.get_integration_status().await {
-                    Ok(_) => TaskStatus::Completed,
-                    Err(e) => {
-                        error!("Integration status check failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
-                    }
+            "status_check" => match self.get_integration_status().await {
+                Ok(_) => TaskStatus::Completed,
+                Err(e) => {
+                    error!("Integration status check failed: {}", e);
+                    TaskStatus::Failed
                 }
-            }
+            },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 
-        debug!("Task {} completed with status: {:?}", task.name, result);
-        Ok(utils::success_result(task.id, serde_json::json!({"status": result})))
+        debug!("Task {} completed with status: {:?}", task.name, status);
+
+        Ok(TaskResult {
+            task_id: task.id,
+            status,
+            output_data: None,
+            error_message: None,
+            completed_at: chrono::Utc::now(),
+        })
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
-                match task.name.as_str() {
-                    "integration_request" => {
-                        // Handle integration request from other agents
-                        info!("Received integration request");
-                        
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(task.id, serde_json::json!("Integration request processed")),
-                        };
-                        
-                        Ok(Some(response))
-                    }
-                    "service_discovery" => {
-                        // Handle service discovery requests
-                        info!("Received service discovery request");
-                        
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(task.id, serde_json::json!("Service discovery response")),
-                        };
-                        
-                        Ok(Some(response))
-                    }
-                    "workflow_trigger" => {
-                        // Handle workflow trigger requests
-                        let status = self.get_integration_status().await?;
-                        
-                        let response = AgentMessage::Response {
-                            id: MessageId::new(),
-                            request_id: id,
-                            from: self.metadata.id,
-                            to: from,
-                            result: utils::success_result(task.id, serde_json::to_value(&status).unwrap_or_default()),
-                        };
-                        
-                        Ok(Some(response))
-                    }
-                    _ => {
-                        debug!("Unknown task type: {}", task.name);
-                        Ok(None)
-                    }
-                }
+                let result = self.execute_task(task).await?;
+
+                Ok(Some(AgentMessage::Response {
+                    id: MessageId::new(),
+                    request_id: id,
+                    from: self.metadata().id,
+                    to: from,
+                    result,
+                }))
             }
-            _ => {
-                debug!("Unhandled message type");
+            AgentMessage::Response { .. } => {
+                // Handle response messages if needed
+                Ok(None)
+            }
+            AgentMessage::Broadcast { .. } => {
+                // Handle broadcast messages if needed
+                Ok(None)
+            }
+            AgentMessage::Alert { .. } => {
+                // Handle alert messages if needed
+                Ok(None)
+            }
+            AgentMessage::Heartbeat { .. } => {
+                // Handle heartbeat messages if needed
+                Ok(None)
+            }
+            AgentMessage::Registration { .. } => {
+                // Handle registration messages if needed
                 Ok(None)
             }
         }
-    }
-
-    async fn update_config(&mut self, _config: serde_json::Value) -> Result<()> {
-        Ok(())
-    }
-
-    async fn health_check(&self) -> Result<HealthStatus> {
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: AgentStatus::Active,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 10.0,
-            memory_usage: 1024 * 1024,
-            task_queue_size: 0,
-            completed_tasks: 0,
-            failed_tasks: 0,
-            average_response_time: std::time::Duration::from_millis(100),
-        })
     }
 }
 
@@ -1276,7 +1358,7 @@ pub struct ServiceEntry {
     pub status: ServiceStatus,
     pub registered_at: chrono::DateTime<chrono::Utc>,
     pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
-    pub health_status: HealthStatus,
+    pub health_status: ServiceHealthStatus,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1285,6 +1367,14 @@ pub enum ServiceStatus {
     Inactive,
     Degraded,
     Maintenance,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ServiceHealthStatus {
+    Healthy,
+    Unhealthy,
+    Unknown,
+    Degraded,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1630,7 +1720,10 @@ impl ApiGateway {
     }
 
     pub async fn start_server(&self) -> AgentResult<()> {
-        info!("Starting API Gateway server on port {}", self.config.listen_port);
+        info!(
+            "Starting API Gateway server on port {}",
+            self.config.listen_port
+        );
         Ok(())
     }
 
@@ -1666,7 +1759,10 @@ impl ServiceRegistry {
         Ok(())
     }
 
-    pub async fn register_service(&mut self, registration: ServiceRegistration) -> AgentResult<ServiceEntry> {
+    pub async fn register_service(
+        &mut self,
+        registration: ServiceRegistration,
+    ) -> AgentResult<ServiceEntry> {
         info!("Registering service: {}", registration.name);
         let entry = ServiceEntry {
             service_id: Uuid::new_v4().to_string(),
@@ -1674,14 +1770,18 @@ impl ServiceRegistry {
             status: ServiceStatus::Active,
             registered_at: chrono::Utc::now(),
             last_health_check: None,
-            health_status: HealthStatus::Unknown,
+            health_status: ServiceHealthStatus::Unknown,
         };
-        self.services.insert(entry.service_id.clone(), entry.clone());
+        self.services
+            .insert(entry.service_id.clone(), entry.clone());
         Ok(entry)
     }
 
     pub async fn perform_health_checks(&self) -> AgentResult<()> {
-        info!("Performing health checks for {} services", self.services.len());
+        info!(
+            "Performing health checks for {} services",
+            self.services.len()
+        );
         Ok(())
     }
 
@@ -1747,18 +1847,66 @@ pub struct ServiceLoadBalancer;
 #[derive(Debug)]
 pub struct FailoverManager;
 
-impl RouteRegistry { pub fn new() -> Self { Self } }
-impl RequestProcessor { pub fn new() -> Self { Self } }
-impl ResponseProcessor { pub fn new() -> Self { Self } }
-impl MiddlewareChain { pub fn new() -> Self { Self } }
-impl RateLimiter { pub fn new() -> Self { Self } }
-impl AuthenticationService { pub fn new() -> Self { Self } }
-impl LoadBalancer { pub fn new() -> Self { Self } }
-impl CircuitBreaker { pub fn new() -> Self { Self } }
-impl HealthChecker { pub fn new() -> Self { Self } }
-impl DiscoveryClient { pub fn new() -> Self { Self } }
-impl ServiceLoadBalancer { pub fn new() -> Self { Self } }
-impl FailoverManager { pub fn new() -> Self { Self } }
+impl RouteRegistry {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl RequestProcessor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ResponseProcessor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl MiddlewareChain {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl RateLimiter {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AuthenticationService {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl LoadBalancer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl CircuitBreaker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl HealthChecker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DiscoveryClient {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ServiceLoadBalancer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl FailoverManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
 
 impl DataTransformer {
     pub fn new(config: TransformationConfig) -> Self {
@@ -1783,8 +1931,14 @@ impl DataTransformer {
         Ok(())
     }
 
-    pub async fn transform(&self, request: DataTransformationRequest) -> AgentResult<TransformationResult> {
-        info!("Transforming data from {:?} to {:?}", request.source_format, request.target_format);
+    pub async fn transform(
+        &self,
+        request: DataTransformationRequest,
+    ) -> AgentResult<TransformationResult> {
+        info!(
+            "Transforming data from {:?} to {:?}",
+            request.source_format, request.target_format
+        );
         Ok(TransformationResult {
             transformation_id: request.transformation_id,
             status: TransformationStatus::Success,
@@ -1819,7 +1973,10 @@ impl WorkflowOrchestrator {
         Ok(())
     }
 
-    pub async fn execute_workflow(&self, request: WorkflowExecutionRequest) -> AgentResult<WorkflowExecution> {
+    pub async fn execute_workflow(
+        &self,
+        request: WorkflowExecutionRequest,
+    ) -> AgentResult<WorkflowExecution> {
         info!("Executing workflow: {}", request.workflow_id);
         Ok(WorkflowExecution {
             execution_id: Uuid::new_v4(),
@@ -1868,7 +2025,10 @@ impl ConnectorManager {
         Ok(())
     }
 
-    pub async fn establish_connection(&self, request: SystemConnectionRequest) -> AgentResult<SystemConnection> {
+    pub async fn establish_connection(
+        &self,
+        request: SystemConnectionRequest,
+    ) -> AgentResult<SystemConnection> {
         info!("Establishing connection to system: {}", request.system_name);
         Ok(SystemConnection {
             connection_id: Uuid::new_v4().to_string(),
@@ -1911,7 +2071,10 @@ impl MessageBroker {
         Ok(())
     }
 
-    pub async fn publish_message(&self, request: MessagePublishRequest) -> AgentResult<MessagePublishResult> {
+    pub async fn publish_message(
+        &self,
+        request: MessagePublishRequest,
+    ) -> AgentResult<MessagePublishResult> {
         info!("Publishing message to topic: {}", request.topic);
         Ok(MessagePublishResult {
             message_id: Uuid::new_v4().to_string(),
@@ -1951,8 +2114,14 @@ impl ProtocolHandler {
         Ok(())
     }
 
-    pub async fn convert_protocol(&self, request: ProtocolConversionRequest) -> AgentResult<ProtocolConversionResult> {
-        info!("Converting protocol from {:?} to {:?}", request.source_protocol, request.target_protocol);
+    pub async fn convert_protocol(
+        &self,
+        request: ProtocolConversionRequest,
+    ) -> AgentResult<ProtocolConversionResult> {
+        info!(
+            "Converting protocol from {:?} to {:?}",
+            request.source_protocol, request.target_protocol
+        );
         Ok(ProtocolConversionResult {
             converted_payload: request.payload,
             target_metadata: request.metadata,
@@ -2062,38 +2231,166 @@ pub struct AlertManager;
 #[derive(Debug)]
 pub struct DashboardService;
 
-impl SchemaRegistry { pub fn new() -> Self { Self } }
-impl TransformationCache { pub fn new() -> Self { Self } }
-impl EnrichmentService { pub fn new() -> Self { Self } }
-impl ValidationService { pub fn new() -> Self { Self } }
-impl TransformationPipeline { pub fn new() -> Self { Self } }
-impl WorkflowExecutionEngine { pub fn new() -> Self { Self } }
-impl StateManager { pub fn new() -> Self { Self } }
-impl TaskScheduler { pub fn new() -> Self { Self } }
-impl EventProcessor { pub fn new() -> Self { Self } }
-impl WorkflowRegistry { pub fn new() -> Self { Self } }
-impl ExecutionMonitor { pub fn new() -> Self { Self } }
-impl ConnectionPool { pub fn new() -> Self { Self } }
-impl AuthenticationManager { pub fn new() -> Self { Self } }
-impl ConnectorFactory { pub fn new() -> Self { Self } }
-impl ConnectionMonitor { pub fn new() -> Self { Self } }
-impl BrokerEngine { pub fn new() -> Self { Self } }
-impl TopicManager { pub fn new() -> Self { Self } }
-impl SubscriptionManager { pub fn new() -> Self { Self } }
-impl MessageSerializer { pub fn new() -> Self { Self } }
-impl DeliveryTracker { pub fn new() -> Self { Self } }
-impl DeadLetterHandler { pub fn new() -> Self { Self } }
-impl ProtocolRegistry { pub fn new() -> Self { Self } }
-impl ProtocolNegotiationService { pub fn new() -> Self { Self } }
-impl ProtocolConversionService { pub fn new() -> Self { Self } }
-impl ProtocolVersionManager { pub fn new() -> Self { Self } }
-impl MetricsCollector { pub fn new() -> Self { Self } }
-impl PerformanceMonitor { pub fn new() -> Self { Self } }
-impl ErrorTracker { pub fn new() -> Self { Self } }
-impl TraceManager { pub fn new() -> Self { Self } }
-impl HealthMonitor { pub fn new() -> Self { Self } }
-impl AlertManager { pub fn new() -> Self { Self } }
-impl DashboardService { pub fn new() -> Self { Self } }
+impl SchemaRegistry {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TransformationCache {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl EnrichmentService {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ValidationService {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TransformationPipeline {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl WorkflowExecutionEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl StateManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TaskScheduler {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl EventProcessor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl WorkflowRegistry {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ExecutionMonitor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ConnectionPool {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AuthenticationManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ConnectorFactory {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ConnectionMonitor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl BrokerEngine {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TopicManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl SubscriptionManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl MessageSerializer {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DeliveryTracker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DeadLetterHandler {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ProtocolRegistry {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ProtocolNegotiationService {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ProtocolConversionService {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ProtocolVersionManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl MetricsCollector {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl PerformanceMonitor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl ErrorTracker {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl TraceManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl HealthMonitor {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl AlertManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+impl DashboardService {
+    pub fn new() -> Self {
+        Self
+    }
+}
 
 // Empty struct that implements ProtocolAdapter trait
 #[derive(Debug)]

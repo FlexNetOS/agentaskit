@@ -9,12 +9,12 @@ use uuid::Uuid;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Finance Board Agent - Financial oversight and resource management
-/// 
+///
 /// The Finance Board Agent is responsible for:
 /// - Financial planning and budgeting
 /// - Resource allocation and cost optimization
@@ -26,19 +26,19 @@ pub struct FinanceBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Financial planning system
     financial_planner: Arc<RwLock<FinancialPlanner>>,
-    
+
     /// Budget management system
     budget_manager: Arc<RwLock<BudgetManager>>,
-    
+
     /// Cost analysis engine
     cost_analyzer: Arc<RwLock<CostAnalyzer>>,
-    
+
     /// Risk assessment system
     risk_assessor: Arc<RwLock<FinancialRiskAssessor>>,
-    
+
     /// Configuration
     config: FinanceBoardConfig,
 }
@@ -48,19 +48,19 @@ pub struct FinanceBoardAgent {
 pub struct FinanceBoardConfig {
     /// Budget review frequency
     pub budget_review_interval: Duration,
-    
+
     /// Financial reporting frequency
     pub reporting_interval: Duration,
-    
+
     /// Risk assessment frequency
     pub risk_assessment_interval: Duration,
-    
+
     /// Cost optimization cycle
     pub cost_optimization_cycle: Duration,
-    
+
     /// Financial thresholds
     pub financial_thresholds: FinancialThresholds,
-    
+
     /// Approval limits
     pub approval_limits: ApprovalLimits,
 }
@@ -68,7 +68,7 @@ pub struct FinanceBoardConfig {
 /// Financial thresholds
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FinancialThresholds {
-    pub budget_variance_warning: f64, // 10% over budget
+    pub budget_variance_warning: f64,  // 10% over budget
     pub budget_variance_critical: f64, // 20% over budget
     pub cash_flow_warning_days: u32,   // 30 days
     pub roi_minimum_threshold: f64,    // 15% minimum ROI
@@ -78,19 +78,19 @@ pub struct FinancialThresholds {
 /// Approval limits
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApprovalLimits {
-    pub auto_approve_limit: f64,       // $1,000
-    pub manager_approval_limit: f64,   // $10,000
-    pub director_approval_limit: f64,  // $50,000
-    pub board_approval_limit: f64,     // $100,000
+    pub auto_approve_limit: f64,      // $1,000
+    pub manager_approval_limit: f64,  // $10,000
+    pub director_approval_limit: f64, // $50,000
+    pub board_approval_limit: f64,    // $100,000
 }
 
 impl Default for FinanceBoardConfig {
     fn default() -> Self {
         Self {
             budget_review_interval: Duration::from_secs(86400 * 7), // Weekly
-            reporting_interval: Duration::from_secs(86400 * 30), // Monthly
+            reporting_interval: Duration::from_secs(86400 * 30),    // Monthly
             risk_assessment_interval: Duration::from_secs(86400 * 7), // Weekly
-            cost_optimization_cycle: Duration::from_secs(86400), // Daily
+            cost_optimization_cycle: Duration::from_secs(86400),    // Daily
             financial_thresholds: FinancialThresholds {
                 budget_variance_warning: 0.1,
                 budget_variance_critical: 0.2,
@@ -113,16 +113,16 @@ impl Default for FinanceBoardConfig {
 struct FinancialPlanner {
     /// Financial plans
     financial_plans: HashMap<String, FinancialPlan>,
-    
+
     /// Forecasting models
     forecasting_models: Vec<ForecastingModel>,
-    
+
     /// Planning scenarios
     scenarios: HashMap<String, PlanningScenario>,
-    
+
     /// Financial metrics
     financial_metrics: FinancialMetrics,
-    
+
     /// Investment proposals
     investment_proposals: Vec<InvestmentProposal>,
 }
@@ -371,16 +371,16 @@ enum ProposalStatus {
 struct BudgetManager {
     /// Active budgets
     budgets: HashMap<String, Budget>,
-    
+
     /// Budget allocations
     allocations: HashMap<String, BudgetAllocation>,
-    
+
     /// Expenditure tracking
     expenditures: Vec<Expenditure>,
-    
+
     /// Budget controls
     budget_controls: Vec<BudgetControl>,
-    
+
     /// Approval workflows
     approval_workflows: HashMap<String, ApprovalWorkflow>,
 }
@@ -539,16 +539,16 @@ struct ApprovalStep {
 struct CostAnalyzer {
     /// Cost models
     cost_models: HashMap<String, CostModel>,
-    
+
     /// Cost centers
     cost_centers: HashMap<String, CostCenter>,
-    
+
     /// Cost optimization opportunities
     optimization_opportunities: Vec<CostOptimization>,
-    
+
     /// Cost benchmarks
     benchmarks: HashMap<String, CostBenchmark>,
-    
+
     /// Analysis results
     analysis_results: VecDeque<CostAnalysisResult>,
 }
@@ -680,16 +680,16 @@ enum AnalysisType {
 struct FinancialRiskAssessor {
     /// Risk models
     risk_models: HashMap<String, RiskModel>,
-    
+
     /// Active risks
     active_risks: HashMap<String, FinancialRisk>,
-    
+
     /// Risk mitigation strategies
     mitigation_strategies: Vec<RiskMitigationStrategy>,
-    
+
     /// Risk assessments
     risk_assessments: VecDeque<RiskAssessment>,
-    
+
     /// Risk metrics
     risk_metrics: RiskMetrics,
 }
@@ -804,9 +804,9 @@ struct RiskMetrics {
 impl FinanceBoardAgent {
     pub fn new(config: FinanceBoardConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("finance-board-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("finance-board-agent"),
             name: "Finance Board Agent".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "financial-planning".to_string(),
                 "budget-management".to_string(),
@@ -816,16 +816,19 @@ impl FinanceBoardAgent {
                 "financial-reporting".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.3,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 100 * 1024 * 1024,  // 100MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 5 * 1024 * 1024 * 1024, // 5GB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(5120),
+                network_bandwidth_mbps: Some(50.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(60),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -845,7 +848,7 @@ impl FinanceBoardAgent {
         let financial_planner = self.financial_planner.read().await;
         let budget_manager = self.budget_manager.read().await;
         let risk_assessor = self.risk_assessor.read().await;
-        
+
         Ok(FinancialStatus {
             total_revenue: financial_planner.financial_metrics.total_revenue,
             total_expenses: financial_planner.financial_metrics.total_expenses,
@@ -888,32 +891,33 @@ impl Agent for FinanceBoardAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing Finance Board Agent");
-        
+
         // Initialize financial planning models
         let mut financial_planner = self.financial_planner.write().await;
-        self.initialize_forecasting_models(&mut financial_planner).await?;
-        
+        self.initialize_forecasting_models(&mut financial_planner)
+            .await?;
+
         // Initialize budget controls
         let mut budget_manager = self.budget_manager.write().await;
         self.initialize_budget_controls(&mut budget_manager).await?;
-        
+
         // Initialize risk models
         let mut risk_assessor = self.risk_assessor.write().await;
         self.initialize_risk_models(&mut risk_assessor).await?;
-        
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("Finance Board Agent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Finance Board Agent");
-        
+
         // Start budget monitoring
         let budget_manager = self.budget_manager.clone();
         let review_interval = self.config.budget_review_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(review_interval);
             loop {
@@ -923,11 +927,11 @@ impl Agent for FinanceBoardAgent {
                 }
             }
         });
-        
+
         // Start cost optimization
         let cost_analyzer = self.cost_analyzer.clone();
         let optimization_cycle = self.config.cost_optimization_cycle;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(optimization_cycle);
             loop {
@@ -937,11 +941,11 @@ impl Agent for FinanceBoardAgent {
                 }
             }
         });
-        
+
         // Start risk monitoring
         let risk_assessor = self.risk_assessor.clone();
         let risk_interval = self.config.risk_assessment_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(risk_interval);
             loop {
@@ -951,16 +955,16 @@ impl Agent for FinanceBoardAgent {
                 }
             }
         });
-        
+
         tracing::info!("Finance Board Agent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping Finance Board Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Finance Board Agent stopped successfully");
         Ok(())
     }
@@ -969,7 +973,7 @@ impl Agent for FinanceBoardAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -984,15 +988,15 @@ impl Agent for FinanceBoardAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "get-status" => {
                 let status = self.get_financial_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_revenue": status.total_revenue,
                         "total_expenses": status.total_expenses,
                         "net_profit": status.net_profit,
@@ -1003,34 +1007,30 @@ impl Agent for FinanceBoardAgent {
                         "budget_utilization": status.budget_utilization,
                         "active_risks": status.active_risks,
                         "risk_score": status.risk_score,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Financial analysis failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
         let state = self.state.read().await;
         let budget_manager = self.budget_manager.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 8.0, // Placeholder
+            cpu_usage: 8.0,                  // Placeholder
             memory_usage: 512 * 1024 * 1024, // 512MB placeholder
             task_queue_size: 0,
             completed_tasks: budget_manager.budgets.len() as u64,
@@ -1066,53 +1066,56 @@ impl FinanceBoardAgent {
             burn_rate: 25000.0,
             runway_months: 24.0,
         };
-        
+
         tracing::info!("Initialized financial forecasting models");
         Ok(())
     }
-    
+
     /// Initialize budget controls
     async fn initialize_budget_controls(&self, budget_manager: &mut BudgetManager) -> Result<()> {
         // TODO: Initialize budget controls and workflows
-        
+
         tracing::info!("Initialized budget management controls");
         Ok(())
     }
-    
+
     /// Initialize risk models
-    async fn initialize_risk_models(&self, risk_assessor: &mut FinancialRiskAssessor) -> Result<()> {
+    async fn initialize_risk_models(
+        &self,
+        risk_assessor: &mut FinancialRiskAssessor,
+    ) -> Result<()> {
         risk_assessor.risk_metrics.average_risk_score = 3.2; // Out of 10
-        
+
         tracing::info!("Initialized financial risk assessment models");
         Ok(())
     }
-    
+
     /// Run budget review (background task)
     async fn run_budget_review(budget_manager: Arc<RwLock<BudgetManager>>) -> Result<()> {
         let _budget_manager = budget_manager.read().await;
-        
+
         // TODO: Implement budget review cycle
-        
+
         tracing::debug!("Budget review cycle completed");
         Ok(())
     }
-    
+
     /// Run cost analysis (background task)
     async fn run_cost_analysis(cost_analyzer: Arc<RwLock<CostAnalyzer>>) -> Result<()> {
         let _cost_analyzer = cost_analyzer.read().await;
-        
+
         // TODO: Implement cost analysis cycle
-        
+
         tracing::debug!("Cost analysis cycle completed");
         Ok(())
     }
-    
+
     /// Run risk assessment (background task)
     async fn run_risk_assessment(risk_assessor: Arc<RwLock<FinancialRiskAssessor>>) -> Result<()> {
         let _risk_assessor = risk_assessor.read().await;
-        
+
         // TODO: Implement risk assessment cycle
-        
+
         tracing::debug!("Risk assessment cycle completed");
         Ok(())
     }

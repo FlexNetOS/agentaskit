@@ -59,7 +59,7 @@ jobs:
       - name: Run cross-reference (Python)
         id: crossref_py
         run: |
-          python agentaskit-production/tools/analysis/cross_reference.py --root . \
+          python tools/analysis/cross_reference.py --root . \
             --out-dir agentaskit-production/docs/reports/cross_reference/artifacts
       - name: Run cross-reference (PowerShell fallback)
         if: failure()

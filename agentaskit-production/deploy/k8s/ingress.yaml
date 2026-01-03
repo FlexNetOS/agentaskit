@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AgentAskit Ingress
+# REF: DEP-K8S - K8s manifests & Helm charts
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agentaskit
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - api.agentaskit.example.com
+      secretName: agentaskit-tls
+  rules:
+    - host: api.agentaskit.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agentaskit
+                port:
+                  name: http
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: agentaskit
+                port:
+                  name: http
+
+---
+# gRPC Ingress (separate for protocol-specific config)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agentaskit-grpc
+  namespace: agentaskit-production
+  labels:
+    app.kubernetes.io/name: agentaskit
+    app.kubernetes.io/component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  tls:
+    - hosts:
+        - grpc.agentaskit.example.com
+      secretName: agentaskit-grpc-tls
+  rules:
+    - host: grpc.agentaskit.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agentaskit
+                port:
+                  name: grpc

@@ -1,35 +1,35 @@
 //! Enhanced Workflow Processing System
-//! 
+//!
 //! This module implements the complete workflow from user chat requests through
 //! AI model processing, SOT reading, TODO updating with 4D method application,
 //! and deliverable definition with target locations.
 
-pub mod seven_phase;
-pub mod sop_parser;
-pub mod methodology_engine;
+pub mod ai_sop_interface;
 pub mod deliverable_manager;
 pub mod location_manager;
-pub mod ai_sop_interface;
+pub mod methodology_engine;
+pub mod seven_phase;
+pub mod sop_parser;
 
 // Re-export key types for convenience
-pub use deliverable_manager::{DeliverableType, LocationType, TargetLocation};
-pub use methodology_engine::{Scores, QualityGates, MethodologyEngine};
-pub use sop_parser::{SOPDocument, SOPProcedure, SOPStep};
 pub use ai_sop_interface::{AISopAnalyzer, ContentAnalysis, ProcedureValidation};
+pub use methodology_engine::{MethodologyEngine, QualityGates, Scores};
+pub use sop_parser::{SOPDocument, SOPProcedure, SOPStep};
 
 use anyhow::Result;
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use tokio::fs;
-use chrono::{DateTime, Utc};
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{AgentId, AgentMessage, Task, TaskStatus};
-use agentaskit_shared::{AgentCommunicationProtocol, TaskOrchestrationProtocol};
+use crate::agents::AgentMessage;
+use crate::orchestration::{Task, TaskStatus};
+use agentaskit_shared::{AgentCommunicationProtocol, AgentId, TaskOrchestrationProtocol};
 
 /// Enhanced chat request structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,7 +43,7 @@ pub struct ChatRequest {
     pub priority: RequestPriority,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum RequestPriority {
     Low,
     Medium,
@@ -292,7 +292,7 @@ pub struct TargetLocation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LocationType {
-    ProductionDirectory,  // agentaskit-production
+    ProductionDirectory, // agentaskit-production
     DocsSubdirectory,    // ~/docs
     TestDirectory,       // tests/
     ConfigDirectory,     // configs/
@@ -367,7 +367,7 @@ impl EnhancedWorkflowProcessor {
             let orchestrator = seven_phase::SevenPhaseOrchestrator::new().await?;
             return orchestrator.execute_workflow(request).await;
         }
-        
+
         // Fall back to enhanced workflow processing
         self.process_enhanced_workflow(request).await
     }
@@ -375,11 +375,11 @@ impl EnhancedWorkflowProcessor {
     /// Check if request requires 7-phase workflow processing
     fn is_seven_phase_request(&self, request: &ChatRequest) -> bool {
         let message = request.message.to_lowercase();
-        message.contains("7-phase") || 
-        message.contains("928-agent") || 
-        message.contains("performance optimization") ||
-        message.contains("triple cross-reference") ||
-        request.priority == RequestPriority::Critical
+        message.contains("7-phase")
+            || message.contains("928-agent")
+            || message.contains("performance optimization")
+            || message.contains("triple cross-reference")
+            || request.priority == RequestPriority::Critical
     }
 
     /// Process using enhanced workflow (original implementation)
@@ -422,29 +422,46 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Analyze SOT content in context of user request using AI SOP interface
-    async fn analyze_sot_content(&self, sot_content: &str, request: &ChatRequest) -> Result<SOTAnalysis> {
+    async fn analyze_sot_content(
+        &self,
+        sot_content: &str,
+        request: &ChatRequest,
+    ) -> Result<SOTAnalysis> {
         // Parse SOT content using sop_parser
         let sop_document = sop_parser::parse_sop(sot_content)?;
-        
+
         // Analyze using AI SOP interface
-        let ai_analyzer = ai_sop_interface::AISopAnalyzer::new(sop_document.clone());
-        let content_analysis = ai_analyzer.analyze_content().await?;
-        
-        // Validate request against SOP procedures
-        let validation = ai_analyzer.validate_procedure(&request.message).await?;
-        
+        let ai_analyzer = ai_sop_interface::AISopAnalyzer::new("default-model".to_string());
+        let content_analysis = ai_analyzer.analyze_content(&sop_document).await?;
+
+        // Validate request against SOP procedures - use first procedure if available
+        let validation = if let Some(first_proc) = sop_document.procedures.first() {
+            ai_analyzer
+                .validate_procedure(first_proc, &request.message)
+                .await?
+        } else {
+            // Default validation if no procedures exist
+            ProcedureValidation {
+                is_aligned: true,
+                alignment_score: 0.5,
+                relevant_steps: vec![],
+                gaps: vec![],
+                required_steps: vec![],
+            }
+        };
+
         // Extract task information from SOT
         let executed_tasks = self.extract_executed_tasks(sot_content).await?;
         let in_progress_tasks = self.extract_in_progress_tasks(sot_content).await?;
         let system_constraints = self.extract_system_constraints(sot_content).await?;
-        
+
         // Enhanced alignment assessment using AI analysis
-        let request_alignment = if validation.is_valid {
+        let request_alignment = if validation.is_aligned {
             content_analysis.completeness_score
         } else {
             content_analysis.completeness_score * 0.5 // Penalize invalid procedures
         };
-        
+
         Ok(SOTAnalysis {
             executed_tasks,
             in_progress_tasks,
@@ -455,24 +472,32 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Apply 4D methodology to create task subject with comprehensive scoring and validation
-    async fn apply_4d_method(&self, request: &ChatRequest, sot_analysis: &SOTAnalysis) -> Result<TaskSubject> {
+    async fn apply_4d_method(
+        &self,
+        request: &ChatRequest,
+        sot_analysis: &SOTAnalysis,
+    ) -> Result<TaskSubject> {
         // Phase 1: DECONSTRUCT
         let deconstruct = self.deconstruct_request(request, sot_analysis).await?;
-        
-        // Phase 2: DIAGNOSE  
+
+        // Phase 2: DIAGNOSE
         let diagnose = self.diagnose_requirements(&deconstruct, request).await?;
-        
+
         // Phase 3: DEVELOP
         let develop = self.develop_approach(&diagnose, &deconstruct).await?;
-        
+
         // Phase 4: DELIVER
-        let deliver = self.design_delivery(&develop, &diagnose, &deconstruct).await?;
+        let deliver = self
+            .design_delivery(&develop, &diagnose, &deconstruct)
+            .await?;
 
         // Create initial task subject
         let task_subject = TaskSubject {
             id: Uuid::new_v4(),
             title: self.generate_task_title(request, &deconstruct).await?,
-            description: self.generate_task_description(request, &deconstruct).await?,
+            description: self
+                .generate_task_description(request, &deconstruct)
+                .await?,
             deconstruct: deconstruct.clone(),
             diagnose: diagnose.clone(),
             develop: develop.clone(),
@@ -487,20 +512,16 @@ impl EnhancedWorkflowProcessor {
 
         // Apply methodology engine for comprehensive scoring and validation
         let methodology = methodology_engine::MethodologyEngine::new();
-        let scores = methodology.score_all(&task_subject)?;
-        
+        let scores = methodology.score_all(&deconstruct, &diagnose, &develop, &deliver);
+
         // Generate quality report
-        let quality_report = methodology.generate_quality_report(&scores)?;
-        
+        let quality_report = methodology.generate_quality_report(&scores);
+
         // Check quality gates
         if !scores.quality_gate_passed {
             // Log warning but continue - allow manual override for critical tasks
             eprintln!("Warning: Quality gates not passed. Scores: {:?}", scores);
             eprintln!("Quality Report:\n{}", quality_report);
-            
-            // Generate recommendations for improvement
-            let recommendations = methodology.generate_recommendations(&scores)?;
-            eprintln!("Recommendations:\n{}", recommendations.join("\n"));
         }
 
         Ok(task_subject)
@@ -510,14 +531,16 @@ impl EnhancedWorkflowProcessor {
     async fn update_todo_file(&self, task_subject: &TaskSubject) -> Result<()> {
         // Read existing TODO content
         let existing_content = if self.todo_path.exists() {
-            fs::read_to_string(&self.todo_path).await.unwrap_or_default()
+            fs::read_to_string(&self.todo_path)
+                .await
+                .unwrap_or_default()
         } else {
             String::new()
         };
 
         // Generate TODO entry
         let todo_entry = self.generate_todo_entry(task_subject).await?;
-        
+
         // Append new entry
         let updated_content = if existing_content.is_empty() {
             format!("# AgentAsKit TODO List\n\n{}", todo_entry)
@@ -532,16 +555,18 @@ impl EnhancedWorkflowProcessor {
     }
 
     /// Define deliverables and target locations using deliverable_manager and location_manager
-    async fn define_deliverables_and_targets(&self, task_subject: &TaskSubject) -> Result<Vec<Deliverable>> {
+    async fn define_deliverables_and_targets(
+        &self,
+        task_subject: &TaskSubject,
+    ) -> Result<Vec<Deliverable>> {
         let mut deliverables = Vec::new();
 
-        // Initialize location manager for workspace detection
-        let location_mgr = location_manager::LocationManager::new()?;
-        
+        // Determine workspace root (current directory or from environment)
+        let workspace_root = std::env::current_dir()?;
+
         // Initialize deliverable manager
         let deliverable_mgr = deliverable_manager::DeliverableManager::new(
-            location_mgr.clone(),
-            "agentaskit-production/archive".to_string(),
+            workspace_root.join("agentaskit-production"),
         );
 
         // Generate deliverables based on task type and requirements
@@ -549,34 +574,30 @@ impl EnhancedWorkflowProcessor {
             // Create deliverable specification using deliverable_manager
             let spec = deliverable_manager::DeliverableSpec {
                 name: self.generate_deliverable_name(output_req).await?,
+                description: output_req.to_string(),
                 deliverable_type: self.determine_deliverable_type(output_req).await?,
+                priority: task_subject.priority.clone(),
                 category: self.determine_category_from_requirement(output_req).await?,
-                priority: self.convert_to_deliverable_priority(&task_subject.priority).await?,
-                expected_size: None, // Will be determined by manager
-                format_requirements: vec![],
             };
-            
+
             // Plan deliverable with location resolution
-            let planned = deliverable_mgr.plan(&spec).await?;
-            
+            let planned = deliverable_mgr.plan(&spec)?;
+
             // Convert to Deliverable structure
             let deliverable = Deliverable {
                 id: Uuid::new_v4(),
                 name: planned.spec.name.clone(),
-                description: output_req.to_string(),
+                description: planned.spec.description.clone(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
-                target_location: self.convert_to_target_location(&planned.primary_location).await?,
-                file_specifications: vec![format!(
-                    "Format: {:?}, Max size: {:?}, Category: {}",
-                    planned.spec.format_requirements,
-                    planned.spec.expected_size,
-                    planned.spec.category
-                )],
-                quality_requirements: self.generate_quality_requirements(&task_subject.develop.request_type).await?,
+                target_location: planned.target_location.clone(),
+                file_specifications: planned.file_specifications.clone(),
+                quality_requirements: self
+                    .generate_quality_requirements(&task_subject.develop.request_type)
+                    .await?,
                 acceptance_criteria: self.generate_acceptance_criteria(output_req).await?,
                 dependencies: Vec::new(),
             };
-            
+
             deliverables.push(deliverable);
         }
 
@@ -585,33 +606,7 @@ impl EnhancedWorkflowProcessor {
 
         Ok(deliverables)
     }
-    
-    /// Convert location_manager::ResolvedLocation to workflows::TargetLocation
-    async fn convert_to_target_location(&self, resolved: &location_manager::ResolvedLocation) -> Result<TargetLocation> {
-        Ok(TargetLocation {
-            location_type: self.convert_location_type(&resolved.location_type).await?,
-            base_path: resolved.workspace_root.clone(),
-            relative_path: resolved.relative_path.clone(),
-            filename_pattern: "*.rs".to_string(), // Default pattern, can be customized
-            organization_rules: self.get_organization_rules_for_location(&resolved.location_type).await?,
-            backup_locations: resolved.backup_paths.iter().map(|p| p.to_string_lossy().to_string()).collect(),
-        })
-    }
-    
-    /// Convert location_manager::LocationType to workflows::LocationType
-    async fn convert_location_type(&self, loc_type: &location_manager::LocationType) -> Result<LocationType> {
-        use location_manager::LocationType as LM;
-        Ok(match loc_type {
-            LM::ProductionDirectory => LocationType::ProductionDirectory,
-            LM::DocsSubdirectory => LocationType::DocsSubdirectory,
-            LM::TestDirectory => LocationType::TestDirectory,
-            LM::ConfigDirectory => LocationType::ConfigDirectory,
-            LM::ScriptsDirectory => LocationType::ScriptsDirectory,
-            LM::ArchiveDirectory => LocationType::ArchiveDirectory,
-            LM::TempDirectory => LocationType::TempDirectory,
-        })
-    }
-    
+
     /// Determine category from output requirement string
     async fn determine_category_from_requirement(&self, requirement: &str) -> Result<String> {
         let req_lower = requirement.to_lowercase();
@@ -633,33 +628,38 @@ impl EnhancedWorkflowProcessor {
             Ok("general".to_string())
         }
     }
-    
-    /// Convert RequestPriority to deliverable_manager::Priority
-    async fn convert_to_deliverable_priority(&self, priority: &RequestPriority) -> Result<deliverable_manager::Priority> {
-        use deliverable_manager::Priority as DP;
+
+    /// Convert RequestPriority to agentaskit_shared::Priority
+    async fn convert_to_deliverable_priority(
+        &self,
+        priority: &RequestPriority,
+    ) -> Result<agentaskit_shared::Priority> {
+        use agentaskit_shared::Priority as P;
         Ok(match priority {
-            RequestPriority::Low => DP::Low,
-            RequestPriority::Medium => DP::Medium,
-            RequestPriority::High => DP::High,
-            RequestPriority::Critical => DP::Critical,
+            RequestPriority::Low => P::Low,
+            RequestPriority::Medium => P::Normal,
+            RequestPriority::High => P::High,
+            RequestPriority::Critical => P::Critical,
         })
     }
-    
+
     /// Get organization rules for specific location type
-    async fn get_organization_rules_for_location(&self, loc_type: &location_manager::LocationType) -> Result<Vec<String>> {
-        use location_manager::LocationType as LM;
+    async fn get_organization_rules_for_location(
+        &self,
+        loc_type: &LocationType,
+    ) -> Result<Vec<String>> {
         Ok(match loc_type {
-            LM::ProductionDirectory => vec![
+            LocationType::ProductionDirectory => vec![
                 "Follow Rust project structure".to_string(),
                 "Place source files in src/".to_string(),
                 "Place tests in tests/".to_string(),
             ],
-            LM::DocsSubdirectory => vec![
+            LocationType::DocsSubdirectory => vec![
                 "Use markdown format".to_string(),
                 "Include table of contents".to_string(),
                 "Follow documentation template".to_string(),
             ],
-            LM::TestDirectory => vec![
+            LocationType::TestDirectory => vec![
                 "Group by module".to_string(),
                 "Include integration tests".to_string(),
                 "Add benchmarks in benches/".to_string(),
@@ -676,17 +676,21 @@ impl EnhancedWorkflowProcessor {
         priority: &RequestPriority,
     ) -> Result<Deliverable> {
         let deliverable_type = self.determine_deliverable_type(output_requirement).await?;
-        let target_location = self.determine_target_location(&deliverable_type, priority).await?;
-        
+        let target_location = self
+            .determine_target_location(&deliverable_type, priority)
+            .await?;
+
         Ok(Deliverable {
             id: Uuid::new_v4(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
-            deliverable_type,
+            deliverable_type: deliverable_type.clone(),
             target_location,
-            file_specifications: self.generate_file_specifications(output_requirement).await?,
+            file_specifications: self.generate_file_specifications(&deliverable_type).await?,
             quality_requirements: self.generate_quality_requirements(request_type).await?,
-            acceptance_criteria: self.generate_acceptance_criteria(output_requirement).await?,
+            acceptance_criteria: self
+                .generate_acceptance_criteria(output_requirement)
+                .await?,
             dependencies: Vec::new(),
         })
     }
@@ -709,72 +713,82 @@ impl EnhancedWorkflowProcessor {
         };
 
         let base_path = match location_type {
-            LocationType::ProductionDirectory => {
-                PathBuf::from("agentaskit-production")
-            }
-            LocationType::DocsSubdirectory => {
-                PathBuf::from("docs")
-            }
-            LocationType::TestDirectory => {
-                PathBuf::from("agentaskit-production/tests")
-            }
-            LocationType::ConfigDirectory => {
-                PathBuf::from("agentaskit-production/configs")
-            }
-            LocationType::ScriptsDirectory => {
-                PathBuf::from("agentaskit-production/scripts")
-            }
-            LocationType::ArchiveDirectory => {
-                PathBuf::from("archive")
-            }
-            LocationType::TempDirectory => {
-                PathBuf::from("temp")
-            }
+            LocationType::ProductionDirectory => PathBuf::from("agentaskit-production"),
+            LocationType::DocsSubdirectory => PathBuf::from("docs"),
+            LocationType::TestDirectory => PathBuf::from("agentaskit-production/tests"),
+            LocationType::ConfigDirectory => PathBuf::from("agentaskit-production/configs"),
+            LocationType::ScriptsDirectory => PathBuf::from("agentaskit-production/scripts"),
+            LocationType::ArchiveDirectory => PathBuf::from("archive"),
+            LocationType::TempDirectory => PathBuf::from("temp"),
         };
+
+        let org_rules = self.get_organization_rules(&location_type).await?;
+        let backup_locs = self.get_backup_locations(&location_type).await?;
 
         Ok(TargetLocation {
             location_type,
             base_path,
             relative_path: self.generate_relative_path(deliverable_type).await?,
             filename_pattern: self.generate_filename_pattern(deliverable_type).await?,
-            organization_rules: self.get_organization_rules(&location_type).await?,
-            backup_locations: self.get_backup_locations(&location_type).await?,
+            organization_rules: org_rules,
+            backup_locations: backup_locs,
         })
     }
 
     /// Initiate agent orchestration for task execution
     async fn initiate_agent_orchestration(&self, task_subject: &TaskSubject) -> Result<()> {
+        use agentaskit_shared::{Priority as SharedPriority, Task as SharedTask};
+
         // Create orchestration tasks for each execution step
         for step in &task_subject.deliver.execution_plan {
-            let task = Task {
+            let shared_task = SharedTask {
                 id: step.step_id,
                 name: step.name.clone(),
                 description: step.description.clone(),
-                task_type: self.determine_task_type(&step.name).await?,
-                priority: self.convert_priority(&task_subject.priority).await?,
-                required_capabilities: self.extract_required_capabilities(&step.description).await?,
-                parameters: self.generate_task_parameters(step).await?,
-                deadline: Some(Utc::now() + step.estimated_duration),
-                created_at: Utc::now(),
-                status: TaskStatus::Pending,
+                task_type: "implementation".to_string(),
+                priority: match task_subject.priority {
+                    RequestPriority::Low => SharedPriority::Low,
+                    RequestPriority::Medium => SharedPriority::Normal,
+                    RequestPriority::High => SharedPriority::High,
+                    RequestPriority::Critical => SharedPriority::Critical,
+                },
+                status: agentaskit_shared::TaskStatus::Pending,
                 assigned_agent: None,
-                result: None,
-                metadata: HashMap::new(),
+                dependencies: Vec::new(),
+                input_data: self.generate_task_parameters(step).await?,
+                output_data: None,
+                created_at: Utc::now(),
+                started_at: None,
+                completed_at: None,
+            deadline: None,
+                timeout: Some(Utc::now() + step.estimated_duration),
+                retry_count: 0,
+                max_retries: 3,
+                error_message: None,
+                tags: HashMap::new(),
+                required_capabilities: vec![],
             };
 
             // Submit task for orchestration
-            let task_id = self.task_protocol.submit_task(task).await?;
-            
+            let task_id = self.task_protocol.submit_task(shared_task.clone()).await?;
+
             // Send notification to communication protocol
-            let message = AgentMessage::TaskAssignment {
-                id: uuid::Uuid::new_v4(),
-                task_id,
-                from: AgentId::new(), // System agent
-                to: AgentId::new(),   // Will be assigned by orchestrator
-                task: task,
-                deadline: Some(Utc::now() + step.estimated_duration),
+            let system_agent = Uuid::new_v4(); // System agent ID
+            let orchestrator_agent = Uuid::new_v4(); // Orchestrator agent ID
+
+            let message = agentaskit_shared::AgentMessage {
+                message_id: Uuid::new_v4(),
+                from_agent: system_agent,
+                to_agent: orchestrator_agent,
+                message_type: "task_submission".to_string(),
+                priority: shared_task.priority.clone(),
+                timestamp: Utc::now(),
+                payload: serde_json::to_value(&shared_task)?,
+                correlation_id: Some(task_id),
+                reply_to: Some(system_agent),
+                ttl: shared_task.timeout,
             };
-            
+
             self.communication_protocol.send_message(message).await?;
         }
 
@@ -788,7 +802,7 @@ impl EnhancedWorkflowProcessor {
         let lines: Vec<&str> = sot_content.lines().collect();
         let mut executed_tasks = Vec::new();
         let mut in_executed_section = false;
-        
+
         for line in lines {
             if line.contains("### 1.1 Executed Tasks") {
                 in_executed_section = true;
@@ -801,7 +815,7 @@ impl EnhancedWorkflowProcessor {
                 executed_tasks.push(line.to_string());
             }
         }
-        
+
         Ok(executed_tasks)
     }
 
@@ -810,7 +824,7 @@ impl EnhancedWorkflowProcessor {
         let lines: Vec<&str> = sot_content.lines().collect();
         let mut in_progress_tasks = Vec::new();
         let mut in_progress_section = false;
-        
+
         for line in lines {
             if line.contains("### 1.2 In-Progress Tasks") {
                 in_progress_section = true;
@@ -823,37 +837,278 @@ impl EnhancedWorkflowProcessor {
                 in_progress_tasks.push(line.to_string());
             }
         }
-        
+
         Ok(in_progress_tasks)
     }
 
     async fn extract_system_constraints(&self, sot_content: &str) -> Result<Vec<String>> {
         // Extract system constraints and metadata
         let mut constraints = Vec::new();
-        
+
         // Add standard constraints from production structure preference
-        constraints.push("Primary production codebase must reside in agentaskit-production directory".to_string());
+        constraints.push(
+            "Primary production codebase must reside in agentaskit-production directory"
+                .to_string(),
+        );
         constraints.push("All artifacts must be organized in ~/docs subdirectory".to_string());
         constraints.push("Only sot.md allowed at root level".to_string());
         constraints.push("Triple-verification protocol mandatory for all claims".to_string());
         constraints.push("Heal, Don't Harm principle must be followed".to_string());
-        
+
         Ok(constraints)
     }
 
-    // Additional helper method implementations would continue here...
-    // [Implementation continues with remaining helper methods]
+    // 4D Method Phase Implementations
+    async fn deconstruct_request(
+        &self,
+        request: &ChatRequest,
+        sot_analysis: &SOTAnalysis,
+    ) -> Result<DeconstructPhase> {
+        Ok(DeconstructPhase {
+            core_intent: request.message.clone(),
+            key_entities: vec![],
+            context_analysis: format!("Request alignment: {}", sot_analysis.request_alignment),
+            output_requirements: vec!["Implementation".to_string()],
+            constraints: sot_analysis.system_constraints.clone(),
+            provided_vs_missing: HashMap::new(),
+        })
+    }
+
+    async fn diagnose_requirements(
+        &self,
+        _deconstruct: &DeconstructPhase,
+        _request: &ChatRequest,
+    ) -> Result<DiagnosePhase> {
+        Ok(DiagnosePhase {
+            clarity_gaps: vec![],
+            ambiguity_points: vec![],
+            specificity_level: SpecificityLevel::Moderate,
+            completeness_score: 0.8,
+            structure_needs: vec![],
+            complexity_assessment: ComplexityLevel::Moderate,
+        })
+    }
+
+    async fn develop_approach(
+        &self,
+        _diagnose: &DiagnosePhase,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<DevelopPhase> {
+        Ok(DevelopPhase {
+            request_type: RequestType::Technical,
+            selected_techniques: vec![OptimizationTechnique::SystematicFrameworks],
+            ai_role_assignment: "Implementation assistant".to_string(),
+            context_enhancement: "Enhanced with SOT context".to_string(),
+            logical_structure: "Structured implementation plan".to_string(),
+        })
+    }
+
+    async fn design_delivery(
+        &self,
+        _develop: &DevelopPhase,
+        _diagnose: &DiagnosePhase,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<DeliverPhase> {
+        Ok(DeliverPhase {
+            execution_plan: vec![],
+            verification_protocol: self.create_default_verification_protocol(),
+            deliverable_specifications: vec![],
+            target_locations: vec![],
+            timeline: ExecutionTimeline {
+                start_time: Utc::now(),
+                estimated_end_time: Utc::now() + chrono::Duration::hours(1),
+                milestones: vec![],
+                critical_path: vec![],
+            },
+        })
+    }
+
+    fn create_default_verification_protocol(&self) -> VerificationProtocol {
+        VerificationProtocol {
+            pass_a_self_check: VerificationPass {
+                name: "Pass A: Self-Check".to_string(),
+                criteria: vec!["Code compiles".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            pass_b_independent: VerificationPass {
+                name: "Pass B: Independent Verification".to_string(),
+                criteria: vec!["Tests pass".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            pass_c_adversarial: VerificationPass {
+                name: "Pass C: Adversarial Review".to_string(),
+                criteria: vec!["Security review".to_string()],
+                tests: vec![],
+                status: VerificationStatus::Pending,
+                timestamp: None,
+                evidence: vec![],
+            },
+            evidence_ledger: EvidenceLedger {
+                files: HashMap::new(),
+                data_sources: vec![],
+                external_references: vec![],
+                mathematics: vec![],
+                tests: vec![],
+                verification_results: vec![],
+            },
+            truth_gate_requirements: TruthGateRequirements {
+                artifact_presence: false,
+                smoke_test_passed: false,
+                spec_match_verified: false,
+                limits_documented: false,
+                hashes_provided: false,
+                gap_scan_complete: false,
+                triple_verification_complete: false,
+            },
+        }
+    }
+
+    async fn generate_task_title(
+        &self,
+        request: &ChatRequest,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<String> {
+        Ok(format!(
+            "Task: {}",
+            request.message.chars().take(50).collect::<String>()
+        ))
+    }
+
+    async fn generate_task_description(
+        &self,
+        request: &ChatRequest,
+        _deconstruct: &DeconstructPhase,
+    ) -> Result<String> {
+        Ok(request.message.clone())
+    }
+
+    async fn generate_todo_entry(&self, task_subject: &TaskSubject) -> Result<String> {
+        Ok(format!(
+            "## {}\n\n- [ ] {}\n\nPriority: {:?}\nStatus: {:?}\n",
+            task_subject.title,
+            task_subject.description,
+            task_subject.priority,
+            task_subject.status
+        ))
+    }
+
+    async fn generate_deliverable_name(&self, output_req: &str) -> Result<String> {
+        Ok(format!("Deliverable: {}", output_req))
+    }
+
+    async fn determine_deliverable_type(&self, output_req: &str) -> Result<DeliverableType> {
+        let req_lower = output_req.to_lowercase();
+        if req_lower.contains("code") || req_lower.contains("implement") {
+            Ok(DeliverableType::SourceCode)
+        } else if req_lower.contains("doc") {
+            Ok(DeliverableType::Documentation)
+        } else if req_lower.contains("test") {
+            Ok(DeliverableType::TestSuite)
+        } else if req_lower.contains("config") {
+            Ok(DeliverableType::Configuration)
+        } else {
+            Ok(DeliverableType::Report)
+        }
+    }
+
+    async fn generate_quality_requirements(
+        &self,
+        _request_type: &RequestType,
+    ) -> Result<Vec<String>> {
+        Ok(vec![
+            "Code must compile without errors".to_string(),
+            "All tests must pass".to_string(),
+            "Documentation must be complete".to_string(),
+        ])
+    }
+
+    async fn generate_acceptance_criteria(&self, _output_req: &str) -> Result<Vec<String>> {
+        Ok(vec![
+            "Functionality implemented as specified".to_string(),
+            "Tests passing".to_string(),
+            "Documentation updated".to_string(),
+        ])
+    }
+
+    async fn create_standard_deliverables(
+        &self,
+        _task_subject: &TaskSubject,
+    ) -> Result<Vec<Deliverable>> {
+        Ok(vec![])
+    }
+
+    async fn generate_file_specifications(
+        &self,
+        _deliverable_type: &DeliverableType,
+    ) -> Result<Vec<FileSpecification>> {
+        Ok(vec![])
+    }
+
+    async fn generate_relative_path(&self, deliverable_type: &DeliverableType) -> Result<String> {
+        Ok(match deliverable_type {
+            DeliverableType::SourceCode => "src/".to_string(),
+            DeliverableType::Documentation => "docs/".to_string(),
+            DeliverableType::TestSuite => "tests/".to_string(),
+            DeliverableType::Configuration => "config/".to_string(),
+            _ => "output/".to_string(),
+        })
+    }
+
+    async fn generate_filename_pattern(
+        &self,
+        _deliverable_type: &DeliverableType,
+    ) -> Result<Option<String>> {
+        Ok(None)
+    }
+
+    async fn get_organization_rules(&self, _location_type: &LocationType) -> Result<Vec<String>> {
+        Ok(vec!["Follow project structure".to_string()])
+    }
+
+    async fn get_backup_locations(&self, _location_type: &LocationType) -> Result<Vec<PathBuf>> {
+        Ok(vec![])
+    }
+
+    async fn determine_task_type(&self, step_name: &str) -> Result<String> {
+        Ok(if step_name.contains("analyz") {
+            "analysis".to_string()
+        } else if step_name.contains("test") {
+            "testing".to_string()
+        } else {
+            "implementation".to_string()
+        })
+    }
+
+    async fn convert_priority(
+        &self,
+        priority: &RequestPriority,
+    ) -> Result<crate::orchestration::Priority> {
+        use crate::orchestration::Priority as P;
+        Ok(match priority {
+            RequestPriority::Low => P::Low,
+            RequestPriority::Medium => P::Medium,
+            RequestPriority::High => P::High,
+            RequestPriority::Critical => P::Critical,
+        })
+    }
+
+    async fn generate_task_parameters(&self, _step: &ExecutionStep) -> Result<serde_json::Value> {
+        Ok(serde_json::json!({}))
+    }
 }
 
 // Supporting structures and traits
 #[derive(Debug, Clone)]
 pub struct SOTAnalysis {
     pub executed_tasks: Vec<String>,
-    pub in_progress_tasks: Vec<String>,  
+    pub in_progress_tasks: Vec<String>,
     pub system_constraints: Vec<String>,
     pub last_updated: DateTime<Utc>,
     pub request_alignment: f32, // 0.0 to 1.0 score
 }
-
-// Re-export for external use
-pub use crate::agents::{Task, TaskStatus, AgentId, AgentMessage};

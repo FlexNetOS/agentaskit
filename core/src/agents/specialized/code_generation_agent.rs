@@ -7,14 +7,14 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Code Generation Agent - Specialized code generation and optimization
-/// 
+///
 /// The Code Generation Agent is responsible for:
 /// - Automated code generation from specifications
 /// - Code refactoring and optimization
@@ -23,22 +23,25 @@ use agentaskit_shared::{
 /// - Multi-language code generation support
 /// - Integration with development workflows
 pub struct CodeGenerationAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Code generation engine
     code_generator: Arc<RwLock<CodeGenerationEngine>>,
-    
+
     /// Code quality analyzer
     quality_analyzer: Arc<RwLock<CodeQualityAnalyzer>>,
-    
+
     /// Template management system
     template_manager: Arc<RwLock<TemplateManager>>,
-    
+
     /// Language support system
     language_support: Arc<RwLock<LanguageSupport>>,
-    
+
     /// Configuration
     config: CodeGenerationConfig,
 }
@@ -48,19 +51,19 @@ pub struct CodeGenerationAgent {
 pub struct CodeGenerationConfig {
     /// Supported programming languages
     pub supported_languages: Vec<String>,
-    
+
     /// Code generation strategies
     pub generation_strategies: Vec<String>,
-    
+
     /// Quality thresholds
     pub quality_thresholds: QualityThresholds,
-    
+
     /// Template update frequency
     pub template_update_interval: Duration,
-    
+
     /// Code analysis frequency
     pub analysis_interval: Duration,
-    
+
     /// Generation parameters
     pub generation_params: GenerationParameters,
 }
@@ -68,23 +71,23 @@ pub struct CodeGenerationConfig {
 /// Quality thresholds
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QualityThresholds {
-    pub code_coverage_minimum: f64,      // 0.8 (80%)
-    pub complexity_threshold: f64,       // 10.0 (cyclomatic complexity)
-    pub maintainability_index_min: f64,  // 70.0
-    pub duplication_threshold: f64,      // 0.05 (5%)
-    pub security_score_minimum: f64,     // 0.9 (90%)
+    pub code_coverage_minimum: f64,     // 0.8 (80%)
+    pub complexity_threshold: f64,      // 10.0 (cyclomatic complexity)
+    pub maintainability_index_min: f64, // 70.0
+    pub duplication_threshold: f64,     // 0.05 (5%)
+    pub security_score_minimum: f64,    // 0.9 (90%)
 }
 
 /// Generation parameters
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GenerationParameters {
-    pub max_function_length: usize,      // 50 lines
-    pub max_class_size: usize,          // 500 lines
-    pub prefer_composition: bool,        // true
-    pub enforce_typing: bool,           // true
-    pub generate_documentation: bool,    // true
-    pub include_tests: bool,            // true
-    pub optimization_level: u8,         // 2 (0-3)
+    pub max_function_length: usize,   // 50 lines
+    pub max_class_size: usize,        // 500 lines
+    pub prefer_composition: bool,     // true
+    pub enforce_typing: bool,         // true
+    pub generate_documentation: bool, // true
+    pub include_tests: bool,          // true
+    pub optimization_level: u8,       // 2 (0-3)
 }
 
 impl Default for CodeGenerationConfig {
@@ -112,7 +115,7 @@ impl Default for CodeGenerationConfig {
                 security_score_minimum: 0.9,
             },
             template_update_interval: Duration::from_secs(86400), // Daily
-            analysis_interval: Duration::from_secs(3600), // Hourly
+            analysis_interval: Duration::from_secs(3600),         // Hourly
             generation_params: GenerationParameters {
                 max_function_length: 50,
                 max_class_size: 500,
@@ -131,16 +134,16 @@ impl Default for CodeGenerationConfig {
 struct CodeGenerationEngine {
     /// Generation models
     generation_models: HashMap<String, GenerationModel>,
-    
+
     /// Active generation tasks
     active_tasks: HashMap<String, GenerationTask>,
-    
+
     /// Generation history
     generation_history: VecDeque<GenerationSession>,
-    
+
     /// Code patterns
     code_patterns: HashMap<String, CodePattern>,
-    
+
     /// Generation metrics
     generation_metrics: GenerationMetrics,
 }
@@ -371,16 +374,16 @@ struct GenerationMetrics {
 struct CodeQualityAnalyzer {
     /// Quality metrics
     quality_metrics: HashMap<String, QualityMetric>,
-    
+
     /// Analysis rules
     analysis_rules: Vec<AnalysisRule>,
-    
+
     /// Quality reports
     quality_reports: VecDeque<QualityReport>,
-    
+
     /// Improvement suggestions
     improvement_suggestions: Vec<ImprovementSuggestion>,
-    
+
     /// Analysis metrics
     analysis_metrics: AnalysisMetrics,
 }
@@ -519,13 +522,13 @@ struct AnalysisMetrics {
 struct TemplateManager {
     /// Code templates
     templates: HashMap<String, CodeTemplate>,
-    
+
     /// Template categories
     categories: HashMap<String, TemplateCategory>,
-    
+
     /// Template usage stats
     usage_stats: HashMap<String, TemplateUsageStats>,
-    
+
     /// Template versioning
     template_versions: HashMap<String, Vec<TemplateVersion>>,
 }
@@ -604,13 +607,13 @@ struct TemplateVersion {
 struct LanguageSupport {
     /// Supported languages
     languages: HashMap<String, LanguageDefinition>,
-    
+
     /// Language-specific generators
     generators: HashMap<String, LanguageGenerator>,
-    
+
     /// Cross-language mappings
     cross_language_mappings: HashMap<String, CrossLanguageMapping>,
-    
+
     /// Language metrics
     language_metrics: HashMap<String, LanguageMetrics>,
 }
@@ -707,32 +710,47 @@ struct LanguageMetrics {
 impl CodeGenerationAgent {
     pub fn new(config: Option<CodeGenerationConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Code Generation Agent".to_string();
+        let capabilities = vec![
+            "code-generation".to_string(),
+            "code-refactoring".to_string(),
+            "quality-analysis".to_string(),
+            "template-management".to_string(),
+            "multi-language-support".to_string(),
+            "pattern-recognition".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("code-generation-agent"),
-            name: "Code Generation Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "code-generation".to_string(),
-                "code-refactoring".to_string(),
-                "quality-analysis".to_string(),
-                "template-management".to_string(),
-                "multi-language-support".to_string(),
-                "pattern-recognition".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
-                min_cpu: 1.0,
-                min_memory: 2 * 1024 * 1024 * 1024, // 2GB
-                min_storage: 1024 * 1024 * 1024,     // 1GB
-                max_cpu: 4.0,
-                max_memory: 16 * 1024 * 1024 * 1024, // 16GB
-                max_storage: 50 * 1024 * 1024 * 1024, // 50GB
+                cpu_cores: Some(4),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: vec!["llm".to_string(), "code-analysis".to_string()],
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [
+                ("code-generation".to_string(), "code-generation".to_string()),
+                ("specialized".to_string(), "specialized".to_string()),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -751,11 +769,11 @@ impl CodeGenerationAgent {
         target_language: String,
     ) -> Result<GenerationResult> {
         tracing::info!("Generating code for: {}", specification.title);
-        
+
         let mut code_generator = self.code_generator.write().await;
-        
+
         let task_id = format!("gen-{}", Uuid::new_v4());
-        
+
         // TODO: Implement actual code generation
         let result = GenerationResult {
             task_id,
@@ -778,11 +796,11 @@ impl CodeGenerationAgent {
             errors: Vec::new(),
             warnings: Vec::new(),
         };
-        
+
         code_generator.generation_metrics.total_generations += 1;
         code_generator.generation_metrics.successful_generations += 1;
         code_generator.generation_metrics.lines_of_code_generated += 3;
-        
+
         tracing::info!("Code generation completed successfully");
         Ok(result)
     }
@@ -792,12 +810,12 @@ impl CodeGenerationAgent {
         let code_generator = self.code_generator.read().await;
         let quality_analyzer = self.quality_analyzer.read().await;
         let template_manager = self.template_manager.read().await;
-        
+
         Ok(CodeGenerationStatus {
             total_generations: code_generator.generation_metrics.total_generations,
             successful_generations: code_generator.generation_metrics.successful_generations,
             success_rate: if code_generator.generation_metrics.total_generations > 0 {
-                code_generator.generation_metrics.successful_generations as f64 
+                code_generator.generation_metrics.successful_generations as f64
                     / code_generator.generation_metrics.total_generations as f64
             } else {
                 0.0
@@ -848,38 +866,13 @@ impl Agent for CodeGenerationAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Code Generation Agent");
-        
-        // Initialize generation models
-        let mut code_generator = self.code_generator.write().await;
-        self.initialize_generation_models(&mut code_generator).await?;
-        
-        // Initialize quality metrics
-        let mut quality_analyzer = self.quality_analyzer.write().await;
-        self.initialize_quality_metrics(&mut quality_analyzer).await?;
-        
-        // Initialize templates
-        let mut template_manager = self.template_manager.write().await;
-        self.initialize_templates(&mut template_manager).await?;
-        
-        // Initialize language support
-        let mut language_support = self.language_support.write().await;
-        self.initialize_language_support(&mut language_support).await?;
-        
-        *self.state.write().await = AgentStatus::Active;
-        
-        tracing::info!("Code Generation Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Code Generation Agent");
-        
+
         // Start quality analysis monitoring
         let quality_analyzer = self.quality_analyzer.clone();
         let analysis_interval = self.config.analysis_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(analysis_interval);
             loop {
@@ -889,11 +882,11 @@ impl Agent for CodeGenerationAgent {
                 }
             }
         });
-        
+
         // Start template management
         let template_manager = self.template_manager.clone();
         let update_interval = self.config.template_update_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(update_interval);
             loop {
@@ -903,27 +896,27 @@ impl Agent for CodeGenerationAgent {
                 }
             }
         });
-        
+
         tracing::info!("Code Generation Agent started successfully");
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Code Generation Agent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("Code Generation Agent stopped successfully");
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -934,21 +927,25 @@ impl Agent for CodeGenerationAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "generate-code" => {
-                let title = task.parameters.get("title")
+                let title = task
+                    .input_data
+                    .get("title")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Generated Code")
                     .to_string();
-                
-                let language = task.parameters.get("language")
+
+                let language = task
+                    .input_data
+                    .get("language")
                     .and_then(|v| v.as_str())
                     .unwrap_or("rust")
                     .to_string();
-                
+
                 // Create a basic specification from task parameters
                 let spec = CodeSpecification {
                     spec_id: Uuid::new_v4().to_string(),
@@ -961,81 +958,76 @@ impl Agent for CodeGenerationAgent {
                     output_specifications: Vec::new(),
                     dependencies: Vec::new(),
                 };
-                
+
                 let result = self.generate_code(spec, language).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "generation_task_id": result.task_id,
                         "artifacts_generated": result.generated_artifacts.len(),
                         "quality_score": result.quality_score,
                         "success": result.success,
                         "generation_time_ms": result.generation_time.as_millis(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
                 let status = self.get_generation_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "total_generations": status.total_generations,
                         "success_rate": status.success_rate,
                         "average_quality_score": status.average_quality_score,
                         "lines_generated": status.lines_generated,
                         "active_tasks": status.active_tasks,
                         "supported_languages": status.supported_languages,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Code generation failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let code_generator = self.code_generator.read().await;
-        
+
         Ok(HealthStatus {
             agent_id: self.metadata.id,
             state: state.clone(),
             last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0, // Placeholder
+            cpu_usage: 20.0,                      // Placeholder
             memory_usage: 2 * 1024 * 1024 * 1024, // 2GB placeholder
             task_queue_size: code_generator.active_tasks.len() as usize,
             completed_tasks: code_generator.generation_metrics.successful_generations,
-            failed_tasks: code_generator.generation_metrics.total_generations 
+            failed_tasks: code_generator.generation_metrics.total_generations
                 - code_generator.generation_metrics.successful_generations,
             average_response_time: Duration::from_millis(500),
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Code Generation Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.capabilities
     }
 }
 
@@ -1055,11 +1047,11 @@ impl CodeGenerationAgent {
             pattern_usage_stats: HashMap::new(),
             language_distribution: HashMap::new(),
         };
-        
+
         tracing::info!("Initialized code generation models");
         Ok(())
     }
-    
+
     /// Initialize quality metrics
     async fn initialize_quality_metrics(
         &self,
@@ -1072,22 +1064,19 @@ impl CodeGenerationAgent {
             suggestions_provided: 0,
             improvement_acceptance_rate: 0.75,
         };
-        
+
         tracing::info!("Initialized code quality analysis metrics");
         Ok(())
     }
-    
+
     /// Initialize templates
-    async fn initialize_templates(
-        &self,
-        template_manager: &mut TemplateManager,
-    ) -> Result<()> {
+    async fn initialize_templates(&self, template_manager: &mut TemplateManager) -> Result<()> {
         // TODO: Load code generation templates
-        
+
         tracing::info!("Initialized code generation templates");
         Ok(())
     }
-    
+
     /// Initialize language support
     async fn initialize_language_support(
         &self,
@@ -1104,35 +1093,35 @@ impl CodeGenerationAgent {
                     average_quality_score: 0.0,
                     performance_metrics: HashMap::new(),
                     user_preference_score: 0.0,
-                }
+                },
             );
         }
-        
-        tracing::info!("Initialized language support for {} languages", 
-                      self.config.supported_languages.len());
+
+        tracing::info!(
+            "Initialized language support for {} languages",
+            self.config.supported_languages.len()
+        );
         Ok(())
     }
-    
+
     /// Run quality analysis (background task)
     async fn run_quality_analysis(
         quality_analyzer: Arc<RwLock<CodeQualityAnalyzer>>,
     ) -> Result<()> {
         let _quality_analyzer = quality_analyzer.read().await;
-        
+
         // TODO: Implement continuous quality analysis
-        
+
         tracing::debug!("Quality analysis cycle completed");
         Ok(())
     }
-    
+
     /// Run template updates (background task)
-    async fn run_template_updates(
-        template_manager: Arc<RwLock<TemplateManager>>,
-    ) -> Result<()> {
+    async fn run_template_updates(template_manager: Arc<RwLock<TemplateManager>>) -> Result<()> {
         let _template_manager = template_manager.read().await;
-        
+
         // TODO: Implement template management and updates
-        
+
         tracing::debug!("Template update cycle completed");
         Ok(())
     }

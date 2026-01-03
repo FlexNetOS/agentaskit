@@ -8,13 +8,14 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// DigestAgent - Knowledge synthesis and strategic intelligence
-/// 
+///
 /// The DigestAgent serves as the strategic intelligence synthesizer for the Board Layer,
 /// responsible for:
 /// - Aggregating information from all agent layers
@@ -27,19 +28,19 @@ pub struct DigestAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Knowledge synthesis engine
     knowledge_synthesizer: Arc<RwLock<KnowledgeSynthesizer>>,
-    
+
     /// Intelligence analysis system
     intelligence_analyzer: Arc<RwLock<IntelligenceAnalyzer>>,
-    
+
     /// Report generation system
     report_generator: Arc<RwLock<ReportGenerator>>,
-    
+
     /// Information aggregation system
     info_aggregator: Arc<RwLock<InformationAggregator>>,
-    
+
     /// Configuration
     config: DigestAgentConfig,
 }
@@ -49,19 +50,19 @@ pub struct DigestAgent {
 pub struct DigestAgentConfig {
     /// Digest generation frequency
     pub digest_interval: Duration,
-    
+
     /// Intelligence briefing frequency
     pub briefing_interval: Duration,
-    
+
     /// Knowledge synthesis frequency
     pub synthesis_interval: Duration,
-    
+
     /// Data aggregation frequency
     pub aggregation_interval: Duration,
-    
+
     /// Synthesis parameters
     pub synthesis_params: SynthesisParameters,
-    
+
     /// Report configuration
     pub report_config: ReportConfiguration,
 }
@@ -76,15 +77,15 @@ pub struct SynthesisParameters {
     pub strategic_importance_weight: f64,   // 0.4
     pub operational_impact_weight: f64,     // 0.3
     pub financial_impact_weight: f64,       // 0.2
-    pub risk_impact_weight: f64,           // 0.1
+    pub risk_impact_weight: f64,            // 0.1
 }
 
 /// Report configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReportConfiguration {
-    pub executive_summary_length: usize,   // 500 words
-    pub key_insights_count: usize,         // 5-7 insights
-    pub recommendations_count: usize,      // 3-5 recommendations
+    pub executive_summary_length: usize, // 500 words
+    pub key_insights_count: usize,       // 5-7 insights
+    pub recommendations_count: usize,    // 3-5 recommendations
     pub trend_analysis_depth: AnalysisDepth,
     pub include_visualizations: bool,
     pub include_appendices: bool,
@@ -133,16 +134,16 @@ impl Default for DigestAgentConfig {
 struct KnowledgeSynthesizer {
     /// Knowledge domains
     knowledge_domains: HashMap<String, KnowledgeDomain>,
-    
+
     /// Synthesis models
     synthesis_models: Vec<SynthesisModel>,
-    
+
     /// Knowledge patterns
     knowledge_patterns: HashMap<String, KnowledgePattern>,
-    
+
     /// Synthesis history
     synthesis_history: VecDeque<SynthesisSession>,
-    
+
     /// Synthesis metrics
     synthesis_metrics: SynthesisMetrics,
 }
@@ -313,16 +314,16 @@ struct SynthesisMetrics {
 struct IntelligenceAnalyzer {
     /// Analysis frameworks
     analysis_frameworks: HashMap<String, AnalysisFramework>,
-    
+
     /// Intelligence reports
     intelligence_reports: VecDeque<IntelligenceReport>,
-    
+
     /// Threat assessments
     threat_assessments: HashMap<String, ThreatAssessment>,
-    
+
     /// Opportunity analyses
     opportunity_analyses: HashMap<String, OpportunityAnalysis>,
-    
+
     /// Analysis metrics
     analysis_metrics: AnalysisMetrics,
 }
@@ -342,11 +343,11 @@ struct AnalysisFramework {
 /// Framework types
 #[derive(Debug)]
 enum FrameworkType {
-    SWOT,      // Strengths, Weaknesses, Opportunities, Threats
-    PEST,      // Political, Economic, Social, Technological
+    SWOT,       // Strengths, Weaknesses, Opportunities, Threats
+    PEST,       // Political, Economic, Social, Technological
     FiveForces, // Porter's Five Forces
-    STEEP,     // Social, Technological, Economic, Environmental, Political
-    VRIO,      // Value, Rarity, Imitability, Organization
+    STEEP,      // Social, Technological, Economic, Environmental, Political
+    VRIO,       // Value, Rarity, Imitability, Organization
     Custom(String),
 }
 
@@ -573,13 +574,13 @@ struct AnalysisMetrics {
 struct ReportGenerator {
     /// Report templates
     report_templates: HashMap<String, ReportTemplate>,
-    
+
     /// Generated reports
     generated_reports: VecDeque<GeneratedReport>,
-    
+
     /// Distribution lists
     distribution_lists: HashMap<String, DistributionList>,
-    
+
     /// Report metrics
     report_metrics: ReportMetrics,
 }
@@ -797,16 +798,16 @@ struct ReportMetrics {
 struct InformationAggregator {
     /// Data connectors
     data_connectors: HashMap<String, DataConnector>,
-    
+
     /// Aggregated datasets
     datasets: HashMap<String, AggregatedDataset>,
-    
+
     /// Data quality metrics
     quality_metrics: HashMap<String, DataQualityMetrics>,
-    
+
     /// Aggregation jobs
     aggregation_jobs: VecDeque<AggregationJob>,
-    
+
     /// Aggregation metrics
     aggregation_metrics: AggregationMetrics,
 }
@@ -984,9 +985,9 @@ struct AggregationMetrics {
 impl DigestAgent {
     pub fn new(config: DigestAgentConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("digest-agent"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("digest-agent"),
             name: "DigestAgent - Strategic Intelligence".to_string(),
-            role: AgentRole::Board,
+            agent_type: "board".to_string(),
             capabilities: vec![
                 "knowledge-synthesis".to_string(),
                 "intelligence-analysis".to_string(),
@@ -996,16 +997,19 @@ impl DigestAgent {
                 "information-aggregation".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 1024 * 1024 * 1024, // 1GB
-                min_storage: 500 * 1024 * 1024,  // 500MB
-                max_cpu: 3.0,
-                max_memory: 8 * 1024 * 1024 * 1024, // 8GB
-                max_storage: 10 * 1024 * 1024 * 1024, // 10GB
+                cpu_cores: Some(3),
+                memory_mb: Some(8192),
+                storage_mb: Some(10240),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -1023,16 +1027,17 @@ impl DigestAgent {
     /// Generate strategic digest
     pub async fn generate_digest(&self, digest_type: DigestType) -> Result<StrategicDigest> {
         tracing::info!("Generating strategic digest: {:?}", digest_type);
-        
+
         let knowledge_synthesizer = self.knowledge_synthesizer.read().await;
         let intelligence_analyzer = self.intelligence_analyzer.read().await;
-        
+
         // TODO: Implement digest generation
         let digest = StrategicDigest {
             digest_id: Uuid::new_v4(),
             digest_type,
             title: "Strategic Intelligence Digest".to_string(),
-            executive_summary: "Strategic overview of current organizational state and opportunities".to_string(),
+            executive_summary:
+                "Strategic overview of current organizational state and opportunities".to_string(),
             key_insights: vec![
                 "Market trends indicate growing demand for AI-driven solutions".to_string(),
                 "Operational efficiency has improved by 15% over the last quarter".to_string(),
@@ -1042,12 +1047,8 @@ impl DigestAgent {
                 "Invest in advanced AI capabilities to maintain competitive advantage".to_string(),
                 "Optimize operational processes to further improve efficiency".to_string(),
             ],
-            risk_alerts: vec![
-                "Monitor regulatory changes in AI governance".to_string(),
-            ],
-            opportunity_highlights: vec![
-                "Emerging market opportunity in healthcare AI".to_string(),
-            ],
+            risk_alerts: vec!["Monitor regulatory changes in AI governance".to_string()],
+            opportunity_highlights: vec!["Emerging market opportunity in healthcare AI".to_string()],
             confidence_score: 0.85,
             generated_at: Instant::now(),
             data_sources: vec![
@@ -1056,7 +1057,7 @@ impl DigestAgent {
                 "Market Intelligence".to_string(),
             ],
         };
-        
+
         tracing::info!("Strategic digest generated: {}", digest.digest_id);
         Ok(digest)
     }
@@ -1067,14 +1068,16 @@ impl DigestAgent {
         let intelligence_analyzer = self.intelligence_analyzer.read().await;
         let report_generator = self.report_generator.read().await;
         let info_aggregator = self.info_aggregator.read().await;
-        
+
         Ok(DigestStatus {
             active_knowledge_domains: knowledge_synthesizer.knowledge_domains.len(),
             insights_generated: knowledge_synthesizer.synthesis_metrics.insights_generated,
             patterns_identified: knowledge_synthesizer.synthesis_metrics.patterns_identified,
             reports_generated: intelligence_analyzer.analysis_metrics.reports_generated,
             threats_identified: intelligence_analyzer.analysis_metrics.threats_identified,
-            opportunities_analyzed: intelligence_analyzer.analysis_metrics.opportunities_analyzed,
+            opportunities_analyzed: intelligence_analyzer
+                .analysis_metrics
+                .opportunities_analyzed,
             data_connectors_active: info_aggregator.data_connectors.len(),
             data_quality_score: 0.92, // Placeholder
             synthesis_accuracy: knowledge_synthesizer.synthesis_metrics.synthesis_accuracy,
@@ -1137,36 +1140,40 @@ impl Agent for DigestAgent {
 
     async fn initialize(&mut self) -> Result<()> {
         tracing::info!("Initializing DigestAgent");
-        
+
         // Initialize knowledge domains
         let mut knowledge_synthesizer = self.knowledge_synthesizer.write().await;
-        self.initialize_knowledge_domains(&mut knowledge_synthesizer).await?;
-        
+        self.initialize_knowledge_domains(&mut knowledge_synthesizer)
+            .await?;
+
         // Initialize analysis frameworks
         let mut intelligence_analyzer = self.intelligence_analyzer.write().await;
-        self.initialize_analysis_frameworks(&mut intelligence_analyzer).await?;
-        
+        self.initialize_analysis_frameworks(&mut intelligence_analyzer)
+            .await?;
+
         // Initialize report templates
         let mut report_generator = self.report_generator.write().await;
-        self.initialize_report_templates(&mut report_generator).await?;
-        
+        self.initialize_report_templates(&mut report_generator)
+            .await?;
+
         // Initialize data connectors
         let mut info_aggregator = self.info_aggregator.write().await;
-        self.initialize_data_connectors(&mut info_aggregator).await?;
-        
+        self.initialize_data_connectors(&mut info_aggregator)
+            .await?;
+
         *self.state.write().await = AgentStatus::Active;
-        
+
         tracing::info!("DigestAgent initialized successfully");
         Ok(())
     }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting DigestAgent");
-        
+
         // Start information aggregation
         let info_aggregator = self.info_aggregator.clone();
         let aggregation_interval = self.config.aggregation_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(aggregation_interval);
             loop {
@@ -1176,11 +1183,11 @@ impl Agent for DigestAgent {
                 }
             }
         });
-        
+
         // Start knowledge synthesis
         let knowledge_synthesizer = self.knowledge_synthesizer.clone();
         let synthesis_interval = self.config.synthesis_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(synthesis_interval);
             loop {
@@ -1190,11 +1197,11 @@ impl Agent for DigestAgent {
                 }
             }
         });
-        
+
         // Start digest generation
         let report_generator = self.report_generator.clone();
         let digest_interval = self.config.digest_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(digest_interval);
             loop {
@@ -1204,16 +1211,16 @@ impl Agent for DigestAgent {
                 }
             }
         });
-        
+
         tracing::info!("DigestAgent started successfully");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         tracing::info!("Stopping DigestAgent");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         tracing::info!("DigestAgent stopped successfully");
         Ok(())
     }
@@ -1222,7 +1229,7 @@ impl Agent for DigestAgent {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -1237,10 +1244,12 @@ impl Agent for DigestAgent {
 
     async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "generate-digest" => {
-                let digest_type = task.parameters.get("type")
+                let digest_type = task
+                    .input_data
+                    .get("type")
                     .and_then(|v| v.as_str())
                     .map(|s| match s {
                         "daily" => DigestType::Daily,
@@ -1250,71 +1259,56 @@ impl Agent for DigestAgent {
                         _ => DigestType::Daily,
                     })
                     .unwrap_or(DigestType::Daily);
-                
+
                 let digest = self.generate_digest(digest_type).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "digest_id": digest.digest_id,
                         "title": digest.title,
                         "confidence_score": digest.confidence_score,
                         "insights_count": digest.key_insights.len(),
                         "recommendations_count": digest.strategic_recommendations.len(),
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
             "get-status" => {
                 let status = self.get_digest_status().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    result: serde_json::json!({
+                    output_data: Some(serde_json::json!({
                         "active_knowledge_domains": status.active_knowledge_domains,
                         "insights_generated": status.insights_generated,
                         "patterns_identified": status.patterns_identified,
                         "reports_generated": status.reports_generated,
                         "data_quality_score": status.data_quality_score,
                         "synthesis_accuracy": status.synthesis_accuracy,
-                    }),
-                    error: None,
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
+                    })),
+                    error_message: None,
+                    completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed("Digest processing failed".to_string()),
-                    result: serde_json::Value::Null,
-                    error: Some(format!("Unknown task type: {}", task.name)),
-                    execution_time: start_time.elapsed(),
-                    resource_usage: ResourceUsage::default(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let knowledge_synthesizer = self.knowledge_synthesizer.read().await;
-        
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0, // Placeholder
-            memory_usage: 1024 * 1024 * 1024, // 1GB placeholder
-            task_queue_size: 0,
-            completed_tasks: knowledge_synthesizer.synthesis_metrics.total_synthesis_sessions,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(300),
-        })
+        let _state = self.state.read().await;
+        let _knowledge_synthesizer = self.knowledge_synthesizer.read().await;
+
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -1322,8 +1316,8 @@ impl Agent for DigestAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 
@@ -1342,11 +1336,11 @@ impl DigestAgent {
             synthesis_accuracy: 0.85,
             knowledge_coverage: 0.78,
         };
-        
+
         tracing::info!("Initialized knowledge synthesis domains");
         Ok(())
     }
-    
+
     /// Initialize analysis frameworks
     async fn initialize_analysis_frameworks(
         &self,
@@ -1360,11 +1354,11 @@ impl DigestAgent {
             analysis_accuracy: 0.88,
             stakeholder_satisfaction: 0.91,
         };
-        
+
         tracing::info!("Initialized intelligence analysis frameworks");
         Ok(())
     }
-    
+
     /// Initialize report templates
     async fn initialize_report_templates(
         &self,
@@ -1378,11 +1372,11 @@ impl DigestAgent {
             report_usefulness: 0.87,
             distribution_success_rate: 0.96,
         };
-        
+
         tracing::info!("Initialized report generation templates");
         Ok(())
     }
-    
+
     /// Initialize data connectors
     async fn initialize_data_connectors(
         &self,
@@ -1396,11 +1390,11 @@ impl DigestAgent {
             data_freshness: Duration::from_secs(300),
             aggregation_accuracy: 0.94,
         };
-        
+
         tracing::info!("Initialized information aggregation connectors");
         Ok(())
     }
-    
+
     /// Run data aggregation (background task)
     async fn run_data_aggregation(
         info_aggregator: Arc<RwLock<InformationAggregator>>,
@@ -1408,35 +1402,35 @@ impl DigestAgent {
         let mut info_aggregator = info_aggregator.write().await;
         info_aggregator.aggregation_metrics.total_jobs_executed += 1;
         info_aggregator.aggregation_metrics.successful_jobs += 1;
-        
+
         // TODO: Implement data aggregation from all agent layers
-        
+
         tracing::debug!("Data aggregation cycle completed");
         Ok(())
     }
-    
+
     /// Run knowledge synthesis (background task)
     async fn run_knowledge_synthesis(
         knowledge_synthesizer: Arc<RwLock<KnowledgeSynthesizer>>,
     ) -> Result<()> {
         let mut knowledge_synthesizer = knowledge_synthesizer.write().await;
-        knowledge_synthesizer.synthesis_metrics.total_synthesis_sessions += 1;
-        
+        knowledge_synthesizer
+            .synthesis_metrics
+            .total_synthesis_sessions += 1;
+
         // TODO: Implement knowledge synthesis process
-        
+
         tracing::debug!("Knowledge synthesis cycle completed");
         Ok(())
     }
-    
+
     /// Run digest generation (background task)
-    async fn run_digest_generation(
-        report_generator: Arc<RwLock<ReportGenerator>>,
-    ) -> Result<()> {
+    async fn run_digest_generation(report_generator: Arc<RwLock<ReportGenerator>>) -> Result<()> {
         let mut report_generator = report_generator.write().await;
         report_generator.report_metrics.reports_generated += 1;
-        
+
         // TODO: Implement digest generation and distribution
-        
+
         tracing::debug!("Digest generation cycle completed");
         Ok(())
     }

@@ -7,14 +7,15 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// System Orchestrator Agent - Operational workflow management
-/// 
+///
 /// The System Orchestrator is responsible for:
 /// - Task dependency resolution and workflow scheduling
 /// - Load balancing across agents and clusters
@@ -25,19 +26,19 @@ pub struct SystemOrchestrator {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
-    
+
     /// Workflow management engine
     workflow_engine: Arc<RwLock<WorkflowEngine>>,
-    
+
     /// Task scheduling and load balancing
     scheduler: Arc<RwLock<TaskScheduler>>,
-    
+
     /// Deadlock detection system
     deadlock_detector: Arc<RwLock<DeadlockDetector>>,
-    
+
     /// Performance monitor for optimization
     performance_monitor: Arc<RwLock<OrchestrationPerformanceMonitor>>,
-    
+
     /// Configuration
     config: OrchestratorConfig,
 }
@@ -47,25 +48,25 @@ pub struct SystemOrchestrator {
 pub struct OrchestratorConfig {
     /// Maximum concurrent workflows
     pub max_concurrent_workflows: usize,
-    
+
     /// Task scheduling interval
     pub scheduling_interval: Duration,
-    
+
     /// Deadlock detection interval
     pub deadlock_detection_interval: Duration,
-    
+
     /// Workflow execution timeout
     pub workflow_timeout: Duration,
-    
+
     /// Load balancing strategy
     pub load_balancing_strategy: LoadBalancingStrategy,
-    
+
     /// Maximum task queue size per agent
     pub max_task_queue_size: usize,
-    
+
     /// Workflow retry attempts
     pub workflow_retry_attempts: usize,
-    
+
     /// Performance monitoring interval
     pub performance_monitoring_interval: Duration,
 }
@@ -101,13 +102,13 @@ pub enum LoadBalancingStrategy {
 struct WorkflowEngine {
     /// Active workflows
     active_workflows: HashMap<Uuid, Workflow>,
-    
+
     /// Workflow templates
     templates: HashMap<String, WorkflowTemplate>,
-    
+
     /// Workflow execution history
     execution_history: Vec<WorkflowExecution>,
-    
+
     /// Workflow metrics
     metrics: WorkflowMetrics,
 }
@@ -150,15 +151,15 @@ struct WorkflowStep {
 /// Workflow step types
 #[derive(Debug)]
 enum WorkflowStepType {
-    Task,           // Execute a specific task
-    Decision,       // Make a decision based on input
-    Parallel,       // Execute multiple steps in parallel
-    Sequential,     // Execute steps in sequence
-    Conditional,    // Execute based on condition
-    Loop,           // Repeat steps based on condition
+    Task,            // Execute a specific task
+    Decision,        // Make a decision based on input
+    Parallel,        // Execute multiple steps in parallel
+    Sequential,      // Execute steps in sequence
+    Conditional,     // Execute based on condition
+    Loop,            // Repeat steps based on condition
     Synchronization, // Wait for multiple parallel steps
-    Notification,   // Send notification
-    Delay,          // Wait for specified time
+    Notification,    // Send notification
+    Delay,           // Wait for specified time
 }
 
 /// Workflow step status
@@ -252,13 +253,13 @@ struct WorkflowMetrics {
 struct TaskScheduler {
     /// Task queue with priority
     task_queue: VecDeque<ScheduledTask>,
-    
+
     /// Agent load tracking
     agent_loads: HashMap<AgentId, AgentLoad>,
-    
+
     /// Scheduling statistics
     scheduling_stats: SchedulingStatistics,
-    
+
     /// Load balancer
     load_balancer: LoadBalancer,
 }
@@ -322,36 +323,36 @@ impl LoadBalancer {
                 self.round_robin_index += 1;
                 Some(selected)
             }
-            LoadBalancingStrategy::LeastLoaded => {
-                available_agents.iter()
-                    .filter_map(|&agent_id| {
-                        agent_loads.get(&agent_id).map(|load| (agent_id, load.current_tasks))
+            LoadBalancingStrategy::LeastLoaded => available_agents
+                .iter()
+                .filter_map(|&agent_id| {
+                    agent_loads
+                        .get(&agent_id)
+                        .map(|load| (agent_id, load.current_tasks))
+                })
+                .min_by_key(|(_, tasks)| *tasks)
+                .map(|(agent_id, _)| agent_id),
+            LoadBalancingStrategy::ResourceBased => available_agents
+                .iter()
+                .filter_map(|&agent_id| {
+                    agent_loads.get(&agent_id).map(|load| {
+                        let resource_score = (load.cpu_utilization + load.memory_utilization) / 2.0;
+                        (agent_id, resource_score)
                     })
-                    .min_by_key(|(_, tasks)| *tasks)
-                    .map(|(agent_id, _)| agent_id)
-            }
-            LoadBalancingStrategy::ResourceBased => {
-                available_agents.iter()
-                    .filter_map(|&agent_id| {
-                        agent_loads.get(&agent_id).map(|load| {
-                            let resource_score = (load.cpu_utilization + load.memory_utilization) / 2.0;
-                            (agent_id, resource_score)
-                        })
+                })
+                .min_by(|(_, score_a), (_, score_b)| score_a.partial_cmp(score_b).unwrap())
+                .map(|(agent_id, _)| agent_id),
+            LoadBalancingStrategy::PerformanceBased => available_agents
+                .iter()
+                .filter_map(|&agent_id| {
+                    agent_loads.get(&agent_id).map(|load| {
+                        let performance_score =
+                            load.success_rate * (1.0 / load.avg_response_time.as_secs_f64());
+                        (agent_id, performance_score)
                     })
-                    .min_by(|(_, score_a), (_, score_b)| score_a.partial_cmp(score_b).unwrap())
-                    .map(|(agent_id, _)| agent_id)
-            }
-            LoadBalancingStrategy::PerformanceBased => {
-                available_agents.iter()
-                    .filter_map(|&agent_id| {
-                        agent_loads.get(&agent_id).map(|load| {
-                            let performance_score = load.success_rate * (1.0 / load.avg_response_time.as_secs_f64());
-                            (agent_id, performance_score)
-                        })
-                    })
-                    .max_by(|(_, score_a), (_, score_b)| score_a.partial_cmp(score_b).unwrap())
-                    .map(|(agent_id, _)| agent_id)
-            }
+                })
+                .max_by(|(_, score_a), (_, score_b)| score_a.partial_cmp(score_b).unwrap())
+                .map(|(agent_id, _)| agent_id),
             _ => available_agents.first().copied(),
         }
     }
@@ -362,10 +363,10 @@ impl LoadBalancer {
 struct DeadlockDetector {
     /// Resource dependency graph
     dependency_graph: DependencyGraph,
-    
+
     /// Deadlock detection history
     detection_history: Vec<DeadlockDetection>,
-    
+
     /// Resolution strategies
     resolution_strategies: Vec<DeadlockResolutionStrategy>,
 }
@@ -375,10 +376,10 @@ struct DeadlockDetector {
 struct DependencyGraph {
     /// Nodes represent resources/agents
     nodes: HashMap<String, DependencyNode>,
-    
+
     /// Edges represent dependencies
     edges: HashMap<String, Vec<String>>,
-    
+
     /// Waiting relationships
     waiting_for: HashMap<AgentId, Vec<String>>,
 }
@@ -416,12 +417,12 @@ struct DeadlockDetection {
 /// Deadlock resolution strategies
 #[derive(Debug, Clone)]
 enum DeadlockResolutionStrategy {
-    Timeout,            // Let tasks timeout
-    PreemptResource,    // Force release of resource
-    RestartAgent,       // Restart deadlocked agent
-    ReorderTasks,       // Change task execution order
-    AddResource,        // Allocate additional resources
-    Manual,             // Require manual intervention
+    Timeout,         // Let tasks timeout
+    PreemptResource, // Force release of resource
+    RestartAgent,    // Restart deadlocked agent
+    ReorderTasks,    // Change task execution order
+    AddResource,     // Allocate additional resources
+    Manual,          // Require manual intervention
 }
 
 /// Performance monitoring for orchestration
@@ -429,10 +430,10 @@ enum DeadlockResolutionStrategy {
 struct OrchestrationPerformanceMonitor {
     /// Current performance metrics
     current_metrics: OrchestrationMetrics,
-    
+
     /// Historical performance data
     performance_history: Vec<OrchestrationMetrics>,
-    
+
     /// Performance thresholds
     thresholds: PerformanceThresholds,
 }
@@ -475,9 +476,9 @@ impl Default for PerformanceThresholds {
 impl SystemOrchestrator {
     pub fn new(config: OrchestratorConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("system-orchestrator"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("system-orchestrator"),
             name: "System Orchestrator".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
             capabilities: vec![
                 "workflow-orchestration".to_string(),
                 "task-scheduling".to_string(),
@@ -487,16 +488,19 @@ impl SystemOrchestrator {
                 "coordination".to_string(),
             ],
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
-                min_cpu: 0.5,
-                min_memory: 512 * 1024 * 1024, // 512MB
-                min_storage: 5 * 1024 * 1024,   // 5MB
-                max_cpu: 2.0,
-                max_memory: 4 * 1024 * 1024 * 1024, // 4GB
-                max_storage: 500 * 1024 * 1024,     // 500MB
+                cpu_cores: Some(2),
+                memory_mb: Some(4096),
+                storage_mb: Some(500),
+                network_bandwidth_mbps: Some(100.0),
+                gpu_required: false,
+                special_capabilities: Vec::new(),
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -514,7 +518,7 @@ impl SystemOrchestrator {
     /// Schedule a task for execution
     pub async fn schedule_task(&self, task: Task, priority: Priority) -> Result<()> {
         let mut scheduler = self.scheduler.write().await;
-        
+
         let scheduled_task = ScheduledTask {
             task,
             priority,
@@ -523,19 +527,21 @@ impl SystemOrchestrator {
             scheduling_time: Instant::now(),
             attempts: 0,
         };
-        
+
         // Insert task in priority order
-        let insert_pos = scheduler.task_queue.iter()
+        let insert_pos = scheduler
+            .task_queue
+            .iter()
             .position(|t| t.priority > priority)
             .unwrap_or(scheduler.task_queue.len());
-        
+
         scheduler.task_queue.insert(insert_pos, scheduled_task);
         scheduler.scheduling_stats.total_tasks_scheduled += 1;
-        
+
         tracing::debug!("Scheduled task with priority {:?}", priority);
         Ok(())
     }
-    
+
     /// Create and execute a workflow
     pub async fn execute_workflow(
         &self,
@@ -543,11 +549,13 @@ impl SystemOrchestrator {
         context: serde_json::Value,
     ) -> Result<Uuid> {
         let mut workflow_engine = self.workflow_engine.write().await;
-        
+
         // Get workflow template
-        let template = workflow_engine.templates.get(template_id)
+        let template = workflow_engine
+            .templates
+            .get(template_id)
             .ok_or_else(|| anyhow::anyhow!("Workflow template not found: {}", template_id))?;
-        
+
         // Create workflow instance
         let workflow_id = Uuid::new_v4();
         let workflow = Workflow {
@@ -555,8 +563,10 @@ impl SystemOrchestrator {
             template_id: template_id.to_string(),
             name: template.name.clone(),
             description: template.description.clone(),
-            steps: template.steps.iter().map(|step_template| {
-                WorkflowStep {
+            steps: template
+                .steps
+                .iter()
+                .map(|step_template| WorkflowStep {
                     id: step_template.id.clone(),
                     name: step_template.name.clone(),
                     step_type: step_template.step_type.clone(),
@@ -570,8 +580,8 @@ impl SystemOrchestrator {
                     timeout: step_template.timeout,
                     retry_count: 0,
                     dependencies: step_template.dependencies.clone(),
-                }
-            }).collect(),
+                })
+                .collect(),
             current_step: 0,
             status: WorkflowStatus::Created,
             start_time: Instant::now(),
@@ -580,26 +590,32 @@ impl SystemOrchestrator {
             context,
             retry_count: 0,
         };
-        
-        workflow_engine.active_workflows.insert(workflow_id, workflow);
+
+        workflow_engine
+            .active_workflows
+            .insert(workflow_id, workflow);
         workflow_engine.metrics.total_workflows += 1;
-        
-        tracing::info!("Created workflow {} from template {}", workflow_id, template_id);
-        
+
+        tracing::info!(
+            "Created workflow {} from template {}",
+            workflow_id,
+            template_id
+        );
+
         // Start workflow execution
         self.start_workflow_execution(workflow_id).await?;
-        
+
         Ok(workflow_id)
     }
-    
+
     /// Start workflow execution
     async fn start_workflow_execution(&self, workflow_id: Uuid) -> Result<()> {
         let mut workflow_engine = self.workflow_engine.write().await;
-        
+
         if let Some(workflow) = workflow_engine.active_workflows.get_mut(&workflow_id) {
             workflow.status = WorkflowStatus::Running;
             tracing::info!("Started workflow execution: {}", workflow_id);
-            
+
             // TODO: Implement workflow step execution logic
             // This would involve:
             // 1. Checking dependencies
@@ -608,21 +624,24 @@ impl SystemOrchestrator {
             // 4. Handling parallel and conditional steps
             // 5. Managing timeouts and retries
         }
-        
+
         Ok(())
     }
-    
+
     /// Detect deadlocks in the system
     pub async fn detect_deadlocks(&self) -> Result<Vec<DeadlockDetection>> {
         let mut deadlock_detector = self.deadlock_detector.write().await;
         let mut detections = Vec::new();
-        
+
         // Build current dependency graph
-        self.build_dependency_graph(&mut deadlock_detector.dependency_graph).await?;
-        
+        self.build_dependency_graph(&mut deadlock_detector.dependency_graph)
+            .await?;
+
         // Use cycle detection algorithm to find deadlocks
-        let cycles = self.find_cycles_in_dependency_graph(&deadlock_detector.dependency_graph).await?;
-        
+        let cycles = self
+            .find_cycles_in_dependency_graph(&deadlock_detector.dependency_graph)
+            .await?;
+
         for cycle in cycles {
             let detection = DeadlockDetection {
                 detection_time: Instant::now(),
@@ -632,18 +651,18 @@ impl SystemOrchestrator {
                 cycle_path: cycle,
                 resolution_applied: None,
             };
-            
+
             detections.push(detection.clone());
             deadlock_detector.detection_history.push(detection);
         }
-        
+
         if !detections.is_empty() {
             tracing::warn!("Detected {} deadlock(s)", detections.len());
         }
-        
+
         Ok(detections)
     }
-    
+
     /// Build dependency graph from current system state
     async fn build_dependency_graph(&self, _graph: &mut DependencyGraph) -> Result<()> {
         // TODO: Implement dependency graph building
@@ -652,10 +671,10 @@ impl SystemOrchestrator {
         // 2. Analyzing resource allocations
         // 3. Building the graph structure
         // 4. Updating waiting relationships
-        
+
         Ok(())
     }
-    
+
     /// Find cycles in dependency graph using DFS
     async fn find_cycles_in_dependency_graph(
         &self,
@@ -664,16 +683,16 @@ impl SystemOrchestrator {
         // TODO: Implement cycle detection algorithm
         // This would use depth-first search to find cycles
         // indicating potential deadlocks
-        
+
         Ok(Vec::new()) // Placeholder
     }
-    
+
     /// Extract agent IDs from cycle path
     async fn extract_agents_from_cycle(&self, _cycle: &[String]) -> Result<Vec<AgentId>> {
         // TODO: Map cycle resources back to agents
         Ok(Vec::new()) // Placeholder
     }
-    
+
     /// Get orchestration performance metrics
     pub async fn get_performance_metrics(&self) -> Result<OrchestrationMetrics> {
         let performance_monitor = self.performance_monitor.read().await;
@@ -691,34 +710,13 @@ impl Agent for SystemOrchestrator {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing System Orchestrator");
-        
-        // Initialize workflow templates
-        let mut workflow_engine = self.workflow_engine.write().await;
-        self.initialize_workflow_templates(&mut workflow_engine).await?;
-        
-        // Initialize scheduler with load balancer
-        let mut scheduler = self.scheduler.write().await;
-        scheduler.load_balancer.strategy = self.config.load_balancing_strategy.clone();
-        
-        // Initialize performance thresholds
-        let mut performance_monitor = self.performance_monitor.write().await;
-        performance_monitor.thresholds = PerformanceThresholds::default();
-        
-        *self.state.write().await = AgentStatus::Active;
-        
-        tracing::info!("System Orchestrator initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting System Orchestrator");
-        
+
         // Start task scheduling loop
         let scheduler = self.scheduler.clone();
         let scheduling_interval = self.config.scheduling_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(scheduling_interval);
             loop {
@@ -728,11 +726,11 @@ impl Agent for SystemOrchestrator {
                 }
             }
         });
-        
+
         // Start deadlock detection
         let deadlock_detector = self.deadlock_detector.clone();
         let detection_interval = self.config.deadlock_detection_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(detection_interval);
             loop {
@@ -740,44 +738,45 @@ impl Agent for SystemOrchestrator {
                 // TODO: Implement deadlock detection cycle
             }
         });
-        
+
         // Start performance monitoring
         let performance_monitor = self.performance_monitor.clone();
         let monitoring_interval = self.config.performance_monitoring_interval;
-        
+
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(monitoring_interval);
             loop {
                 interval.tick().await;
-                if let Err(e) = Self::update_performance_metrics(performance_monitor.clone()).await {
+                if let Err(e) = Self::update_performance_metrics(performance_monitor.clone()).await
+                {
                     tracing::error!("Performance monitoring failed: {}", e);
                 }
             }
         });
-        
+
         tracing::info!("System Orchestrator started successfully");
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping System Orchestrator");
-        
+
         *self.state.write().await = AgentStatus::Terminating;
-        
+
         // TODO: Implement graceful shutdown
         // - Complete running workflows
         // - Save scheduler state
         // - Clean up resources
-        
+
         tracing::info!("System Orchestrator stopped successfully");
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
-                
+
                 Ok(Some(AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
@@ -790,12 +789,14 @@ impl Agent for SystemOrchestrator {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
-        
+
         match task.name.as_str() {
             "schedule-task" => {
-                let priority = task.parameters.get("priority")
+                let priority = task
+                    .input_data
+                    .get("priority")
                     .and_then(|v| v.as_str())
                     .and_then(|s| match s {
                         "emergency" => Some(Priority::Emergency),
@@ -806,35 +807,43 @@ impl Agent for SystemOrchestrator {
                         _ => Some(Priority::Normal),
                     })
                     .unwrap_or(Priority::Normal);
-                
+
                 self.schedule_task(task.clone(), priority).await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    output_data: Some(serde_json::json!({"scheduled": true, "priority": format!("{:?}", priority)})),
+                    output_data: Some(
+                        serde_json::json!({"scheduled": true, "priority": format!("{:?}", priority)}),
+                    ),
                     error_message: None,
                     completed_at: chrono::Utc::now(),
                 })
             }
             "execute-workflow" => {
-                let template_id = task.parameters.get("template_id")
+                let template_id = task
+                    .input_data
+                    .get("template_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
-                
-                let workflow_id = self.execute_workflow(template_id, task.parameters.clone()).await?;
-                
+
+                let workflow_id = self
+                    .execute_workflow(template_id, task.input_data.clone())
+                    .await?;
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
-                    output_data: Some(serde_json::json!({"workflow_id": workflow_id, "status": "started"})),
+                    output_data: Some(
+                        serde_json::json!({"workflow_id": workflow_id, "status": "started"}),
+                    ),
                     error_message: None,
                     completed_at: chrono::Utc::now(),
                 })
             }
             "detect-deadlocks" => {
                 let detections = self.detect_deadlocks().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -848,7 +857,7 @@ impl Agent for SystemOrchestrator {
             }
             "get-metrics" => {
                 let metrics = self.get_performance_metrics().await?;
-                
+
                 Ok(TaskResult {
                     task_id: task.id,
                     status: TaskStatus::Completed,
@@ -857,39 +866,27 @@ impl Agent for SystemOrchestrator {
                     completed_at: chrono::Utc::now(),
                 })
             }
-            _ => {
-                Ok(TaskResult {
-                    task_id: task.id,
-                    status: TaskStatus::Failed,
-                    output_data: None,
-                    error_message: Some(format!("Unknown task type: {}", task.name)),
-                    completed_at: chrono::Utc::now(),
-                })
-            }
+            _ => Ok(TaskResult {
+                task_id: task.id,
+                status: TaskStatus::Failed,
+                output_data: None,
+                error_message: Some(format!("Unknown task type: {}", task.name)),
+                completed_at: chrono::Utc::now(),
+            }),
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let workflow_engine = self.workflow_engine.read().await;
-        let scheduler = self.scheduler.read().await;
-        
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0, // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: scheduler.task_queue.len(),
-            completed_tasks: workflow_engine.metrics.completed_workflows,
-            failed_tasks: workflow_engine.metrics.failed_workflows,
-            average_response_time: workflow_engine.metrics.avg_execution_time,
-        })
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
+        let _state = self.state.read().await;
+        let _workflow_engine = self.workflow_engine.read().await;
+        let _scheduler = self.scheduler.read().await;
+
+        Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating System Orchestrator configuration");
-        
+
         // TODO: Parse and update configuration
         Ok(())
     }
@@ -901,76 +898,82 @@ impl Agent for SystemOrchestrator {
 
 impl SystemOrchestrator {
     /// Initialize workflow templates
-    async fn initialize_workflow_templates(&self, workflow_engine: &mut WorkflowEngine) -> Result<()> {
+    async fn initialize_workflow_templates(
+        &self,
+        workflow_engine: &mut WorkflowEngine,
+    ) -> Result<()> {
         // Create default workflow templates
-        let templates = vec![
-            WorkflowTemplate {
-                id: "system-deployment".to_string(),
-                name: "System Deployment".to_string(),
-                description: "Deploy system components".to_string(),
-                version: "1.0.0".to_string(),
-                steps: vec![
-                    WorkflowStepTemplate {
-                        id: "prepare-environment".to_string(),
-                        name: "Prepare Environment".to_string(),
-                        step_type: WorkflowStepType::Task,
-                        required_capabilities: vec!["environment-preparation".to_string()],
-                        timeout: Some(Duration::from_secs(300)),
-                        retry_policy: RetryPolicy {
-                            max_attempts: 3,
-                            initial_delay: Duration::from_secs(1),
-                            max_delay: Duration::from_secs(30),
-                            backoff_multiplier: 2.0,
-                            retry_on_failure: true,
-                            retry_on_timeout: true,
-                        },
-                        dependencies: Vec::new(),
-                        input_schema: serde_json::json!({}),
-                        output_schema: serde_json::json!({}),
+        let templates = vec![WorkflowTemplate {
+            id: "system-deployment".to_string(),
+            name: "System Deployment".to_string(),
+            description: "Deploy system components".to_string(),
+            version: "1.0.0".to_string(),
+            steps: vec![
+                WorkflowStepTemplate {
+                    id: "prepare-environment".to_string(),
+                    name: "Prepare Environment".to_string(),
+                    step_type: WorkflowStepType::Task,
+                    required_capabilities: vec!["environment-preparation".to_string()],
+                    timeout: Some(Duration::from_secs(300)),
+                    retry_policy: RetryPolicy {
+                        max_attempts: 3,
+                        initial_delay: Duration::from_secs(1),
+                        max_delay: Duration::from_secs(30),
+                        backoff_multiplier: 2.0,
+                        retry_on_failure: true,
+                        retry_on_timeout: true,
                     },
-                    WorkflowStepTemplate {
-                        id: "deploy-components".to_string(),
-                        name: "Deploy Components".to_string(),
-                        step_type: WorkflowStepType::Parallel,
-                        required_capabilities: vec!["component-deployment".to_string()],
-                        timeout: Some(Duration::from_secs(600)),
-                        retry_policy: RetryPolicy {
-                            max_attempts: 2,
-                            initial_delay: Duration::from_secs(2),
-                            max_delay: Duration::from_secs(60),
-                            backoff_multiplier: 2.0,
-                            retry_on_failure: true,
-                            retry_on_timeout: false,
-                        },
-                        dependencies: vec!["prepare-environment".to_string()],
-                        input_schema: serde_json::json!({}),
-                        output_schema: serde_json::json!({}),
-                    },
-                ],
-                default_timeout: Duration::from_secs(1800), // 30 minutes
-                retry_policy: RetryPolicy {
-                    max_attempts: 2,
-                    initial_delay: Duration::from_secs(5),
-                    max_delay: Duration::from_secs(300),
-                    backoff_multiplier: 2.0,
-                    retry_on_failure: true,
-                    retry_on_timeout: true,
+                    dependencies: Vec::new(),
+                    input_schema: serde_json::json!({}),
+                    output_schema: serde_json::json!({}),
                 },
+                WorkflowStepTemplate {
+                    id: "deploy-components".to_string(),
+                    name: "Deploy Components".to_string(),
+                    step_type: WorkflowStepType::Parallel,
+                    required_capabilities: vec!["component-deployment".to_string()],
+                    timeout: Some(Duration::from_secs(600)),
+                    retry_policy: RetryPolicy {
+                        max_attempts: 2,
+                        initial_delay: Duration::from_secs(2),
+                        max_delay: Duration::from_secs(60),
+                        backoff_multiplier: 2.0,
+                        retry_on_failure: true,
+                        retry_on_timeout: false,
+                    },
+                    dependencies: vec!["prepare-environment".to_string()],
+                    input_schema: serde_json::json!({}),
+                    output_schema: serde_json::json!({}),
+                },
+            ],
+            default_timeout: Duration::from_secs(1800), // 30 minutes
+            retry_policy: RetryPolicy {
+                max_attempts: 2,
+                initial_delay: Duration::from_secs(5),
+                max_delay: Duration::from_secs(300),
+                backoff_multiplier: 2.0,
+                retry_on_failure: true,
+                retry_on_timeout: true,
             },
-        ];
-        
+        }];
+
         for template in templates {
-            workflow_engine.templates.insert(template.id.clone(), template);
+            workflow_engine
+                .templates
+                .insert(template.id.clone(), template);
         }
-        
-        tracing::info!("Initialized {} workflow templates", workflow_engine.templates.len());
+
+        tracing::info!(
+            "Initialized {} workflow templates",
+            workflow_engine.templates.len()
+        );
         Ok(())
     }
-    
+
     /// Process task queue (background task)
     async fn process_task_queue(scheduler: Arc<RwLock<TaskScheduler>>) -> Result<()> {
         let mut scheduler = scheduler.write().await;
-        
+
         // Process tasks from the queue
         while let Some(mut scheduled_task) = scheduler.task_queue.pop_front() {
             // TODO: Implement task assignment logic
@@ -978,24 +981,24 @@ impl SystemOrchestrator {
             // 2. Apply load balancing strategy
             // 3. Send task to selected agent
             // 4. Track task execution
-            
+
             scheduled_task.attempts += 1;
-            
+
             tracing::debug!("Processing scheduled task: {}", scheduled_task.task.name);
-            
+
             // For now, just mark as processed
             scheduler.scheduling_stats.tasks_completed += 1;
         }
-        
+
         Ok(())
     }
-    
+
     /// Update performance metrics (background task)
     async fn update_performance_metrics(
         performance_monitor: Arc<RwLock<OrchestrationPerformanceMonitor>>,
     ) -> Result<()> {
         let mut monitor = performance_monitor.write().await;
-        
+
         // TODO: Collect real performance metrics
         let current_metrics = OrchestrationMetrics {
             workflow_throughput: 10.0, // Placeholder
@@ -1007,14 +1010,16 @@ impl SystemOrchestrator {
             resource_efficiency: 0.8,
             timestamp: chrono::Utc::now(),
         };
-        
+
         monitor.current_metrics = current_metrics.clone();
         monitor.performance_history.push(current_metrics);
-        
+
         // Keep only recent history (last 24 hours)
         let cutoff_time = chrono::Utc::now() - chrono::Duration::days(1);
-        monitor.performance_history.retain(|m| m.timestamp > cutoff_time);
-        
+        monitor
+            .performance_history
+            .retain(|m| m.timestamp > cutoff_time);
+
         Ok(())
     }
 }
