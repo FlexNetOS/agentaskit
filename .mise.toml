@@ -56,10 +56,10 @@ cargo fmt --all -- --check
 [tasks.build-tools]
 description = "Build external tools from source"
 run = """
-cd tools/external/pixi && cargo build --release
-cd tools/external/nushell && cargo build --release
-cd tools/external/coreutils && cargo build --release
-cd tools/external/rusty-tags && cargo build --release
+(cd "{{cwd}}/tools/external/pixi" && cargo build --release)
+(cd "{{cwd}}/tools/external/nushell" && cargo build --release)
+(cd "{{cwd}}/tools/external/coreutils" && cargo build --release)
+(cd "{{cwd}}/tools/external/rusty-tags" && cargo build --release)
 """
 
 [tasks.xdg-audit]
