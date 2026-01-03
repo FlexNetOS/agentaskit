@@ -1007,19 +1007,15 @@ impl Agent for DataAnalyticsAgent {
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state().await;
-        let task_queue_size = self.tasks.lock().await.len() as usize;
 
-        Ok(HealthStatus {
-            agent_id: self.id,
-            state,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 0.0,  // Would be measured in real implementation
-            memory_usage: 0, // Would be measured in real implementation
-            task_queue_size,
-            completed_tasks: 0, // Would track in real implementation
-            failed_tasks: 0,    // Would track in real implementation
-            average_response_time: Duration::from_millis(100), // Would calculate in real implementation
-        })
+        // Return appropriate health status based on agent state
+        match state {
+            AgentStatus::Active | AgentStatus::Idle => Ok(HealthStatus::Healthy),
+            AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

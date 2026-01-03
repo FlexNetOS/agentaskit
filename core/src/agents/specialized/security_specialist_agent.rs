@@ -995,15 +995,7 @@ impl Agent for SecuritySpecialistAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        static CAPABILITIES: &[String] = &[
-            "ThreatDetection".to_string(),
-            "AccessControl".to_string(),
-            "IncidentResponse".to_string(),
-            "SecurityAuditing".to_string(),
-            "ComplianceMonitoring".to_string(),
-            "VulnerabilityScanning".to_string(),
-        ];
-        CAPABILITIES
+        &self.capabilities
     }
 
     async fn start(&mut self) -> AgentResult<()> {
@@ -1088,19 +1080,16 @@ impl Agent for SecuritySpecialistAgent {
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
-        let status = self.get_security_status().await?;
+        let state = self.state().await;
 
-        Ok(crate::agents::HealthStatus {
-            agent_id: self.metadata.id,
-            state: self.state().await,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 0.0,  // Would be actual CPU usage
-            memory_usage: 0, // Would be actual memory usage
-            task_queue_size: self.tasks.lock().await.len() as usize,
-            completed_tasks: 0, // Would track completed tasks
-            failed_tasks: 0,    // Would track failed tasks
-            average_response_time: std::time::Duration::from_millis(100), // Placeholder
-        })
+        // Return appropriate health status based on agent state
+        match state {
+            AgentStatus::Active | AgentStatus::Idle => Ok(HealthStatus::Healthy),
+            AgentStatus::Busy => Ok(HealthStatus::Healthy),
+            AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
+            AgentStatus::Error => Ok(HealthStatus::Critical),
+            _ => Ok(HealthStatus::Unknown),
+        }
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

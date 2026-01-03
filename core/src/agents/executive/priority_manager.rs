@@ -9,9 +9,10 @@ use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
@@ -1115,21 +1116,11 @@ impl Agent for PriorityManager {
     }
 
     async fn health_check(&self) -> Result<HealthStatus> {
-        let state = self.state.read().await;
-        let scheduler = self.scheduler.read().await;
-        let priority_engine = self.priority_engine.read().await;
+        let _state = self.state.read().await;
+        let _scheduler = self.scheduler.read().await;
+        let _priority_engine = self.priority_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 8.0,                  // Placeholder
-            memory_usage: 128 * 1024 * 1024, // 128MB placeholder
-            task_queue_size: scheduler.task_queue.len(),
-            completed_tasks: scheduler.scheduling_metrics.tasks_completed,
-            failed_tasks: scheduler.scheduling_metrics.tasks_failed,
-            average_response_time: Duration::from_millis(25),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
@@ -1139,8 +1130,8 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+    fn capabilities(&self) -> Vec<String> {
+        self.metadata.capabilities.clone()
     }
 }
 
