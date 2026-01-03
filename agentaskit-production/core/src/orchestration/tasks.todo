@@ -473,9 +473,13 @@
 #### Subtasks (auto-generated)
 <!-- AUTO:WORKFLOW-009:SUBTASKS:BEGIN -->
 - [ ] Review basenames present outside production (top sample):
+  - [ ] .clippy.toml
+  - [ ] .editorconfig
+  - [ ] .envrc
   - [ ] .gitattributes
   - [ ] .gitignore
   - [ ] .gitmodules
+  - [ ] .mise.toml
   - [ ] .qoderignore
   - [ ] a2a.rs
   - [ ] a2a_tests.rs
@@ -505,6 +509,7 @@
   - [ ] check_errors_2.txt
   - [ ] compilation_fix_complete.md
   - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] config.nu
   - [ ] config.rs
   - [ ] config_tests.rs
   - [ ] crosscheck_report.md
@@ -518,11 +523,6 @@
   - [ ] enhanced_workflow_components_report.md
   - [ ] enhanced_workflow_implementation.md
   - [ ] enhanced_workflow_tests.rs
-  - [ ] final_report.md
-  - [ ] final_summary.md
-  - [ ] fitness-report.json
-  - [ ] gateway.rs
-  - [ ] generator.rs
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
