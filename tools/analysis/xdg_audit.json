@@ -1,0 +1,33 @@
+{
+  "timestamp": "YYYY-MM-DDTHH:MM:SSZ",
+  "tool": "manual-audit",
+  "xdg_paths": {
+    "XDG_CONFIG_HOME": "/root/.config",
+    "XDG_DATA_HOME": "/root/.local/share",
+    "XDG_CACHE_HOME": "/root/.cache",
+    "XDG_STATE_HOME": "/root/.local/state"
+  },
+  "violations": [
+    {
+      "file": "/root/.cargo",
+      "variable": "CARGO_HOME",
+      "suggested_fix": "XDG_DATA_HOME/cargo"
+    },
+    {
+      "file": "/root/.rustup",
+      "variable": "RUSTUP_HOME",
+      "suggested_fix": "XDG_DATA_HOME/rustup"
+    },
+    {
+      "file": "/root/.npm",
+      "variable": "npm config",
+      "suggested_fix": "XDG_DATA_HOME/npm"
+    }
+  ],
+  "recommendations": [
+    "Set CARGO_HOME=$XDG_DATA_HOME/cargo",
+    "Set RUSTUP_HOME=$XDG_DATA_HOME/rustup",
+    "Set HISTFILE=$XDG_STATE_HOME/bash/history",
+    "Configure npm: npm config set prefix $XDG_DATA_HOME/npm"
+  ]
+}

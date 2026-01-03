@@ -1,0 +1,81 @@
+# mise configuration for AgentAskit
+# REF: ADR-0005 Modern Tooling Strategy
+# See: docs/decisions/adr/0005-modern-tooling-strategy.md
+
+[tools]
+# Rust toolchain (managed by rustup, mise tracks version)
+rust = "stable"
+
+# Node.js for frontend tooling and scripts
+node = "20"
+
+# Python for AI/ML workflows and scripts
+python = "3.11"
+
+[env]
+# Project root for scripts
+PROJECT_ROOT = "{{cwd}}"
+AGENTASKIT_ROOT = "{{cwd}}"
+
+# XDG compliance
+XDG_CONFIG_HOME = "{{env.HOME}}/.config"
+XDG_DATA_HOME = "{{env.HOME}}/.local/share"
+XDG_CACHE_HOME = "{{env.HOME}}/.cache"
+XDG_STATE_HOME = "{{env.HOME}}/.local/state"
+
+# Rust settings
+CARGO_HOME = "{{env.HOME}}/.local/share/cargo"
+RUSTUP_HOME = "{{env.HOME}}/.local/share/rustup"
+
+# Tool paths - unified bin directory first, then fallbacks
+PATH = [
+  "{{cwd}}/tools/bin",
+  "{{cwd}}/tools/external/nushell/target/release",
+  "{{cwd}}/tools/external/coreutils/target/release",
+  "{{cwd}}/tools/external/rusty-tags/target/release",
+  "{{env.HOME}}/.local/bin",
+  "{{env.PATH}}"
+]
+
+[tasks.build]
+description = "Build the AgentAskit core"
+run = "cargo build --release"
+dir = "{{cwd}}/agentaskit-production/core"
+
+[tasks.test]
+description = "Run all tests"
+run = "cargo test --all"
+dir = "{{cwd}}/agentaskit-production/core"
+
+[tasks.lint]
+description = "Run linting checks"
+run = """
+cargo clippy --all-targets --all-features -- -D warnings
+cargo fmt --all -- --check
+"""
+
+[tasks.build-tools]
+description = "Build external tools from source"
+run = """
+(cd "{{cwd}}/tools/external/pixi" && cargo build --release)
+(cd "{{cwd}}/tools/external/nushell" && cargo build --release)
+(cd "{{cwd}}/tools/external/coreutils" && cargo build --release)
+(cd "{{cwd}}/tools/external/rusty-tags" && cargo build --release)
+"""
+
+[tasks.xdg-audit]
+description = "Run XDG compliance audit"
+run = "xdg-ninja --json > tools/analysis/xdg_audit.json"
+
+[tasks.todo-validate]
+description = "Validate .todo file schema"
+run = "scripts/validate_sot.sh"
+dir = "{{cwd}}/agentaskit-production"
+
+[tasks.bootstrap]
+description = "Bootstrap development environment"
+run = "bash tools/bootstrap.sh"
+
+[tasks.aider]
+description = "Start aider AI pair programming session"
+run = "aider --config .aider.conf.yml"
