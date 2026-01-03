@@ -46,7 +46,7 @@ pub struct SevenPhaseOrchestrator {
 }
 
 /// Workflow state tracking across all seven phases
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct WorkflowState {
     pub id: Uuid,
     pub chat_request: ChatRequest,
@@ -72,7 +72,7 @@ pub enum PhaseType {
 }
 
 /// Result from each phase with verification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PhaseResult {
     pub phase: PhaseType,
     pub status: PhaseStatus,
@@ -83,7 +83,7 @@ pub struct PhaseResult {
     pub evidence_hashes: HashMap<String, String>, // file -> SHA-256
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum PhaseStatus {
     Pending,
     InProgress,
@@ -92,7 +92,7 @@ pub enum PhaseStatus {
     RequiresReview,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum WorkflowStatus {
     Initializing,
     Processing,
@@ -102,7 +102,7 @@ pub enum WorkflowStatus {
 }
 
 /// Performance metrics for entire workflow
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PerformanceMetrics {
     pub total_processing_time: chrono::Duration,
     pub agent_startup_time: chrono::Duration,
@@ -113,7 +113,7 @@ pub struct PerformanceMetrics {
 }
 
 /// Performance metrics per phase
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PhasePerformanceMetrics {
     pub phase_duration: chrono::Duration,
     pub cpu_usage: f64,
