@@ -893,22 +893,52 @@ impl Agent for SystemOrchestrator {
                 let detector = deadlock_detector_clone.read().await;
                 let dependency_count = detector.dependencies.len();
 
-                // Simple cycle detection: check for circular dependencies
+                // Proper cycle detection using DFS with recursion stack tracking
+                // Three states: White (unvisited), Gray (in recursion stack), Black (fully processed)
                 let mut visited = std::collections::HashSet::new();
+                let mut rec_stack = std::collections::HashSet::new();
                 let mut has_cycle = false;
 
-                for (task_id, deps) in &detector.dependencies {
-                    if !visited.insert(task_id.clone()) {
-                        // Already visited - potential cycle
-                        has_cycle = true;
-                        break;
+                // DFS helper function to detect cycles
+                fn dfs(
+                    node: &str,
+                    dependencies: &std::collections::HashMap<String, Vec<String>>,
+                    visited: &mut std::collections::HashSet<String>,
+                    rec_stack: &mut std::collections::HashSet<String>,
+                ) -> bool {
+                    if rec_stack.contains(node) {
+                        // Node is in recursion stack - cycle found
+                        return true;
                     }
-                    for dep in deps {
-                        if detector.dependencies.contains_key(dep) {
-                            if !visited.insert(dep.clone()) {
-                                has_cycle = true;
-                                break;
+                    if visited.contains(node) {
+                        // Already fully processed
+                        return false;
+                    }
+                    
+                    // Mark as visited and add to recursion stack
+                    visited.insert(node.to_string());
+                    rec_stack.insert(node.to_string());
+                    
+                    // Check all dependencies
+                    if let Some(deps) = dependencies.get(node) {
+                        for dep in deps {
+                            if dfs(dep, dependencies, visited, rec_stack) {
+                                return true;
                             }
+                        }
+                    }
+                    
+                    // Remove from recursion stack (backtrack)
+                    rec_stack.remove(node);
+                    false
+                }
+
+                // Check each node for cycles
+                for task_id in detector.dependencies.keys() {
+                    if !visited.contains(task_id.as_str()) {
+                        if dfs(task_id, &detector.dependencies, &mut visited, &mut rec_stack) {
+                            has_cycle = true;
+                            break;
                         }
                     }
                 }

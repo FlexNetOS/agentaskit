@@ -249,38 +249,18 @@ pub mod coordination {
         
         communication_manager.send_message(request).await?;
 
-        // Wait for response with timeout handling
-        // In a real implementation, this would use a response channel
-        // For now, we simulate coordination acknowledgment
-        let coordination_result = tokio::time::timeout(timeout, async {
-            // Simulate waiting for coordination response
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-            Ok::<_, anyhow::Error>(serde_json::json!({
-                "acknowledged": true,
-                "response_time_ms": 50,
-            }))
-        }).await;
-
-        match coordination_result {
-            Ok(Ok(response)) => Ok(serde_json::json!({
-                "status": "coordinated",
-                "decision_initiated": true,
-                "coordinator": "noa-commander",
-                "response": response,
-            })),
-            Ok(Err(e)) => Ok(serde_json::json!({
-                "status": "error",
-                "decision_initiated": true,
-                "coordinator": "noa-commander",
-                "error": e.to_string(),
-            })),
-            Err(_) => Ok(serde_json::json!({
-                "status": "timeout",
-                "decision_initiated": true,
-                "coordinator": "noa-commander",
-                "message": "Coordination request timed out",
-            })),
-        }
+        // NOTE: Real coordination would wait for a response correlated to `message_id`,
+        // potentially with timeout handling via a response channel. That behavior is
+        // not yet implemented here, so we return an immediate acknowledgment that the
+        // decision request has been initiated and handed off to the NOA Commander.
+        // The timeout parameter is preserved for future implementation.
+        let _ = timeout; // Silence unused variable warning
+        Ok(serde_json::json!({
+            "status": "coordinated",
+            "decision_initiated": true,
+            "coordinator": "noa-commander",
+            "message_id": message_id.to_string(),
+        }))
     }
     
     /// Broadcast emergency alert to all executive agents

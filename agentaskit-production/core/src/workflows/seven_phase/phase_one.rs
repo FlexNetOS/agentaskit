@@ -701,7 +701,9 @@ impl SessionManager {
             .unwrap_or_else(|| format!("session-{}", uuid::Uuid::new_v4()));
 
         // Attempt to retrieve session from storage
-        let session_path = format!("/tmp/agentaskit_sessions/{}.json", session_id);
+        let session_path = std::env::temp_dir()
+            .join("agentaskit_sessions")
+            .join(format!("{}.json", session_id));
         if let Ok(session_data) = std::fs::read_to_string(&session_path) {
             if let Ok(mut context) = serde_json::from_str::<SessionContext>(&session_data) {
                 // Add current request to conversation history

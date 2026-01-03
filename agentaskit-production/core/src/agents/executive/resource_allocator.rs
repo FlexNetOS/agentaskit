@@ -7,6 +7,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
+use sysinfo::{System, SystemExt};
 
 use crate::agents::{
     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
@@ -1279,29 +1280,25 @@ impl ResourceAllocator {
     async fn monitor_resources(monitor: Arc<RwLock<ResourceMonitor>>) -> Result<()> {
         let mut monitor = monitor.write().await;
 
-        // Collect real resource metrics from system
+        // Collect real resource metrics from system using cross-platform sysinfo crate
         // 1. Query system metrics
-        let cpu_usage = std::fs::read_to_string("/proc/loadavg")
-            .ok()
-            .and_then(|s| s.split_whitespace().next().and_then(|v| v.parse::<f64>().ok()))
-            .map(|load| (load * 10.0).min(100.0))
-            .unwrap_or(50.0);
+        let mut sys = System::new_all();
+        sys.refresh_all();
+        
+        let cpu_usage = {
+            let load = sys.load_average().one;
+            (load * 10.0).min(100.0)
+        };
 
-        let memory_usage = std::fs::read_to_string("/proc/meminfo")
-            .ok()
-            .map(|content| {
-                let mut total: f64 = 0.0;
-                let mut available: f64 = 0.0;
-                for line in content.lines() {
-                    if line.starts_with("MemTotal:") {
-                        total = line.split_whitespace().nth(1).and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                    } else if line.starts_with("MemAvailable:") {
-                        available = line.split_whitespace().nth(1).and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                    }
-                }
-                if total > 0.0 { (total - available) / total * 100.0 } else { 50.0 }
-            })
-            .unwrap_or(50.0);
+        let memory_usage = {
+            let total = sys.total_memory() as f64;
+            let used = sys.used_memory() as f64;
+            if total > 0.0 {
+                (used / total * 100.0).min(100.0)
+            } else {
+                50.0
+            }
+        };
 
         // 2. Update monitoring metrics
         monitor.metrics.cpu_utilization = cpu_usage;

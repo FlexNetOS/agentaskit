@@ -1099,9 +1099,17 @@ impl Agent for CodeGenerationAgent {
         let cpu_usage = (10.0 + active_tasks * 15.0 + (total_generations * 0.001).min(20.0)).min(95.0);
 
         // Calculate real memory usage based on code generated and templates
-        let base_memory = 256 * 1024 * 1024; // 256MB base
-        let code_memory = code_generator.generation_metrics.lines_of_code_generated * 100; // ~100 bytes per line
-        let template_memory = code_generator.template_library.templates.len() as u64 * 50 * 1024; // 50KB per template
+        // NOTE: This is a heuristic estimate intended for health monitoring, not precise profiling.
+        // The 100 bytes per line is an approximation for in-memory representation including:
+        // - AST nodes and metadata (~50 bytes)
+        // - String storage for code text (~30 bytes)
+        // - Symbol tables and context (~20 bytes)
+        // For more accurate values, integrate with actual memory usage metrics via system profiling.
+        const ESTIMATED_BYTES_PER_LINE: u64 = 100;
+        
+        let base_memory = 256 * 1024 * 1024; // 256MB base (framework + runtime overhead)
+        let code_memory = code_generator.generation_metrics.lines_of_code_generated * ESTIMATED_BYTES_PER_LINE;
+        let template_memory = code_generator.template_library.templates.len() as u64 * 50 * 1024; // ~50KB per template
         let memory_usage = base_memory + code_memory + template_memory;
 
         // Calculate average response time from generation metrics
