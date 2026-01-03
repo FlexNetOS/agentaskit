@@ -35,8 +35,6 @@ else
   "violations": [
 JSONEOF
 
-    VIOLATIONS=()
-
     # Check for common XDG violators in $HOME
     CHECK_FILES=(
         ".bash_history:HISTFILE:XDG_STATE_HOME/bash/history"
