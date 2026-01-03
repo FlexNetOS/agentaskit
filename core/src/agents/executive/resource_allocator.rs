@@ -390,7 +390,7 @@ struct OptimizationResult {
 }
 
 /// Optimization actions
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OptimizationAction {
     ResourceReallocation {
         from: AgentId,
