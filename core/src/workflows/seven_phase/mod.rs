@@ -540,7 +540,7 @@ impl SevenPhaseOrchestrator {
     fn extract_task_subject(&self, phase_result: &PhaseResult) -> Result<TaskSubject> {
         // TODO: Implement actual TaskSubject extraction from output
         Ok(TaskSubject {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             title: "7-Phase Workflow Task".to_string(),
             description: "Generated from 7-phase workflow execution".to_string(),
             deconstruct: crate::workflows::DeconstructPhase {

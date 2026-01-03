@@ -206,7 +206,8 @@ pub struct BasicAgent {
 }
 
 impl BasicAgent {
-    pub fn new(id: Uuid, name: String, layer: AgentLayer, capabilities: Vec<String>) -> Self {
+    /// Enhanced: Constructor with type-safe AgentId
+    pub fn new(id: AgentId, name: String, layer: AgentLayer, capabilities: Vec<String>) -> Self {
         let metadata = AgentMetadata {
             id,
             name,
@@ -463,7 +464,8 @@ impl AgentManager {
         ]
     }
 
-    async fn create_agent(&self, layer: AgentLayer) -> Result<Uuid> {
+    /// Enhanced: Create agent with type-safe AgentId return
+    async fn create_agent(&self, layer: AgentLayer) -> Result<AgentId> {
         let agent_number = {
             let mut num = self.next_agent_number.write().await;
             let current = *num;
@@ -775,7 +777,8 @@ impl AgentManager {
         Ok(())
     }
 
-    pub async fn get_agent_status(&self, agent_id: Uuid) -> Result<AgentStatus> {
+    /// Enhanced: Get agent status with type-safe AgentId
+    pub async fn get_agent_status(&self, agent_id: AgentId) -> Result<AgentStatus> {
         let agents = self.agents.read().await;
         if let Some(agent) = agents.get(&agent_id) {
             Ok(agent.state().await)
