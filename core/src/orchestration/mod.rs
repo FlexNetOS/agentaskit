@@ -356,7 +356,8 @@ impl OrchestratorEngine {
         Ok(())
     }
 
-    pub async fn submit_task(&self, task: Task) -> Result<Uuid> {
+    /// Enhanced: Submit task with type-safe TaskId return
+    pub async fn submit_task(&self, task: Task) -> Result<TaskId> {
         info!("Submitting task: {} ({})", task.name, task.id);
 
         let task_id = task.id;

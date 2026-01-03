@@ -334,12 +334,13 @@ pub struct Milestone {
 }
 
 /// Enhanced workflow processor
+/// Enhanced: Workflow processor with type-safe task IDs
 pub struct EnhancedWorkflowProcessor {
     sot_path: PathBuf,
     todo_path: PathBuf,
     communication_protocol: Arc<dyn AgentCommunicationProtocol + Send + Sync>,
     task_protocol: Arc<dyn TaskOrchestrationProtocol + Send + Sync>,
-    active_tasks: Arc<RwLock<HashMap<Uuid, TaskSubject>>>,
+    active_tasks: Arc<RwLock<HashMap<TaskId, TaskSubject>>>,
     pending_requests: Arc<RwLock<HashMap<Uuid, ChatRequest>>>,
 }
 

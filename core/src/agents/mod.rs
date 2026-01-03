@@ -384,15 +384,16 @@ impl Agent for ManagedAgent {
 }
 
 /// The agent management system that handles the six-layer hierarchy
+/// Enhanced: Agent manager with type-safe IDs
 pub struct AgentManager {
-    agents: Arc<RwLock<HashMap<Uuid, Arc<dyn Agent>>>>,
-    layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<Uuid>>>>,
+    agents: Arc<RwLock<HashMap<AgentId, Arc<dyn Agent>>>>,
+    layer_assignments: Arc<RwLock<HashMap<AgentLayer, Vec<AgentId>>>>,
     security_manager: Arc<SecurityManager>,
     next_agent_number: Arc<RwLock<u32>>,
     // Store hierarchy relationships separately since they're not part of the Agent trait
-    escalation_paths: Arc<RwLock<HashMap<Uuid, Uuid>>>,
-    subordinates_map: Arc<RwLock<HashMap<Uuid, Vec<Uuid>>>>,
-    agent_layers: Arc<RwLock<HashMap<Uuid, AgentLayer>>>,
+    escalation_paths: Arc<RwLock<HashMap<AgentId, AgentId>>>,
+    subordinates_map: Arc<RwLock<HashMap<AgentId, Vec<AgentId>>>>,
+    agent_layers: Arc<RwLock<HashMap<AgentId, AgentLayer>>>,
 }
 
 impl AgentManager {
@@ -690,7 +691,8 @@ impl AgentManager {
         Ok(())
     }
 
-    pub async fn find_suitable_agent(&self, task: &Task) -> Result<Uuid> {
+    /// Enhanced: Find suitable agent with type-safe ID
+    pub async fn find_suitable_agent(&self, task: &Task) -> Result<AgentId> {
         let agents = self.agents.read().await;
 
         // Find agents with matching capabilities and available status
@@ -713,7 +715,8 @@ impl AgentManager {
         Err(anyhow::anyhow!("No suitable agent found for task"))
     }
 
-    pub async fn send_task_to_agent(&self, agent_id: Uuid, task: &Task) -> Result<()> {
+    /// Enhanced: Send task to agent with type-safe ID
+    pub async fn send_task_to_agent(&self, agent_id: AgentId, task: &Task) -> Result<()> {
         // Get the agent and execute the task
         let agents = self.agents.read().await;
         if let Some(agent) = agents.get(&agent_id) {

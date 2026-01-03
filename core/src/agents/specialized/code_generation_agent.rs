@@ -709,7 +709,7 @@ struct LanguageMetrics {
 impl CodeGenerationAgent {
     pub fn new(config: Option<CodeGenerationConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let name = "Code Generation Agent".to_string();
         let capabilities = vec![
             "code-generation".to_string(),
