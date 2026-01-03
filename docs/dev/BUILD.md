@@ -166,3 +166,41 @@ See `.github/workflows/` for CI configuration. The build uses:
 1. Cached dependencies (`~/.cargo/registry`)
 2. sccache for build caching
 3. Matrix builds for Linux/macOS/Windows
+
+## Integrations
+
+### Building aichat (AI CLI)
+
+```bash
+cd integrations/aichat
+cargo build --release
+# Binary at: target/release/aichat
+```
+
+### Building llama.cpp (Local Inference)
+
+```bash
+cd integrations/llama.cpp
+make -j$(nproc)
+# Binary at: main
+```
+
+### Installing claude-flow (Orchestration)
+
+```bash
+cd integrations/claude-flow
+npm install
+# Or use npx directly
+npx claude-flow --help
+```
+
+### Gateway Configuration
+
+Gateway configs are in `configs/agentgateway/`:
+
+| Config | Purpose |
+|--------|---------|
+| `local.yaml` | Local development |
+| `integrated.yaml` | Full integration with aichat, claude-flow, llama.cpp |
+
+See [AGENT_GATEWAY_INTEGRATION.md](AGENT_GATEWAY_INTEGRATION.md) for architecture details.
