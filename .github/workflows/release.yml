@@ -1,11 +1,106 @@
 name: Release
+
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
 
 jobs:
   gates:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify gates (stub)
-        run: echo "Gates would verify VER-001, canary, signatures"
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Verify Release Gates
+        run: |
+          nu -c '
+            print "=== Verifying Release Gates ==="
+
+            mut gates_passed = 0
+            mut gates_failed = 0
+
+            # Gate 1: Check version format
+            print "Gate 1: Version format..."
+            let version = "${{ inputs.version }}"
+            if ($version =~ "^v[0-9]+\\.[0-9]+\\.[0-9]+") {
+              print $"  ✓ Version ($version) format valid"
+              $gates_passed = $gates_passed + 1
+            } else {
+              print $"  ✗ Invalid version format: ($version)"
+              $gates_failed = $gates_failed + 1
+            }
+
+            # Gate 2: Check Cargo.toml exists
+            print "Gate 2: Cargo.toml..."
+            if ("Cargo.toml" | path exists) {
+              print "  ✓ Cargo.toml found"
+              $gates_passed = $gates_passed + 1
+            } else {
+              print "  ✗ Cargo.toml not found"
+              $gates_failed = $gates_failed + 1
+            }
+
+            # Gate 3: Check for CHANGELOG
+            print "Gate 3: CHANGELOG..."
+            let changelog_files = ["CHANGELOG.md" "agentaskit-production/CHANGELOG.md"]
+            let has_changelog = $changelog_files | any { |f| $f | path exists }
+            if $has_changelog {
+              print "  ✓ CHANGELOG found"
+              $gates_passed = $gates_passed + 1
+            } else {
+              print "  ✗ CHANGELOG not found"
+              $gates_failed = $gates_failed + 1
+            }
+
+            print $"\n=== Gates: ($gates_passed) passed, ($gates_failed) failed ==="
+
+            if $gates_failed > 0 {
+              print "Release blocked due to failed gates"
+              exit 1
+            }
+
+            print "✓ All release gates passed"
+          '
+
+  build-release:
+    needs: gates
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build Release
+        run: |
+          nu -c '
+            print $"=== Building for ${{ matrix.target }} ==="
+            cargo build --release --target ${{ matrix.target }}
+            print "✓ Build complete"
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/

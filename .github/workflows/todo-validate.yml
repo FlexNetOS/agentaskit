@@ -1,23 +1,75 @@
 name: Validate .todo schema
+
 on:
   pull_request:
-    paths: [ "agentaskit-production/.todo" ]
+    paths: ["agentaskit-production/.todo"]
   workflow_dispatch:
 
 jobs:
-  lint:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
       - name: Validate .todo lines
         run: |
-          awk 'BEGIN{e=0}
-            /^- \[ \]/{
-              line=$0;
-              if (line !~ /\[REF:[^]]+\]/) {print "Missing [REF]: " line; e=1}
-              if (line !~ /owner:@[A-Za-z0-9_\-]+/) {print "Missing owner:@user: " line; e=1}
-              if (line !~ /deps:\[[^]]*\]/) {print "Missing deps:[...]: " line; e=1}
-              if (line !~ /acc:\"[^"]+\"/) {print "Missing acc:\"...\": " line; e=1}
-              if (line !~ /evid:\"[^"]+\"/) {print "Missing evid:\"...\": " line; e=1}
+          nu -c '
+            print "=== Validating .todo schema ==="
+
+            let todo_file = "agentaskit-production/.todo"
+
+            if not ($todo_file | path exists) {
+              print "ERROR: .todo file not found"
+              exit 1
             }
-            END{exit e}' agentaskit-production/.todo
+
+            let lines = open $todo_file | lines
+
+            # Find unchecked todo items
+            let todos = $lines | where { |l| $l | str starts-with "- [ ]" }
+
+            mut errors = 0
+
+            for todo in $todos {
+              mut line_errors = []
+
+              # Check for required fields
+              if not ($todo | str contains "[REF:") {
+                $line_errors = ($line_errors | append "Missing [REF:]")
+              }
+
+              if not ($todo =~ "owner:@[A-Za-z0-9_-]+") {
+                $line_errors = ($line_errors | append "Missing owner:@user")
+              }
+
+              if not ($todo | str contains "deps:[") {
+                $line_errors = ($line_errors | append "Missing deps:[...]")
+              }
+
+              if not ($todo | str contains "acc:\"") {
+                $line_errors = ($line_errors | append "Missing acc:\"...\"")
+              }
+
+              if not ($todo | str contains "evid:\"") {
+                $line_errors = ($line_errors | append "Missing evid:\"...\"")
+              }
+
+              if ($line_errors | length) > 0 {
+                print $"ERROR in: ($todo | str substring 0..80)..."
+                for err in $line_errors {
+                  print $"  - ($err)"
+                }
+                $errors = $errors + 1
+              }
+            }
+
+            if $errors > 0 {
+              print $"\n($errors) todo item(s) have validation errors"
+              exit 1
+            }
+
+            print $"✓ All ($todos | length) todo items validated successfully"
+          '

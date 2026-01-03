@@ -1,0 +1,79 @@
+name: 'Setup Nushell'
+description: 'Install and configure Nushell for cross-platform CI'
+author: 'AgentAskit'
+
+inputs:
+  version:
+    description: 'Nushell version to install'
+    required: false
+    default: '0.101.0'
+
+outputs:
+  nu-path:
+    description: 'Path to the nushell binary'
+    value: ${{ steps.install.outputs.nu-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache Nushell
+      uses: actions/cache@v4
+      id: cache-nu
+      with:
+        path: ~/.local/bin/nu
+        key: nushell-${{ runner.os }}-${{ inputs.version }}
+
+    - name: Install Nushell (Linux)
+      if: runner.os == 'Linux' && steps.cache-nu.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        mkdir -p ~/.local/bin
+        curl -sL "https://github.com/nushell/nushell/releases/download/${VERSION}/nu-${VERSION}-x86_64-unknown-linux-gnu.tar.gz" | \
+          tar xz --strip-components=1 -C ~/.local/bin nu-${VERSION}-x86_64-unknown-linux-gnu/nu
+        chmod +x ~/.local/bin/nu
+
+    - name: Install Nushell (macOS)
+      if: runner.os == 'macOS' && steps.cache-nu.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        mkdir -p ~/.local/bin
+        if [[ "$(uname -m)" == "arm64" ]]; then
+          ARCH="aarch64-apple-darwin"
+        else
+          ARCH="x86_64-apple-darwin"
+        fi
+        curl -sL "https://github.com/nushell/nushell/releases/download/${VERSION}/nu-${VERSION}-${ARCH}.tar.gz" | \
+          tar xz --strip-components=1 -C ~/.local/bin nu-${VERSION}-${ARCH}/nu
+        chmod +x ~/.local/bin/nu
+
+    - name: Install Nushell (Windows)
+      if: runner.os == 'Windows' && steps.cache-nu.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        $VERSION = "${{ inputs.version }}"
+        $NU_DIR = "$env:USERPROFILE\.local\bin"
+        New-Item -ItemType Directory -Force -Path $NU_DIR | Out-Null
+        $url = "https://github.com/nushell/nushell/releases/download/${VERSION}/nu-${VERSION}-x86_64-pc-windows-msvc.zip"
+        $zip = "$env:TEMP\nu.zip"
+        Invoke-WebRequest -Uri $url -OutFile $zip
+        Expand-Archive -Path $zip -DestinationPath $env:TEMP\nu -Force
+        Copy-Item "$env:TEMP\nu\nu-${VERSION}-x86_64-pc-windows-msvc\nu.exe" "$NU_DIR\nu.exe"
+
+    - name: Add Nushell to PATH
+      id: install
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          echo "$USERPROFILE/.local/bin" >> $GITHUB_PATH
+          echo "nu-path=$USERPROFILE/.local/bin/nu.exe" >> $GITHUB_OUTPUT
+        else
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "nu-path=$HOME/.local/bin/nu" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Verify Nushell
+      shell: bash
+      run: |
+        ~/.local/bin/nu --version
