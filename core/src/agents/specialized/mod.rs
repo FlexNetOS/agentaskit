@@ -227,14 +227,14 @@ impl SpecializedLayer {
         Ok(())
     }
 
-    /// Get agent by name
-    pub async fn get_agent_by_name(&self, name: &str) -> Option<Uuid> {
+    /// Enhanced: Get agent by name with type-safe ID
+    pub async fn get_agent_by_name(&self, name: &str) -> Option<AgentId> {
         let registry = self.agent_registry.read().await;
         registry.get(name).copied()
     }
 
-    /// Get all agent IDs
-    pub async fn get_all_agent_ids(&self) -> Vec<Uuid> {
+    /// Enhanced: Get all agent IDs with type safety
+    pub async fn get_all_agent_ids(&self) -> Vec<AgentId> {
         let agents = self.agents.read().await;
         agents.keys().copied().collect()
     }
@@ -364,11 +364,12 @@ impl SpecializedLayer {
 
 /// Status information for the entire Specialized Layer
 #[derive(Debug, serde::Serialize)]
+/// Enhanced: Specialized layer status with type-safe agent IDs
 pub struct SpecializedLayerStatus {
     pub total_agents: usize,
     pub active_agents: usize,
     pub total_tasks: u64,
-    pub agent_statuses: HashMap<Uuid, serde_json::Value>,
+    pub agent_statuses: HashMap<AgentId, serde_json::Value>,
     pub layer_health: f64, // Percentage of agents that are active
 }
 
