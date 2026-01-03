@@ -312,15 +312,26 @@ impl MessageBroker {
 
     pub async fn shutdown(&self) -> Result<()> {
         info!("Shutting down message broker");
-        
+
         *self.running.write().await = false;
-        
+
         // Clear all channels
         self.agent_channels.write().await.clear();
         self.message_queue.write().await.clear();
-        
+
         info!("Message broker shutdown complete");
         Ok(())
+    }
+
+    /// Alias for send_message (used by protocol implementations)
+    pub async fn send(&self, message: Message) -> Result<()> {
+        self.send_message(message).await
+    }
+
+    /// Get pending messages from queue (used by protocol implementations)
+    pub async fn get_pending_messages(&self) -> Result<Vec<Message>> {
+        let queue = self.message_queue.read().await;
+        Ok(queue.clone())
     }
 }
 
