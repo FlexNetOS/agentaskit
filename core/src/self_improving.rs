@@ -636,8 +636,9 @@ impl SelfImprovingOrchestrator {
         // - I/O buffer tuning
         // - Thread pool sizing
 
+        // Enhanced: Calculate age of optimization (fixed DateTime usage)
         let current_time = chrono::Utc::now();
-        let implementation_time = improvement.implemented_at.unwrap_or(current_time);
+        let implementation_time = improvement.implemented_at;
         let age = (current_time - implementation_time).num_seconds();
 
         if age < 300 {
@@ -859,10 +860,9 @@ impl LearningEngine {
         // 4. Save improved model to cache
         // 5. Update model metrics
 
-        // Update metrics
+        // Enhanced: Update metrics (removed last_training - not a field)
         let previous_accuracy = self.learning_metrics.model_accuracy;
         self.learning_metrics.model_accuracy = (previous_accuracy + 0.05).min(0.99); // Simulate improvement
-        self.learning_metrics.last_training = Some(chrono::Utc::now());
 
         info!(
             "Model retraining complete. Accuracy: {:.2}% -> {:.2}%",

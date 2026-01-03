@@ -400,10 +400,10 @@ impl CommunicationManager {
         }
     }
 
-    /// Get communication metrics
+    /// Enhanced: Get communication metrics (clone inner data, not guard)
     pub async fn get_metrics(&self) -> CommunicationMetrics {
         let metrics = self.metrics.read().await;
-        metrics.clone()
+        (*metrics).clone()
     }
 
     /// Health check for communication system
