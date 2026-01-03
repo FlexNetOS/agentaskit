@@ -5,8 +5,8 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task,
+    TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Context, Result};
 use async_trait::async_trait;
@@ -198,7 +198,7 @@ impl CargoBuildAgent {
     pub fn new(config: Option<CargoBuildConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "cargo_build".to_string(),
             "cargo_test".to_string(),
@@ -315,7 +315,10 @@ impl CargoBuildAgent {
 
     /// Run cargo build
     async fn run_cargo_build(&self, workspace_path: &Path) -> Result<Vec<BuildArtifact>> {
-        debug!("Running cargo build with profile: {:?}", self.config.build_profile);
+        debug!(
+            "Running cargo build with profile: {:?}",
+            self.config.build_profile
+        );
 
         // Simplified - would execute actual cargo build command
         let artifact = BuildArtifact {
@@ -342,15 +345,13 @@ impl CargoBuildAgent {
             ignored_tests: 0,
             test_duration_secs: 5.2,
             coverage_percentage: 85.0,
-            failed_test_details: vec![
-                FailedTest {
-                    name: "test_example".to_string(),
-                    module: "tests".to_string(),
-                    error_message: "assertion failed".to_string(),
-                    stdout: None,
-                    stderr: None,
-                }
-            ],
+            failed_test_details: vec![FailedTest {
+                name: "test_example".to_string(),
+                module: "tests".to_string(),
+                error_message: "assertion failed".to_string(),
+                stdout: None,
+                stderr: None,
+            }],
         })
     }
 
@@ -361,16 +362,14 @@ impl CargoBuildAgent {
         // Simplified benchmark results
         Ok(BenchmarkResults {
             total_benchmarks: 3,
-            benchmarks: vec![
-                BenchmarkResult {
-                    name: "bench_example".to_string(),
-                    mean_time_ns: 1250.0,
-                    std_dev_ns: 50.0,
-                    min_time_ns: 1200.0,
-                    max_time_ns: 1400.0,
-                    iterations: 1000,
-                }
-            ],
+            benchmarks: vec![BenchmarkResult {
+                name: "bench_example".to_string(),
+                mean_time_ns: 1250.0,
+                std_dev_ns: 50.0,
+                min_time_ns: 1200.0,
+                max_time_ns: 1400.0,
+                iterations: 1000,
+            }],
             timestamp: chrono::Utc::now(),
         })
     }
@@ -404,7 +403,10 @@ impl Agent for CargoBuildAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         debug!("CargoBuildAgent received message");
         Ok(None)
     }
@@ -416,8 +418,9 @@ impl Agent for CargoBuildAgent {
         self.tasks.lock().await.insert(task_id, task.clone());
 
         // Parse task parameters
-        let workspace_path = if let Some(params) = &task.parameters {
-            params.get("workspace_path")
+        let workspace_path = if let Some(params) = &task.input_data {
+            params
+                .get("workspace_path")
                 .and_then(|v| v.as_str())
                 .map(PathBuf::from)
                 .unwrap_or_else(|| PathBuf::from("."))
@@ -431,7 +434,11 @@ impl Agent for CargoBuildAgent {
                 self.tasks.lock().await.remove(&task_id);
                 Ok(TaskResult {
                     task_id,
-                    status: if build_result.success { TaskStatus::Completed } else { TaskStatus::Failed },
+                    status: if build_result.success {
+                        TaskStatus::Completed
+                    } else {
+                        TaskStatus::Failed
+                    },
                     output_data: Some(serde_json::to_value(build_result)?),
                     error_message: None,
                     completed_at: chrono::Utc::now(),

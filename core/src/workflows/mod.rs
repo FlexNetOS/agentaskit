@@ -436,7 +436,9 @@ impl EnhancedWorkflowProcessor {
 
         // Validate request against SOP procedures - use first procedure if available
         let validation = if let Some(first_proc) = sop_document.procedures.first() {
-            ai_analyzer.validate_procedure(first_proc, &request.message).await?
+            ai_analyzer
+                .validate_procedure(first_proc, &request.message)
+                .await?
         } else {
             // Default validation if no procedures exist
             ProcedureValidation {
@@ -684,9 +686,7 @@ impl EnhancedWorkflowProcessor {
             description: output_requirement.to_string(),
             deliverable_type: deliverable_type.clone(),
             target_location,
-            file_specifications: self
-                .generate_file_specifications(&deliverable_type)
-                .await?,
+            file_specifications: self.generate_file_specifications(&deliverable_type).await?,
             quality_requirements: self.generate_quality_requirements(request_type).await?,
             acceptance_criteria: self
                 .generate_acceptance_criteria(output_requirement)
@@ -737,7 +737,7 @@ impl EnhancedWorkflowProcessor {
 
     /// Initiate agent orchestration for task execution
     async fn initiate_agent_orchestration(&self, task_subject: &TaskSubject) -> Result<()> {
-        use agentaskit_shared::{Task as SharedTask, Priority as SharedPriority};
+        use agentaskit_shared::{Priority as SharedPriority, Task as SharedTask};
 
         // Create orchestration tasks for each execution step
         for step in &task_subject.deliver.execution_plan {
@@ -760,6 +760,7 @@ impl EnhancedWorkflowProcessor {
                 created_at: Utc::now(),
                 started_at: None,
                 completed_at: None,
+            deadline: None,
                 timeout: Some(Utc::now() + step.estimated_duration),
                 retry_count: 0,
                 max_retries: 3,
@@ -973,7 +974,10 @@ impl EnhancedWorkflowProcessor {
         request: &ChatRequest,
         _deconstruct: &DeconstructPhase,
     ) -> Result<String> {
-        Ok(format!("Task: {}", request.message.chars().take(50).collect::<String>()))
+        Ok(format!(
+            "Task: {}",
+            request.message.chars().take(50).collect::<String>()
+        ))
     }
 
     async fn generate_task_description(
@@ -987,7 +991,10 @@ impl EnhancedWorkflowProcessor {
     async fn generate_todo_entry(&self, task_subject: &TaskSubject) -> Result<String> {
         Ok(format!(
             "## {}\n\n- [ ] {}\n\nPriority: {:?}\nStatus: {:?}\n",
-            task_subject.title, task_subject.description, task_subject.priority, task_subject.status
+            task_subject.title,
+            task_subject.description,
+            task_subject.priority,
+            task_subject.status
         ))
     }
 
@@ -1105,4 +1112,3 @@ pub struct SOTAnalysis {
     pub last_updated: DateTime<Utc>,
     pub request_alignment: f32, // 0.0 to 1.0 score
 }
-

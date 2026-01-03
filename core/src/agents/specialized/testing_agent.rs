@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Testing Agent - Comprehensive automated testing and quality assurance
@@ -1027,7 +1027,10 @@ impl Agent for TestingAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> AgentResult<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        message: crate::agents::AgentMessage,
+    ) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
             crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
@@ -1111,7 +1114,7 @@ impl Agent for TestingAgent {
             }
             _ => Ok(TaskResult {
                 task_id: task.id,
-                status: TaskStatus::Failed("Testing failed".to_string()),
+                status: TaskStatus::Failed,
                 output_data: None,
                 error_message: Some(format!("Unknown task type: {}", task.name)),
                 completed_at: chrono::Utc::now(),

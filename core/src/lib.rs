@@ -2,10 +2,21 @@
 //!
 //! This library unifies the best capabilities from all integrated systems:
 //! - rustecosys: Tauri desktop application framework
-//! - rustecosys2: Advanced orchestration and execution engine  
+//! - rustecosys2: Advanced orchestration and execution engine
 //! - agentrs: Comprehensive multi-agent system
 //!
 //! Following the "Heal, Don't Harm" principle, all capabilities are preserved and enhanced.
+
+// Clippy lint configuration for production-ready code quality
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
+// Allow some pedantic lints that are too strict for this codebase
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::must_use_candidate)]
 
 use anyhow::Result;
 

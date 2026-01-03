@@ -5,8 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements,
-    Task, TaskResult, TaskStatus,
+    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -62,7 +61,7 @@ impl RustDocAgent {
     pub fn new(config: Option<RustDocConfig>) -> Self {
         let id = Uuid::new_v4();
         let config = config.unwrap_or_default();
-        
+
         let capabilities = vec![
             "documentation_generation".to_string(),
             "rustdoc_integration".to_string(),
@@ -102,7 +101,10 @@ impl RustDocAgent {
     }
 
     pub async fn generate_docs(&self, workspace_path: &Path) -> Result<DocResult> {
-        info!("Generating documentation for workspace at: {:?}", workspace_path);
+        info!(
+            "Generating documentation for workspace at: {:?}",
+            workspace_path
+        );
 
         let result = DocResult {
             docs_generated: 0,
@@ -131,7 +133,10 @@ impl Agent for RustDocAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: crate::agents::AgentMessage) -> Result<Option<crate::agents::AgentMessage>> {
+    async fn handle_message(
+        &mut self,
+        _message: crate::agents::AgentMessage,
+    ) -> Result<Option<crate::agents::AgentMessage>> {
         Ok(None)
     }
 
@@ -140,7 +145,8 @@ impl Agent for RustDocAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        let workspace_path = task.parameters
+        let workspace_path = task
+            .input_data
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

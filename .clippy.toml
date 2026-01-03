@@ -1,0 +1,21 @@
+# Clippy configuration for AgentAsKit Production
+# Ensures high code quality and catches common mistakes
+
+# Cognitive complexity threshold
+cognitive-complexity-threshold = 30
+
+# Type complexity threshold
+type-complexity-threshold = 250
+
+# Maximum number of single char bindings
+single-char-binding-names-threshold = 4
+
+# Literal representation improvements
+literal-representation-threshold = 65536
+
+# Documentation
+missing-docs-in-crate-items = false
+
+# Allow some common patterns
+allow-unwrap-in-tests = true
+allow-dbg-in-tests = true

@@ -7,14 +7,13 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::agents::communication::CommunicationManager;
 use crate::agents::specialized::integration_agent::MessageBroker;
+use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata,
-    AgentRole, AgentStatus, HealthStatus, Priority, ResourceRequirements,
-    ResourceUsage,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage,
 };
 
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA
@@ -756,7 +755,7 @@ enum BenchmarkTrend {
 impl NoaCommander {
     pub fn new(config: CommanderConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("noa-commander"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("noa-commander"),
             name: "NOA Commander".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

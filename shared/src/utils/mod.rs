@@ -18,6 +18,18 @@ pub mod agent_utils {
         Uuid::new_v4()
     }
 
+    /// Create a deterministic AgentId from a name string
+    /// Uses UUID v5 (name-based) for consistent ID generation across sessions
+    pub fn agent_id_from_name(name: &str) -> AgentId {
+        // Use a namespace UUID for agent names
+        const AGENT_NAMESPACE: uuid::Uuid = uuid::Uuid::from_bytes([
+            0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
+            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
+        ]);
+
+        uuid::Uuid::new_v5(&AGENT_NAMESPACE, name.as_bytes())
+    }
+
     /// Create agent metadata with default values
     pub fn create_agent_metadata(name: String, agent_type: String) -> AgentMetadata {
         AgentMetadata {
@@ -86,6 +98,7 @@ pub mod task_utils {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: None,
             retry_count: 0,
             max_retries: 3,

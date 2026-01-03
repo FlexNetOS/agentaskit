@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Emergency Responder Agent - Crisis management and system recovery
@@ -770,7 +770,7 @@ enum ResolutionSource {
 impl EmergencyResponder {
     pub fn new(config: EmergencyResponderConfig) -> Self {
         let metadata = AgentMetadata {
-            id: AgentId::from_name("emergency-responder"),
+            id: agentaskit_shared::agent_utils::agent_id_from_name("emergency-responder"),
             name: "Emergency Responder".to_string(),
             agent_type: "executive".to_string(),
             capabilities: vec![

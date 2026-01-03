@@ -492,10 +492,12 @@ impl EvidenceLedger {
         let last_modified = metadata
             .modified()
             .ok()
-            .and_then(|t| chrono::DateTime::from_timestamp(
-                t.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs() as i64,
-                0
-            ))
+            .and_then(|t| {
+                chrono::DateTime::from_timestamp(
+                    t.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs() as i64,
+                    0,
+                )
+            })
             .unwrap_or_else(Utc::now);
 
         let evidence = FileEvidence {

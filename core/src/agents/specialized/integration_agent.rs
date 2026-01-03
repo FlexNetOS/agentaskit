@@ -3,13 +3,13 @@
 // workflow orchestration, and external system connectivity capabilities
 
 use crate::agents::{Agent, AgentResult, MessageId};
-use anyhow::Result;
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -1069,7 +1069,7 @@ impl Agent for IntegrationAgent {
             "service_registration" => {
                 // Parse service registration from parameters
                 let service_data = task
-                    .parameters
+                    .input_data
                     .get("service")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: service"))?;
 
@@ -1079,14 +1079,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Service registration failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "api_route_creation" => {
                 // Parse route config from parameters
                 let route_data = task
-                    .parameters
+                    .input_data
                     .get("route")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: route"))?;
 
@@ -1096,14 +1096,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("API route creation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "data_transformation" => {
                 // Parse transformation request from parameters
                 let transform_data = task
-                    .parameters
+                    .input_data
                     .get("transformation")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: transformation"))?;
 
@@ -1113,14 +1113,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Data transformation failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "workflow_execution" => {
                 // Parse workflow request from parameters
                 let workflow_data = task
-                    .parameters
+                    .input_data
                     .get("workflow")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: workflow"))?;
 
@@ -1130,14 +1130,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Workflow execution failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "system_connection" => {
                 // Parse connection request from parameters
                 let connection_data = task
-                    .parameters
+                    .input_data
                     .get("connection")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: connection"))?;
 
@@ -1147,14 +1147,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("System connection failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "message_publish" => {
                 // Parse message request from parameters
                 let message_data = task
-                    .parameters
+                    .input_data
                     .get("message")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: message"))?;
 
@@ -1164,14 +1164,14 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Message publish failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
             "protocol_conversion" => {
                 // Parse conversion request from parameters
                 let conversion_data = task
-                    .parameters
+                    .input_data
                     .get("conversion")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: conversion"))?;
 
@@ -1181,7 +1181,7 @@ impl Agent for IntegrationAgent {
                     Ok(_) => TaskStatus::Completed,
                     Err(e) => {
                         error!("Protocol conversion failed: {}", e);
-                        TaskStatus::Failed(e.to_string())
+                        TaskStatus::Failed
                     }
                 }
             }
@@ -1189,12 +1189,12 @@ impl Agent for IntegrationAgent {
                 Ok(_) => TaskStatus::Completed,
                 Err(e) => {
                     error!("Integration status check failed: {}", e);
-                    TaskStatus::Failed(e.to_string())
+                    TaskStatus::Failed
                 }
             },
             _ => {
                 error!("Unknown task type: {}", task.task_type);
-                TaskStatus::Failed(format!("Unknown task type: {}", task.task_type))
+                TaskStatus::Failed
             }
         };
 
