@@ -2,9 +2,9 @@
 // Provides comprehensive security implementation, compliance monitoring, threat detection,
 // vulnerability assessment, access control management, and security policy enforcement
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
@@ -21,7 +21,6 @@ use uuid::Uuid;
 pub struct SecuritySpecialistAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     config: SecurityConfig,
     metadata: AgentMetadata,
     security_engine: Arc<SecurityEngine>,
@@ -572,10 +571,11 @@ impl SecuritySpecialistAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id: id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
@@ -600,7 +600,6 @@ impl SecuritySpecialistAgent {
         Self {
             id,
             name,
-            capabilities,
             config,
             metadata,
             security_engine,
@@ -684,7 +683,7 @@ impl SecuritySpecialistAgent {
             scan_id,
             scan_type: "vulnerability".to_string(),
             target: target.to_string(),
-            findings: scan_result.findings.len() as u64,
+            findings: scan_result.total_findings as u64,
             severity_breakdown: scan_result.findings_by_severity,
             recommendations: scan_result.recommendations,
             scan_duration: 0, // Would be calculated from actual scan time
@@ -1001,7 +1000,7 @@ impl Agent for SecuritySpecialistAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 
     async fn start(&mut self) -> AgentResult<()> {
@@ -1222,7 +1221,7 @@ impl Agent for SecuritySpecialistAgent {
                 priority,
                 timeout,
             } => {
-                debug!("Received task request: {} from {}", task.name, from.0);
+                debug!("Received task request: {} from {}", task.name, from);
 
                 // Execute the requested task
                 let task_result = self.execute_task(task.clone()).await?;
@@ -1244,7 +1243,7 @@ impl Agent for SecuritySpecialistAgent {
                 payload,
                 scope,
             } => {
-                debug!("Received broadcast: {} from {}", topic, from.0);
+                debug!("Received broadcast: {} from {}", topic, from);
 
                 // Handle broadcast messages based on topic
                 match topic.as_str() {
@@ -1272,7 +1271,7 @@ impl Agent for SecuritySpecialistAgent {
                 context,
                 timestamp,
             } => {
-                debug!("Received alert: {} from {}", message, from.0);
+                debug!("Received alert: {} from {}", message, from);
 
                 // Handle security alerts
                 if matches!(

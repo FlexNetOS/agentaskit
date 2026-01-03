@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -25,7 +25,6 @@ use agentaskit_shared::{
 pub struct LearningAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -1125,17 +1124,18 @@ impl LearningAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities,
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(8),
                 memory_mb: Some(16384),
                 storage_mb: Some(102400),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: true,
                 special_capabilities: vec!["gpu".to_string(), "ml-framework".to_string()],
             },
@@ -1153,7 +1153,6 @@ impl LearningAgent {
         Self {
             id,
             name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1250,34 +1249,6 @@ impl Agent for LearningAgent {
 
     async fn state(&self) -> AgentStatus {
         self.state.read().await.clone()
-    }
-
-    async fn start(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Learning Agent");
-
-        // Initialize model management
-        let mut model_manager = self.model_manager.write().await;
-        self.initialize_model_management(&mut model_manager).await?;
-
-        // Initialize training orchestration
-        let mut training_orchestrator = self.training_orchestrator.write().await;
-        self.initialize_training_orchestration(&mut training_orchestrator)
-            .await?;
-
-        // Initialize knowledge extraction
-        let mut knowledge_extractor = self.knowledge_extractor.write().await;
-        self.initialize_knowledge_extraction(&mut knowledge_extractor)
-            .await?;
-
-        // Initialize feature engineering
-        let mut feature_engineer = self.feature_engineer.write().await;
-        self.initialize_feature_engineering(&mut feature_engineer)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Learning Agent initialized successfully");
-        Ok(())
     }
 
     async fn start(&mut self) -> AgentResult<()> {
@@ -1423,18 +1394,7 @@ impl Agent for LearningAgent {
         let state = self.state.read().await;
         let model_manager = self.model_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 40.0,                      // Placeholder
-            memory_usage: 8 * 1024 * 1024 * 1024, // 8GB placeholder
-            task_queue_size: model_manager.active_trainings.len() as usize,
-            completed_tasks: model_manager.management_stats.successful_trainings,
-            failed_tasks: model_manager.management_stats.total_trainings
-                - model_manager.management_stats.successful_trainings,
-            average_response_time: Duration::from_millis(5000),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1443,7 +1403,7 @@ impl Agent for LearningAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilitiesself.capabilities
+        &self.metadata.capabilities
     }
 }
 

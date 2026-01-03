@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -1099,33 +1099,6 @@ impl Agent for EmergencyResponder {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Emergency Responder");
-
-        // Initialize emergency detection rules
-        let mut emergency_detector = self.emergency_detector.write().await;
-        self.initialize_detection_rules(&mut emergency_detector)
-            .await?;
-
-        // Initialize response plans
-        let mut crisis_manager = self.crisis_manager.write().await;
-        self.initialize_response_plans(&mut crisis_manager).await?;
-
-        // Initialize recovery strategies
-        let mut recovery_coordinator = self.recovery_coordinator.write().await;
-        self.initialize_recovery_strategies(&mut recovery_coordinator)
-            .await?;
-
-        // Initialize escalation policies
-        let mut escalation_manager = self.escalation_manager.write().await;
-        self.initialize_escalation_policies(&mut escalation_manager)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Emergency Responder initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Emergency Responder");
@@ -1268,18 +1241,7 @@ impl Agent for EmergencyResponder {
         let state = self.state.read().await;
         let crisis_manager = self.crisis_manager.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 12.0,                 // Placeholder
-            memory_usage: 256 * 1024 * 1024, // 256MB placeholder
-            task_queue_size: crisis_manager.active_emergencies.len(),
-            completed_tasks: crisis_manager.metrics.resolved_emergencies,
-            failed_tasks: crisis_manager.metrics.total_emergencies
-                - crisis_manager.metrics.resolved_emergencies,
-            average_response_time: self.config.max_response_time,
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {

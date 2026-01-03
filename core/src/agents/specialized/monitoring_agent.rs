@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -25,7 +25,6 @@ use agentaskit_shared::{
 pub struct MonitoringAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -1013,10 +1012,11 @@ impl MonitoringAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id: id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
@@ -1041,7 +1041,6 @@ impl MonitoringAgent {
         Self {
             id,
             name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1063,17 +1062,7 @@ impl MonitoringAgent {
 
         let service_health = ServiceHealth {
             service_name: service_name.clone(),
-            overall_status: HealthStatus {
-                agent_id: self.metadata.id,
-                state: AgentStatus::Active,
-                last_heartbeat: chrono::Utc::now(),
-                cpu_usage: 0.0,
-                memory_usage: 0,
-                task_queue_size: 0,
-                completed_tasks: 0,
-                failed_tasks: 0,
-                average_response_time: Duration::from_millis(100),
-            },
+            overall_status: HealthStatus::Healthy,
             component_statuses: HashMap::new(),
             last_updated: Instant::now(),
             uptime: Duration::from_secs(0),
@@ -1270,17 +1259,7 @@ impl Agent for MonitoringAgent {
         let state = self.state.read().await;
         let metrics_collector = self.metrics_collector.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 15.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: metrics_collector.metric_streams.len() as usize,
-            completed_tasks: metrics_collector.collection_stats.total_metrics_collected,
-            failed_tasks: metrics_collector.collection_stats.collection_errors,
-            average_response_time: Duration::from_millis(100),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1289,7 +1268,7 @@ impl Agent for MonitoringAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 }
 

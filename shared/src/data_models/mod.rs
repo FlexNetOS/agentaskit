@@ -36,7 +36,7 @@ pub enum TaskStatus {
 
 /// Priority levels used across all systems (unified from core and shared)
 /// Lower numeric values = higher priority
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Priority {
     Emergency = 0,    // Highest priority - from core/orchestration ordering
     Critical = 1,

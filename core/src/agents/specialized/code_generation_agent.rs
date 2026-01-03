@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -25,7 +25,6 @@ use agentaskit_shared::{
 pub struct CodeGenerationAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -722,17 +721,18 @@ impl CodeGenerationAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(10240),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: vec!["llm".to_string(), "code-analysis".to_string()],
             },
@@ -750,7 +750,6 @@ impl CodeGenerationAgent {
         Self {
             id,
             name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1007,18 +1006,7 @@ impl Agent for CodeGenerationAgent {
         let state = self.state.read().await;
         let code_generator = self.code_generator.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0,                      // Placeholder
-            memory_usage: 2 * 1024 * 1024 * 1024, // 2GB placeholder
-            task_queue_size: code_generator.active_tasks.len() as usize,
-            completed_tasks: code_generator.generation_metrics.successful_generations,
-            failed_tasks: code_generator.generation_metrics.total_generations
-                - code_generator.generation_metrics.successful_generations,
-            average_response_time: Duration::from_millis(500),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1027,7 +1015,7 @@ impl Agent for CodeGenerationAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 }
 

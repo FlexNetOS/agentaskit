@@ -267,7 +267,7 @@ pub struct Deliverable {
     pub dependencies: Vec<Uuid>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum DeliverableType {
     SourceCode,
     Documentation,
@@ -290,7 +290,7 @@ pub struct TargetLocation {
     pub backup_locations: Vec<PathBuf>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum LocationType {
     ProductionDirectory, // agentaskit-production
     DocsSubdirectory,    // ~/docs

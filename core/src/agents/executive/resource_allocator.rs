@@ -324,7 +324,7 @@ struct ResourceOptimizer {
 }
 
 /// Optimization strategies
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OptimizationStrategy {
     CostMinimization,
     PerformanceMaximization,
@@ -379,7 +379,7 @@ enum ConstraintType {
 }
 
 /// Optimization result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct OptimizationResult {
     pub optimization_time: Instant,
     pub strategy_used: OptimizationStrategy,
@@ -390,7 +390,7 @@ struct OptimizationResult {
 }
 
 /// Optimization actions
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OptimizationAction {
     ResourceReallocation {
         from: AgentId,
@@ -809,11 +809,12 @@ impl ResourceAllocator {
         let total_capacity = self.calculate_total_capacity(&resource_manager);
         let allocated_capacity = self.calculate_allocated_capacity(&resource_manager);
         let utilization = self.calculate_system_utilization(&resource_manager);
+        let available_capacity = self.subtract_capacities(&total_capacity, &allocated_capacity);
 
         Ok(SystemResourceMetrics {
             total_capacity,
             allocated_capacity,
-            available_capacity: self.subtract_capacities(&total_capacity, &allocated_capacity),
+            available_capacity,
             system_utilization: utilization,
             active_agents: resource_manager.allocations.len(),
             active_alerts: monitor.active_alerts.len(),
@@ -1126,17 +1127,7 @@ impl Agent for ResourceAllocator {
         let _resource_manager = self.resource_manager.read().await;
         let _monitor = self.monitor.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: AgentStatus::Active,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 25.0,
-            memory_usage: 512 * 1024 * 1024,
-            task_queue_size: 0,
-            completed_tasks: 0,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(100),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1150,11 +1141,6 @@ impl Agent for ResourceAllocator {
         &self.metadata.capabilities
     }
 
-    async fn initialize(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Resource Allocator");
-        *self.state.write().await = AgentStatus::Active;
-        Ok(())
-    }
 }
 
 impl ResourceAllocator {

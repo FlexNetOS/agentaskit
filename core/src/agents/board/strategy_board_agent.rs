@@ -8,9 +8,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage,
 };
 
@@ -23,6 +24,7 @@ use agentaskit_shared::{
 /// - Strategic decision support and recommendation
 /// - Risk assessment for strategic initiatives
 /// - Alignment of tactical decisions with strategic objectives
+#[derive(Debug)]
 pub struct StrategyBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -271,7 +273,7 @@ struct MarketAnalyzer {
 }
 
 /// Market intelligence
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct MarketIntelligence {
     pub market_segment: String,
     pub market_size: f64,
@@ -680,24 +682,6 @@ impl Agent for StrategyBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Strategy Board Agent");
-
-        // Initialize planning methodologies
-        let mut planning_engine = self.planning_engine.write().await;
-        self.initialize_planning_methodologies(&mut planning_engine)
-            .await?;
-
-        // Initialize decision framework
-        let mut decision_framework = self.decision_framework.write().await;
-        self.initialize_decision_criteria(&mut decision_framework)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Strategy Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Strategy Board Agent");
@@ -850,8 +834,8 @@ impl Agent for StrategyBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 
