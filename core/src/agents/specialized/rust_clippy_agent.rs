@@ -5,7 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -82,13 +82,13 @@ pub struct RustClippyAgent {
     config: RustClippyConfig,
     metadata: AgentMetadata,
     lint_history: Arc<RwLock<Vec<ClippyResult>>>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
 impl RustClippyAgent {
     pub fn new(config: Option<RustClippyConfig>) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let config = config.unwrap_or_default();
 
         let capabilities = vec![

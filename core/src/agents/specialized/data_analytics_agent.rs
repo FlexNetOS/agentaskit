@@ -4,8 +4,8 @@
 
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -32,7 +32,7 @@ pub struct DataAnalyticsAgent {
     data_warehouse: Arc<RwLock<DataWarehouse>>,
     stream_processor: Arc<StreamProcessor>,
     query_optimizer: Arc<QueryOptimizer>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
@@ -661,7 +661,7 @@ impl Default for DataAnalyticsConfig {
 impl DataAnalyticsAgent {
     pub fn new(config: Option<DataAnalyticsConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
 
         let data_processor = Arc::new(DataProcessor::new(config.processing_config.clone()));
         let analytics_engine = Arc::new(AnalyticsEngine::new(config.analytics_config.clone()));

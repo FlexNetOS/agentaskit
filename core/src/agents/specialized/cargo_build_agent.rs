@@ -5,7 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task,
+    AgentId, AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task, TaskId,
     TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Context, Result};
@@ -164,7 +164,7 @@ pub struct CargoBuildAgent {
     config: CargoBuildConfig,
     metadata: AgentMetadata,
     build_history: Arc<RwLock<Vec<BuildResult>>>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
     cache_manager: Arc<Mutex<CacheManager>>,
 }
@@ -196,7 +196,7 @@ impl CacheManager {
 impl CargoBuildAgent {
     /// Create a new Cargo Build Agent
     pub fn new(config: Option<CargoBuildConfig>) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let config = config.unwrap_or_default();
 
         let capabilities = vec![

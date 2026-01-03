@@ -5,7 +5,8 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskId,
+    TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -75,13 +76,13 @@ pub struct CargoAuditAgent {
     config: CargoAuditConfig,
     metadata: AgentMetadata,
     audit_history: Arc<RwLock<Vec<AuditResult>>>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
 impl CargoAuditAgent {
     pub fn new(config: Option<CargoAuditConfig>) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let config = config.unwrap_or_default();
 
         let capabilities = vec![

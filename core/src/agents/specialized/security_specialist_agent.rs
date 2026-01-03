@@ -4,8 +4,8 @@
 
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentContext, AgentId, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -31,7 +31,7 @@ pub struct SecuritySpecialistAgent {
     security_policies: Arc<RwLock<SecurityPolicyEngine>>,
     incident_responder: Arc<IncidentResponder>,
     security_audit: Arc<SecurityAuditor>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
@@ -546,7 +546,7 @@ impl Default for SecurityConfig {
 impl SecuritySpecialistAgent {
     pub fn new(config: Option<SecurityConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
 
         let security_engine = Arc::new(SecurityEngine::new(config.clone()));
         let vulnerability_scanner = Arc::new(VulnerabilityScanner::new());

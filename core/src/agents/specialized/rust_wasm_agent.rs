@@ -5,7 +5,7 @@
 
 use crate::agents::Agent;
 use agentaskit_shared::{
-    AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskResult, TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, ResourceRequirements, Task, TaskId, TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -104,13 +104,13 @@ pub struct RustWasmAgent {
     config: RustWasmConfig,
     metadata: AgentMetadata,
     wasm_history: Arc<RwLock<Vec<WasmResult>>>,
-    tasks: Arc<Mutex<HashMap<Uuid, Task>>>,
+    tasks: Arc<Mutex<HashMap<TaskId, Task>>>,
     active: Arc<Mutex<bool>>,
 }
 
 impl RustWasmAgent {
     pub fn new(config: Option<RustWasmConfig>) -> Self {
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let config = config.unwrap_or_default();
 
         let capabilities = vec![

@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, AgentId, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Learning Agent - Machine Learning and AI capabilities
@@ -1112,7 +1112,7 @@ struct EngineeringMetrics {
 impl LearningAgent {
     pub fn new(config: Option<LearningConfig>) -> Self {
         let config = config.unwrap_or_default();
-        let id = Uuid::new_v4();
+        let id = AgentId::new();
         let name = "Learning Agent".to_string();
         let capabilities = vec![
             "model-training".to_string(),
