@@ -489,6 +489,7 @@
   - [ ] agent_gateway_integration.md
   - [ ] agent_map_crosswalk.md
   - [ ] agent_schema_template.json
+  - [ ] agent_tools.rs
   - [ ] agentask.subject.todo
   - [ ] agentask.todo
   - [ ] agentaskit.todo
@@ -522,7 +523,6 @@
   - [ ] crosscheck_report.md
   - [ ] csv_schema.md
   - [ ] csv_schema_v1_20251005-081849.md
-  - [ ] csv_schema_v2_20251005-081849.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
