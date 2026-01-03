@@ -205,8 +205,7 @@ impl Agent for RustReleaseAgent {
         self.tasks.lock().await.insert(task_id, task.clone());
 
         let workspace_path = task
-            .input_data
-            .and_then(|p| p.get("workspace_path"))
+            .input_data.get("workspace_path")
             .and_then(|v| v.as_str())
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from("."));
