@@ -37,21 +37,11 @@ jobs:
 
       - name: Build
         shell: bash
-        run: |
-          pixi run nu -c '
-            print $"=== Building on (sys host | get name) ==="
-            cargo build --verbose
-            print "Build successful ✓"
-          '
+        run: pixi run build-dev
 
       - name: Run tests
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "=== Running tests ==="
-            cargo test --verbose
-            print "Tests passed ✓"
-          '
+        run: pixi run test
 
   clippy:
     runs-on: ubuntu-latest
@@ -68,12 +58,7 @@ jobs:
 
       - name: Clippy
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "=== Running Clippy ==="
-            cargo clippy --all-targets --all-features -- -D warnings
-            print "Clippy passed ✓"
-          '
+        run: pixi run lint
 
   fmt:
     runs-on: ubuntu-latest
@@ -90,9 +75,4 @@ jobs:
 
       - name: Format Check
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "=== Checking format ==="
-            cargo fmt --all -- --check
-            print "Format check passed ✓"
-          '
+        run: cargo fmt --all -- --check

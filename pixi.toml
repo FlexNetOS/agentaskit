@@ -44,6 +44,10 @@ pandas = ">=2.0"
 # Git (ensure consistent version across platforms)
 git = "*"
 
+# mise - Tool version manager (complements pixi for local dev workflow)
+# Provides .mise.toml support for developers who prefer mise tasks
+mise = "*"
+
 [tasks]
 # Bootstrap - single cross-platform script
 bootstrap = "nu tools/bootstrap.nu"
