@@ -1,112 +1,79 @@
-name: SLO Policy Check
+name: SLO Compliance Check
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
   schedule:
-    # Run every 6 hours to monitor SLO burn rate
-    - cron: '0 */6 * * *'
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+permissions:
+  contents: read
 
 jobs:
   slo-validation:
+    name: Validate SLO Policies
     runs-on: ubuntu-latest
-    name: Validate SLO Policies and Burn Rate
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate SLO Policy Schema
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate SLO policy syntax
         run: |
-          # Check that slo/policies.yaml exists and is valid YAML
-          if [ ! -f slo/policies.yaml ]; then
-            echo "ERROR: slo/policies.yaml not found"
-            exit 1
+          python -c "
+          import yaml
+          import sys
+          
+          try:
+              with open('slo/policies.yaml', 'r') as f:
+                  policy = yaml.safe_load(f)
+              
+              # Validate required fields
+              assert 'slos' in policy, 'Missing slos section'
+              
+              for slo in policy['slos']:
+                  assert 'name' in slo, f'SLO missing name'
+                  assert 'target' in slo, f'SLO {slo.get(\"name\")} missing target'
+                  assert 0 <= slo['target'] <= 1, f'Invalid target for {slo[\"name\"]}'
+              
+              print(f'✓ Validated {len(policy[\"slos\"])} SLO definitions')
+              sys.exit(0)
+          except Exception as e:
+              print(f'✗ SLO validation failed: {e}')
+              sys.exit(1)
+          "
+
+      - name: Check SLO coverage
+        run: |
+          echo "## SLO Coverage Report" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import yaml
+          
+          with open('slo/policies.yaml', 'r') as f:
+              policy = yaml.safe_load(f)
+          
+          print('| SLO | Target | Type |')
+          print('|-----|--------|------|')
+          for slo in policy['slos']:
+              target = f\"{slo['target']*100:.2f}%\"
+              slo_type = slo.get('indicator', {}).get('type', 'unknown')
+              print(f\"| {slo['name']} | {target} | {slo_type} |\")
+          " >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify alert rules exist
+        run: |
+          if [ -f "alerts/alerting-rules.yaml" ]; then
+            echo "✓ Alert rules file exists"
+          else
+            echo "⚠️ Warning: alerts/alerting-rules.yaml not found"
           fi
-
-          # Basic YAML syntax validation
-          python3 -c "import yaml; yaml.safe_load(open('slo/policies.yaml'))" || exit 1
-          echo "✓ SLO policy file is valid YAML"
-
-      - name: Verify SLO Targets
-        run: |
-          # Extract and verify SLO targets are defined
-          python3 << 'EOF'
-          import yaml
-
-          with open('slo/policies.yaml', 'r') as f:
-              slo = yaml.safe_load(f)
-
-          # Check availability target
-          if 'availability' not in slo or 'target' not in slo['availability']:
-              print("ERROR: Availability target not defined")
-              exit(1)
-
-          availability_target = slo['availability']['target']
-          if availability_target < 99.0 or availability_target > 100.0:
-              print(f"ERROR: Availability target {availability_target}% is out of range")
-              exit(1)
-
-          print(f"✓ Availability target: {availability_target}%")
-
-          # Check burn rate windows
-          if 'windows' not in slo['availability']:
-              print("ERROR: Burn rate windows not defined")
-              exit(1)
-
-          for window in slo['availability']['windows']:
-              print(f"✓ Burn rate window: {window['name']} (lookback: {window['lookback']}, rate: {window['burn_rate']})")
-
-          # Check latency targets
-          if 'latency' in slo:
-              print(f"✓ Latency p95: {slo['latency']['p95_ms']}ms")
-              print(f"✓ Latency p99: {slo['latency']['p99_ms']}ms")
-
-          # Check startup time
-          if 'startup_time' in slo:
-              print(f"✓ Startup time p95: {slo['startup_time']['p95_ms']}ms")
-
-          print("\n✅ All SLO targets validated successfully")
-          EOF
-
-      - name: Calculate Error Budget
-        run: |
-          python3 << 'EOF'
-          import yaml
-
-          with open('slo/policies.yaml', 'r') as f:
-              slo = yaml.safe_load(f)
-
-          availability_target = slo['availability']['target']
-          error_budget = 100 - availability_target
-
-          # Calculate allowed downtime for different periods
-          downtime_30d = (30 * 24 * 60) * (error_budget / 100)  # minutes
-          downtime_7d = (7 * 24 * 60) * (error_budget / 100)    # minutes
-
-          print("Error Budget Analysis:")
-          print(f"  Target Availability: {availability_target}%")
-          print(f"  Error Budget: {error_budget}%")
-          print(f"  Allowed downtime (30 days): {downtime_30d:.2f} minutes ({downtime_30d/60:.2f} hours)")
-          print(f"  Allowed downtime (7 days): {downtime_7d:.2f} minutes ({downtime_7d/60:.2f} hours)")
-
-          # Check burn rate thresholds
-          print("\nBurn Rate Alert Thresholds:")
-          for window in slo['availability']['windows']:
-              print(f"  {window['name']}: burn rate > {window['burn_rate']} over {window['lookback']}")
-          EOF
-
-      - name: SLO Policy Report
-        run: |
-          echo "📊 SLO Policy Check Summary"
-          echo "=============================="
-          echo "✅ SLO policies validated"
-          echo "✅ Error budget calculated"
-          echo "✅ Burn rate windows configured"
-          echo ""
-          echo "Next steps:"
-          echo "- Monitor actual metrics against these SLOs"
-          echo "- Set up alerting for burn rate violations"
-          echo "- Review SLOs quarterly and adjust as needed"

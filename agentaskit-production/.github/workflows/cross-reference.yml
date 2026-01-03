@@ -1,0 +1,63 @@
+name: Cross-Reference Analysis
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  cross-reference:
+    name: Archive Cross-Reference Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for lineage analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run cross-reference analysis
+        run: |
+          python tools/analysis/cross_reference.py \
+            --production-dir agentaskit-production \
+            --archive-dir archive \
+            --output-dir docs/reports/cross_reference/artifacts
+
+      - name: Upload cross-reference report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-reference-report
+          path: docs/reports/cross_reference/artifacts/
+          retention-days: 90
+
+      - name: Check for critical issues
+        run: |
+          if [ -f docs/reports/cross_reference/artifacts/report.json ]; then
+            critical=$(python -c "import json; r=json.load(open('docs/reports/cross_reference/artifacts/report.json')); print(len(r.get('critical_missing', [])))")
+            if [ "$critical" -gt "0" ]; then
+              echo "::warning::Found $critical critical missing components"
+            fi
+          fi
+
+      - name: Update summary
+        run: |
+          echo "## Cross-Reference Analysis Results" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/reports/cross_reference/artifacts/report.md ]; then
+            cat docs/reports/cross_reference/artifacts/report.md >> $GITHUB_STEP_SUMMARY
+          fi

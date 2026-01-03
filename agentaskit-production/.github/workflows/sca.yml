@@ -1,0 +1,113 @@
+name: Software Composition Analysis
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  cargo-audit:
+    name: Cargo Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run cargo audit
+        run: |
+          cd agentaskit-production
+          cargo audit --json > ../audit-report.json || true
+          cargo audit 2>&1 | tee ../audit-report.txt
+
+      - name: Check for critical vulnerabilities
+        run: |
+          if grep -q '"severity":"critical"' audit-report.json 2>/dev/null; then
+            echo "::error::Critical vulnerabilities found"
+            exit 1
+          fi
+          if grep -q '"severity":"high"' audit-report.json 2>/dev/null; then
+            echo "::warning::High severity vulnerabilities found"
+          fi
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-audit-report
+          path: |
+            audit-report.json
+            audit-report.txt
+          retention-days: 30
+
+  trivy-scan:
+    name: Trivy Container Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install cargo-license
+        run: cargo install cargo-license
+
+      - name: Generate license report
+        run: |
+          cd agentaskit-production
+          cargo license --json > ../license-report.json || true
+          cargo license > ../license-report.txt || true
+
+      - name: Check for problematic licenses
+        run: |
+          # Check for copyleft licenses that might be problematic
+          if grep -iE '"license":\s*"(GPL|AGPL|LGPL)' license-report.json 2>/dev/null; then
+            echo "::warning::Copyleft licenses detected - review required"
+          fi
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: |
+            license-report.json
+            license-report.txt
+          retention-days: 90

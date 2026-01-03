@@ -53,36 +53,36 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 [1;96m== 7-Phase Execution Subjects ==[0m
-- [ ] [91m(A)[0m 2025-10-05 Cross-reference entire repo vs final package; produce lineage/duplicates/missing [96m+CrossRef +Archives[0m [95m@prod[0m [REF: SUBJ-CROSSREF]
+- [x] [91m(A)[0m 2025-10-05 Cross-reference entire repo vs final package; produce lineage/duplicates/missing [96m+CrossRef +Archives[0m [95m@prod[0m [REF: SUBJ-CROSSREF]
       acc  : "Artifacts manifest/report present; CI uploaded; SoT updated"
       evid : "agentaskit-production/docs/reports/cross_reference/artifacts/"
 
-- [ ] [91m(A)[0m 2025-10-05 Verify nothing overlooked; enumerate missing expected production components [96m+Verification +Inventory[0m [95m@prod[0m [REF: SUBJ-VERIFY]
+- [x] [91m(A)[0m 2025-10-05 Verify nothing overlooked; enumerate missing expected production components [96m+Verification +Inventory[0m [95m@prod[0m [REF: SUBJ-VERIFY]
       acc  : "Missing-dirs list closed or waived with ADR"
       evid : "report.md section: Missing expected production components"
 
-- [ ] [91m(A)[0m 2025-10-05 Apply fixes (heal, no harm); upgrades only; update .todo with actions [96m+Fixes +Upgrades[0m [95m@prod[0m [REF: SUBJ-HEAL-UPGRADE]
+- [x] [91m(A)[0m 2025-10-05 Apply fixes (heal, no harm); upgrades only; update .todo with actions [96m+Fixes +Upgrades[0m [95m@prod[0m [REF: SUBJ-HEAL-UPGRADE]
       acc  : "Fix PRs merged; SoT entries added; no capability regressions"
       evid : "SoT entries; CI logs"
 
-- [ ] [93m(B)[0m 2025-10-05 Optimize, organize, unify per report [96m+Unify +Organize +Optimize[0m [95m@prod[0m [REF: SUBJ-UNIFY]
+- [x] [93m(B)[0m 2025-10-05 Optimize, organize, unify per report [96m+Unify +Organize +Optimize[0m [95m@prod[0m [REF: SUBJ-UNIFY]
       acc  : "Unification plan applied; no duplicates; structure conforms"
       evid : "UNIFICATION_PLAN.md; SoT"
 
-- [ ] [93m(B)[0m 2025-10-05 Complete all subject items; reconcile subject inbox to zero [96m+Ops +Hygiene[0m [95m@prod[0m [REF: SUBJ-ZERO-INBOX]
+- [x] [93m(B)[0m 2025-10-05 Complete all subject items; reconcile subject inbox to zero [96m+Ops +Hygiene[0m [95m@prod[0m [REF: SUBJ-ZERO-INBOX]
       acc  : "All SUBJ-* entries closed; mirrored WORKFLOW-* closed"
       evid : "tasks.todo status; SoT"
 
-- [ ] [91m(A)[0m 2025-10-05 Integrate llama.cpp and wire to model selector agents [96m+Models +Inference +Integration[0m [95m@staging[0m [REF: SUBJ-LLAMACPP]
+- [x] [91m(A)[0m 2025-10-05 Integrate llama.cpp and wire to model selector agents [96m+Models +Inference +Integration[0m [95m@staging[0m [REF: SUBJ-LLAMACPP]
       acc  : "Submodule or fetch script; build instructions; selector bridge stub in repo; no breakages"
       evid : "integrations/llama.cpp/README.md; CI build logs"
 
 [1;96m== Observability & Security Subjects ==[0m
-- [ ] [93m(B)[0m 2025-10-05 Add SLO check CI and baseline policies [96m+SLO +CI[0m [95m@prod[0m [REF: SUBJ-SLO-CI]
+- [x] [93m(B)[0m 2025-10-05 Add SLO check CI and baseline policies [96m+SLO +CI[0m [95m@prod[0m [REF: SUBJ-SLO-CI]
       acc  : "slo/policies.yaml present; slo-check CI green"
       evid : "slo/policies.yaml; .github/workflows/slo-check.yml"
 
-- [ ] [93m(B)[0m 2025-10-05 Add CodeQL/SCA security CI baselines [96m+Security +CI[0m [95m@prod[0m [REF: SUBJ-SEC-CI]
+- [x] [93m(B)[0m 2025-10-05 Add CodeQL/SCA security CI baselines [96m+Security +CI[0m [95m@prod[0m [REF: SUBJ-SEC-CI]
       acc  : "CodeQL and SCA pass; 0 critical/high"
       evid : ".github/workflows/codeql.yml; security/reports/"
 

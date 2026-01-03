@@ -1,189 +1,179 @@
-﻿#!/usr/bin/env python3
-import argparse, hashlib, json, os, re, sys
+#!/usr/bin/env python3
+"""
+Cross-Reference Analysis Tool
+
+Analyzes production code against archive versions (V2-V7) to identify:
+- Lineage relationships between files
+- Duplicate code across versions
+- Missing production components
+- File evolution history
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
-
-ARCHIVE_PATTERNS = [
-    re.compile(r".*archive[/\\]old_versions[/\\].*", re.IGNORECASE),
-    re.compile(r".*[/\\](V[2-7]|v[2-7]|agentaskitv[2-7]).*", re.IGNORECASE),
-]
-
-IGNORE_DIRS = {".git", ".github", ".venv", "node_modules", "target", ".idea", ".vs", ".vscode", "__pycache__"}
+from typing import Dict, List, Set, Tuple
 
 
-def sha256_file(p: Path) -> str:
-    h = hashlib.sha256()
-    with p.open("rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
+class CrossReferenceAnalyzer:
+    """Analyzes cross-references between production and archive code."""
 
+    def __init__(self, production_dir: str, archive_dir: str, output_dir: str):
+        self.production_dir = Path(production_dir)
+        self.archive_dir = Path(archive_dir)
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
-def is_textual(p: Path) -> bool:
-    try:
-        with p.open("rb") as f:
-            b = f.read(2048)
-        return b.find(b"\0") == -1
-    except Exception:
-        return False
+        # Results storage
+        self.production_files: Dict[str, dict] = {}
+        self.archive_files: Dict[str, Dict[str, dict]] = defaultdict(dict)
+        self.duplicates: List[dict] = []
+        self.lineage: Dict[str, List[str]] = defaultdict(list)
+        self.missing: List[str] = []
 
+    def compute_file_hash(self, filepath: Path) -> str:
+        """Compute SHA-256 hash of file contents."""
+        try:
+            with open(filepath, 'rb') as f:
+                return hashlib.sha256(f.read()).hexdigest()
+        except Exception:
+            return ""
 
-def walk_files(root: Path):
-    for dirpath, dirnames, filenames in os.walk(root):
-        # prune ignored dirs
-        dirnames[:] = [d for d in dirnames if d not in IGNORE_DIRS]
-        for fn in filenames:
-            fp = Path(dirpath) / fn
-            yield fp
+    def get_file_info(self, filepath: Path, base_dir: Path) -> dict:
+        """Get file metadata and hash."""
+        relative = filepath.relative_to(base_dir)
+        stat = filepath.stat()
+        return {
+            "path": str(relative),
+            "name": filepath.name,
+            "size": stat.st_size,
+            "hash": self.compute_file_hash(filepath),
+            "extension": filepath.suffix,
+            "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        }
 
+    def scan_directory(self, directory: Path, base_dir: Path) -> Dict[str, dict]:
+        """Scan directory and collect file information."""
+        files = {}
+        if not directory.exists():
+            return files
 
-def classify_path(p: Path) -> str:
-    s = str(p.as_posix())
-    for rx in ARCHIVE_PATTERNS:
-        if rx.match(s):
-            return "archive"
-    # Explicit final deploy package: agentaskit-production subtree
-    if "/agentaskit-production/" in s or s.startswith("agentaskit-production/") or s.endswith("agentaskit-production"):
-        return "production"
-    return "other"
+        for filepath in directory.rglob("*"):
+            if filepath.is_file() and not self._should_skip(filepath):
+                info = self.get_file_info(filepath, base_dir)
+                files[info["path"]] = info
+
+        return files
+
+    def _should_skip(self, filepath: Path) -> bool:
+        """Check if file should be skipped."""
+        skip_patterns = [".git", "__pycache__", ".pyc", "node_modules", "target/debug", "target/release", ".DS_Store"]
+        path_str = str(filepath)
+        return any(pattern in path_str for pattern in skip_patterns)
+
+    def analyze(self) -> dict:
+        """Run full cross-reference analysis."""
+        print("Scanning production directory...")
+        self.production_files = self.scan_directory(self.production_dir, self.production_dir)
+        print(f"  Found {len(self.production_files)} files")
+
+        if self.archive_dir.exists():
+            for version_dir in sorted(self.archive_dir.iterdir()):
+                if version_dir.is_dir():
+                    version = version_dir.name
+                    print(f"Scanning archive {version}...")
+                    self.archive_files[version] = self.scan_directory(version_dir, version_dir)
+                    print(f"  Found {len(self.archive_files[version])} files")
+
+        print("Analyzing duplicates...")
+        self._find_duplicates()
+        print("Tracing file lineage...")
+        self._trace_lineage()
+        print("Identifying missing components...")
+        self._find_missing()
+
+        return self._generate_report()
+
+    def _find_duplicates(self):
+        hash_to_files: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
+        for path, info in self.production_files.items():
+            if info["hash"]:
+                hash_to_files[info["hash"]].append(("production", path))
+        for version, files in self.archive_files.items():
+            for path, info in files.items():
+                if info["hash"]:
+                    hash_to_files[info["hash"]].append((version, path))
+        for file_hash, locations in hash_to_files.items():
+            if len(locations) > 1:
+                self.duplicates.append({"hash": file_hash[:16], "locations": [{"source": loc[0], "path": loc[1]} for loc in locations]})
+
+    def _trace_lineage(self):
+        for prod_path, prod_info in self.production_files.items():
+            basename = prod_info["name"]
+            lineage = []
+            for version in sorted(self.archive_files.keys()):
+                for arch_path, arch_info in self.archive_files[version].items():
+                    if arch_info["name"] == basename:
+                        lineage.append({"version": version, "path": arch_path, "hash_match": prod_info["hash"] == arch_info["hash"]})
+            if lineage:
+                self.lineage[prod_path] = lineage
+
+    def _find_missing(self):
+        expected_dirs = ["core/src", "services", "tests", "docs", "deploy", "security", "dashboards", "alerts", "slo"]
+        expected_files = ["Cargo.toml", "README.md", "CHANGELOG.md", ".todo"]
+        for dir_name in expected_dirs:
+            if not (self.production_dir / dir_name).exists():
+                self.missing.append(f"directory: {dir_name}")
+        for file_name in expected_files:
+            if not (self.production_dir / file_name).exists():
+                self.missing.append(f"file: {file_name}")
+
+    def _generate_report(self) -> dict:
+        report = {
+            "timestamp": datetime.now().isoformat(),
+            "summary": {
+                "production_files": len(self.production_files),
+                "archive_versions": len(self.archive_files),
+                "archive_files": sum(len(f) for f in self.archive_files.values()),
+                "duplicates_found": len(self.duplicates),
+                "files_with_lineage": len(self.lineage),
+                "missing_components": len(self.missing),
+            },
+            "duplicates": self.duplicates[:50],
+            "lineage_sample": dict(list(self.lineage.items())[:20]),
+            "missing": self.missing,
+            "critical_missing": [m for m in self.missing if "core" in m or "security" in m],
+        }
+        with open(self.output_dir / "report.json", "w") as f:
+            json.dump(report, f, indent=2)
+        with open(self.output_dir / "report.md", "w") as f:
+            f.write(self._format_markdown(report))
+        print(f"Reports saved to {self.output_dir}")
+        return report
+
+    def _format_markdown(self, report: dict) -> str:
+        lines = ["# Cross-Reference Analysis Report", "", f"**Generated:** {report['timestamp']}", "", "## Summary", ""]
+        lines.extend([f"- Production files: {report['summary']['production_files']}", f"- Duplicates found: {report['summary']['duplicates_found']}", f"- Missing components: {report['summary']['missing_components']}", "", "## Missing Components", ""])
+        lines.extend([f"- {item}" for item in report["missing"]] if report["missing"] else ["*No missing components*"])
+        return "\n".join(lines)
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default=".", help="repo root")
-    ap.add_argument("--out-dir", required=True, help="output dir for artifacts")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description="Cross-reference analysis tool")
+    parser.add_argument("--production-dir", required=True)
+    parser.add_argument("--archive-dir", required=True)
+    parser.add_argument("--output-dir", required=True)
+    args = parser.parse_args()
+    analyzer = CrossReferenceAnalyzer(args.production_dir, args.archive_dir, args.output_dir)
+    report = analyzer.analyze()
+    print(f"\n=== Analysis Complete ===\nProduction files: {report['summary']['production_files']}\nMissing: {report['summary']['missing_components']}")
+    sys.exit(1 if report["critical_missing"] else 0)
 
-    root = Path(args.root).resolve()
-    outdir = Path(args.out_dir)
-    outdir.mkdir(parents=True, exist_ok=True)
-
-    manifest = {
-        "root": str(root),
-        "summary": {"files_total": 0, "archive_files": 0, "production_files": 0, "other_files": 0},
-        "files": [],
-    }
-
-    for fp in walk_files(root):
-        try:
-            kind = classify_path(fp)
-            h = sha256_file(fp)
-            rel = fp.relative_to(root)
-            entry = {
-                "path": str(rel).replace("\\", "/"),
-                "kind": kind,
-                "sha256": h,
-                "size": fp.stat().st_size,
-                "text": is_textual(fp),
-            }
-            manifest["files"].append(entry)
-            manifest["summary"]["files_total"] += 1
-            if kind == "archive":
-                manifest["summary"]["archive_files"] += 1
-            elif kind == "production":
-                manifest["summary"]["production_files"] += 1
-            else:
-                manifest["summary"]["other_files"] += 1
-        except Exception as e:
-            print(f"WARN: {fp}: {e}", file=sys.stderr)
-
-    # lineage mapping: same filename at different roots with differing hashes
-    by_name = {}
-    for f in manifest["files"]:
-        key = os.path.basename(f["path"]).lower()
-        by_name.setdefault(key, []).append(f)
-
-    lineage = []
-    for name, entries in by_name.items():
-        if len(entries) < 2:
-            continue
-        kinds = {e["kind"] for e in entries}
-        if "archive" in kinds and "production" in kinds:
-            lineage.append({"name": name, "entries": entries})
-
-    # duplicates within tree (same sha, different paths)
-    by_hash = {}
-    for f in manifest["files"]:
-        by_hash.setdefault(f["sha256"], []).append(f)
-    duplicates = [v for v in by_hash.values() if len(v) > 1]
-
-    # Production vs non-production comparison by basename
-    prod_names = set()
-    nonprod_names = set()
-    for f in manifest["files"]:
-        nm = os.path.basename(f["path"]).lower()
-        if f["kind"] == "production":
-            prod_names.add(nm)
-        else:
-            nonprod_names.add(nm)
-    missing_in_production = sorted(list(nonprod_names - prod_names))[:200]
-    extra_in_production = sorted(list(prod_names - nonprod_names))[:200]
-
-    # High-level report
-    report = {
-        "summary": manifest["summary"],
-        "lineage_pairs": len(lineage),
-        "duplicates_groups": len(duplicates),
-        "production_missing_dirs": [],
-        "missing_in_production_basenames": missing_in_production,
-        "extra_in_production_basenames": extra_in_production,
-    }
-
-    # heuristics: expected production components
-    expected_dirs = [
-        "agentaskit-production/core/src/workflows/seven_phase",
-        "agentaskit-production/tests",
-        "agentaskit-production/dashboards",
-        "agentaskit-production/alerts",
-        "agentaskit-production/slo",
-        "agentaskit-production/security/policies",
-        "agentaskit-production/operational_hash",
-        "agentaskit-production/TEST",
-        ".github/workflows",
-    ]
-    for d in expected_dirs:
-        if not (root / d).exists():
-            report["production_missing_dirs"].append(d)
-
-    # write artifacts
-    (outdir / "manifest.json").write_text(json.dumps(manifest, indent=2))
-    (outdir / "report.json").write_text(json.dumps(report, indent=2))
-
-    # write human markdown
-    md = []
-    md.append("# Cross-reference Report (archives V2–V7 → production)")
-    s = manifest["summary"]
-    md.append(f"- Files total: {s['files_total']} (archive: {s['archive_files']}, production: {s['production_files']}, other: {s['other_files']})")
-    md.append(f"- Lineage pairs (archive↔production filename collisions): {len(lineage)}")
-    md.append(f"- Duplicate groups (identical sha across different paths): {len(duplicates)}")
-    if report["production_missing_dirs"]:
-        md.append("## Missing expected production components")
-        for m in report["production_missing_dirs"]:
-            md.append(f"- {m}")
-    if missing_in_production:
-        md.append("## Basenames present outside production but not in final package (top 200)")
-        for n in missing_in_production[:50]:
-            md.append(f"- {n}")
-        if len(missing_in_production) > 50:
-            md.append(f"… and {len(missing_in_production)-50} more")
-    if extra_in_production:
-        md.append("## Basenames present in final package but not elsewhere (top 200)")
-        for n in extra_in_production[:50]:
-            md.append(f"- {n}")
-        if len(extra_in_production) > 50:
-            md.append(f"… and {len(extra_in_production)-50} more")
-    if lineage:
-        md.append("## Archive ↔ Production lineage examples (up to 10)")
-        for pair in lineage[:10]:
-            md.append(f"- {pair['name']}:")
-            for e in pair["entries"]:
-                md.append(f"  - {e['kind']}: {e['path']} ({e['sha256'][:12]} … size {e['size']})")
-    if duplicates:
-        md.append("## Duplicate content groups (up to 5)")
-        for group in duplicates[:5]:
-            md.append(f"- sha {group[0]['sha256'][:12]} present in:")
-            for e in group:
-                md.append(f"  - {e['path']}")
-    (outdir / "report.md").write_text("\n".join(md), encoding="utf-8")
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
