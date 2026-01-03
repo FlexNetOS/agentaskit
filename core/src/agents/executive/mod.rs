@@ -33,7 +33,7 @@ pub async fn coordinate_strategic_decision(
 
     // Send task to NOA Commander for strategic decision-making
     let commander_id = agentaskit_shared::agent_utils::agent_id_from_name("noa-commander");
-    let message_id = MessageId::new();
+    let message_id = crate::agents::new_message_id();
 
     let request = AgentMessage::Request {
         id: message_id,
@@ -65,7 +65,7 @@ pub async fn broadcast_emergency_alert(
     tracing::error!("Broadcasting emergency alert: {}", alert_message);
 
     let alert = AgentMessage::Alert {
-        id: MessageId::new(),
+        id: crate::agents::new_message_id(),
         from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
         severity: crate::agents::AlertSeverity::Emergency,
         message: alert_message,
@@ -76,7 +76,7 @@ pub async fn broadcast_emergency_alert(
     // Broadcast to all executive agents
     communication_manager
         .send_message(AgentMessage::Broadcast {
-            id: MessageId::new(),
+            id: crate::agents::new_message_id(),
             from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
             topic: "emergency-alert".to_string(),
             payload: serde_json::to_value(alert)?,
@@ -120,7 +120,7 @@ pub async fn coordinate_resource_reallocation(
 
     let resource_allocator_id = agentaskit_shared::agent_utils::agent_id_from_name("resource-allocator");
     let message = AgentMessage::Request {
-        id: MessageId::new(),
+        id: crate::agents::new_message_id(),
         from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
         to: resource_allocator_id,
         task,

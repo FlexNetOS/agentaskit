@@ -25,6 +25,12 @@ use crate::security::SecurityManager;
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
 
+/// Generate a new unique message ID
+#[inline]
+pub fn new_message_id() -> MessageId {
+    Uuid::new_v4()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum BroadcastScope {
     All,

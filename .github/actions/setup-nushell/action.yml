@@ -1,0 +1,44 @@
+name: 'Setup Nushell'
+description: 'Install and configure Nushell for cross-platform CI using Pixi'
+author: 'AgentAskit'
+
+inputs:
+  pixi-version:
+    description: 'Pixi version to use'
+    required: false
+    default: 'v0.42.0'
+  cache:
+    description: 'Enable pixi environment caching'
+    required: false
+    default: 'true'
+
+outputs:
+  nu-path:
+    description: 'Path to the nushell binary (inside pixi environment)'
+    value: ${{ steps.get-path.outputs.nu-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Pixi Environment
+      id: setup-pixi
+      uses: prefix-dev/setup-pixi@v0.9.3
+      with:
+        pixi-version: ${{ inputs.pixi-version }}
+        cache: ${{ inputs.cache }}
+        # Automatically installs nushell from pixi.toml
+        # Provides cross-platform portability and containment
+
+    - name: Get Nushell Path
+      id: get-path
+      shell: bash
+      run: |
+        NU_PATH=$(pixi run which nu)
+        echo "nu-path=$NU_PATH" >> $GITHUB_OUTPUT
+        echo "Nushell path: $NU_PATH"
+
+    - name: Verify Nushell Installation
+      shell: bash
+      run: |
+        pixi run nu --version
+        echo "✓ Nushell installed via Pixi for cross-platform portability"

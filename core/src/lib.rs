@@ -28,6 +28,10 @@ pub mod orchestration;
 pub mod performance;
 pub mod security;
 
+// AI and tool integration
+pub mod ai;
+pub mod mcp;
+
 // Enhanced workflow processing module
 pub mod workflows;
 
@@ -58,6 +62,16 @@ pub use self_improving::{
     ImprovementTracker, LearningEngine, OrchestratorConfig, SelfImprovingOrchestrator,
 };
 pub use verification::{NoaVerificationSystem, TruthGate, VerificationStatus};
+
+// Export AI and MCP capabilities
+pub use ai::{
+    AIProvider, AichatProvider, ChatMessage, CompletionRequest, CompletionResponse,
+    GatewayBridge, GatewayConfig, McpTool, Provider, ProviderManager, SharedGateway,
+};
+pub use mcp::{
+    AgentToolContext, ToolEnabledAgent, ToolEnabledAgentFactory, ToolHandler, ToolRegistry,
+    ToolResult,
+};
 
 /// Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
