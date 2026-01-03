@@ -777,7 +777,7 @@ impl NoaCommander {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(1024),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },

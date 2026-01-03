@@ -28,7 +28,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::AgentMessage;
-use crate::orchestration::{Task, TaskStatus};
+use crate::orchestration::{Task, TaskId, TaskStatus};
 use agentaskit_shared::{AgentCommunicationProtocol, AgentId, TaskOrchestrationProtocol};
 
 /// Enhanced chat request structure
@@ -53,8 +53,9 @@ pub enum RequestPriority {
 
 /// Task subject with 4D method application
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Task subject with type-safe ID
 pub struct TaskSubject {
-    pub id: Uuid,
+    pub id: TaskId,
     pub title: String,
     pub description: String,
     pub deconstruct: DeconstructPhase,
@@ -149,8 +150,9 @@ pub struct DeliverPhase {
 
 /// Execution step with verification
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Execution step with type-safe task ID
 pub struct ExecutionStep {
-    pub step_id: Uuid,
+    pub step_id: TaskId,
     pub name: String,
     pub description: String,
     pub dependencies: Vec<Uuid>,
@@ -255,8 +257,9 @@ pub struct TruthGateRequirements {
 
 /// Deliverable specification with target location
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Deliverable with type-safe IDs
 pub struct Deliverable {
-    pub id: Uuid,
+    pub id: TaskId,
     pub name: String,
     pub description: String,
     pub deliverable_type: DeliverableType,
@@ -264,7 +267,7 @@ pub struct Deliverable {
     pub file_specifications: Vec<FileSpecification>,
     pub quality_requirements: Vec<String>,
     pub acceptance_criteria: Vec<String>,
-    pub dependencies: Vec<Uuid>,
+    pub dependencies: Vec<TaskId>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -493,7 +496,7 @@ impl EnhancedWorkflowProcessor {
 
         // Create initial task subject
         let task_subject = TaskSubject {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             title: self.generate_task_title(request, &deconstruct).await?,
             description: self
                 .generate_task_description(request, &deconstruct)
@@ -585,7 +588,7 @@ impl EnhancedWorkflowProcessor {
 
             // Convert to Deliverable structure
             let deliverable = Deliverable {
-                id: Uuid::new_v4(),
+                id: TaskId::new(),
                 name: planned.spec.name.clone(),
                 description: planned.spec.description.clone(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
@@ -681,7 +684,7 @@ impl EnhancedWorkflowProcessor {
             .await?;
 
         Ok(Deliverable {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
             deliverable_type: deliverable_type.clone(),
@@ -772,12 +775,12 @@ impl EnhancedWorkflowProcessor {
             // Submit task for orchestration
             let task_id = self.task_protocol.submit_task(shared_task.clone()).await?;
 
-            // Send notification to communication protocol
-            let system_agent = Uuid::new_v4(); // System agent ID
-            let orchestrator_agent = Uuid::new_v4(); // Orchestrator agent ID
+            // Enhanced: Send notification with type-safe IDs
+            let system_agent = AgentId::new(); // System agent ID
+            let orchestrator_agent = AgentId::new(); // Orchestrator agent ID
 
             let message = agentaskit_shared::AgentMessage {
-                message_id: Uuid::new_v4(),
+                message_id: agentaskit_shared::MessageId::new(),
                 from_agent: system_agent,
                 to_agent: orchestrator_agent,
                 message_type: "task_submission".to_string(),

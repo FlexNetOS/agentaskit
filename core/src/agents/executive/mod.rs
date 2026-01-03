@@ -18,7 +18,7 @@ use crate::agents::communication::CommunicationManager;
 use crate::agents::{Agent, AgentMessage, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use std::time::Duration;
 use uuid::Uuid;
@@ -70,7 +70,7 @@ pub async fn broadcast_emergency_alert(
         severity: crate::agents::AlertSeverity::Emergency,
         message: alert_message,
         context,
-        timestamp: std::time::Instant::now(),
+        timestamp: chrono::Utc::now(),
     };
 
     // Broadcast to all executive agents
@@ -80,7 +80,7 @@ pub async fn broadcast_emergency_alert(
             from: agentaskit_shared::agent_utils::agent_id_from_name("executive-layer-coordinator"),
             topic: "emergency-alert".to_string(),
             payload: serde_json::to_value(alert)?,
-            scope: crate::agents::BroadcastScope::Role(AgentRole::Executive),
+            scope: crate::agents::BroadcastScope::Role(crate::agents::AgentRole::Executive),
         })
         .await?;
 
@@ -94,9 +94,9 @@ pub async fn coordinate_resource_reallocation(
 ) -> Result<serde_json::Value> {
     tracing::info!("Coordinating resource reallocation");
 
-    // Create task for resource allocator
+    // Enhanced: Create task with type-safe ID
     let task = Task {
-        id: Uuid::new_v4(),
+        id: TaskId::new(),
         name: "resource-reallocation".to_string(),
         description: "Coordinate system-wide resource reallocation".to_string(),
         task_type: "resource-allocation".to_string(),

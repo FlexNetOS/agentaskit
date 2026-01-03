@@ -602,7 +602,7 @@ impl ResourceAllocator {
                 cpu_cores: Some(2),
                 memory_mb: Some(2048),
                 storage_mb: Some(1024),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },
@@ -831,7 +831,7 @@ impl ResourceAllocator {
             cpu_cores: requirements.cpu_cores.unwrap_or(1) as f64,
             memory_bytes: requirements.memory_mb.unwrap_or(512) * 1024 * 1024,
             storage_bytes: requirements.storage_mb.unwrap_or(100) * 1024 * 1024,
-            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100.0),
+            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100),
             gpu_units: if requirements.gpu_required { 1 } else { 0 },
             custom_units: HashMap::new(),
         }
@@ -1056,7 +1056,7 @@ impl Agent for ResourceAllocator {
                     cpu_cores: Some(1),
                     memory_mb: Some(1024),
                     storage_mb: Some(100),
-                    network_bandwidth_mbps: Some(50.0),
+                    network_bandwidth_mbps: Some(50),
                     gpu_required: false,
                     special_capabilities: Vec::new(),
                 };

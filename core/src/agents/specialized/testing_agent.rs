@@ -881,7 +881,7 @@ impl TestingAgent {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(10240),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: vec!["test-framework".to_string()],
             },

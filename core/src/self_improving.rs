@@ -500,7 +500,7 @@ impl SelfImprovingOrchestrator {
             .filter(|m| m.success_rate > 0.0)
             .map(|m| m.success_rate)
             .sum::<f64>()
-            / 100.0.max(1.0);
+            / f64::max(100.0, 1.0);
 
         Ok(TrainingExample {
             example_id: Uuid::new_v4(),
@@ -573,16 +573,15 @@ impl SelfImprovingOrchestrator {
         // Apply agent-specific optimizations
         info!("Applying agent optimization: {}", improvement.description);
 
-        // Optimization strategies based on improvement data
-        if let Some(confidence) = improvement.confidence_score {
-            if confidence < 0.7 {
-                warn!(
-                    "Low confidence optimization ({}), applying conservatively",
-                    confidence
-                );
-                // Apply with reduced effect
-                return Ok(false);
-            }
+        // Enhanced: Direct confidence check (confidence_score is f64, not Option)
+        let confidence = improvement.confidence_score;
+        if confidence < 0.7 {
+            warn!(
+                "Low confidence optimization ({}), applying conservatively",
+                confidence
+            );
+            // Apply with reduced effect
+            return Ok(false);
         }
 
         // Simulated agent optimization effects:

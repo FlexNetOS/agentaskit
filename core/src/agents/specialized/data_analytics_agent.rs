@@ -701,7 +701,7 @@ impl DataAnalyticsAgent {
                 cpu_cores: Some(2),
                 memory_mb: Some(2048),
                 storage_mb: Some(1024),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },
@@ -1101,13 +1101,16 @@ impl Agent for DataAnalyticsAgent {
                 }
             }
             "data_analysis" => {
+                // Enhanced: Extract and convert parameters with proper type handling
                 let dataset_id = task
                     .input_data
                     .get("dataset_id")
+                    .and_then(|v| v.as_str())
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset_id"))?;
-                let analysis_type_str = task
+                let _analysis_type_str = task
                     .input_data
                     .get("analysis_type")
+                    .and_then(|v| v.as_str())
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: analysis_type"))?;
 
                 let analysis_type = AnalysisType::Descriptive; // Would parse from string
