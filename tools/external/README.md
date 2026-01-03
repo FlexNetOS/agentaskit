@@ -27,7 +27,7 @@ mise run build-tools
 
 # Or manually
 for dir in pixi nushell coreutils rusty-tags; do
-    cd $dir && cargo build --release && cd ..
+    (cd "$dir" && cargo build --release)
 done
 ```
 
