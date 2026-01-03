@@ -716,7 +716,7 @@ impl IntegrationAgent {
                 cpu_cores: Some(2),
                 memory_mb: Some(2048),
                 storage_mb: Some(512),
-                network_bandwidth_mbps: Some(200.0),
+                network_bandwidth_mbps: Some(200),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },

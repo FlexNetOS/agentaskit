@@ -8,8 +8,8 @@ pub mod communication;
 pub mod integration_tests;
 
 use agentaskit_shared::{
-    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, TaskResult,
-    TaskStatus,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, MessageId, Priority, ResourceRequirements,
+    TaskResult, TaskStatus,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -24,7 +24,6 @@ use crate::orchestration::Task;
 use crate::security::SecurityManager;
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
-pub type MessageId = Uuid;
 
 /// Generate a new unique message ID
 #[inline]

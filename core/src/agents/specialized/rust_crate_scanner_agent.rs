@@ -488,16 +488,12 @@ impl Agent for RustCrateScannerAgent {
         let task_id = task.id;
         self.tasks.lock().await.insert(task_id, task.clone());
 
-        // Parse task parameters to get workspace path
-        let workspace_path = if let Some(params) = &task.input_data {
-            params
-                .get("workspace_path")
-                .and_then(|v| v.as_str())
-                .map(PathBuf::from)
-                .unwrap_or_else(|| PathBuf::from("."))
-        } else {
-            PathBuf::from(".")
-        };
+        // Enhanced: Parse task parameters (input_data is Value, not Option)
+        let workspace_path = task.input_data
+            .get("workspace_path")
+            .and_then(|v| v.as_str())
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("."));
 
         // Execute scan
         match self.scan_workspace(&workspace_path).await {

@@ -1023,7 +1023,7 @@ impl MonitoringAgent {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(102400),
-                network_bandwidth_mbps: Some(200.0),
+                network_bandwidth_mbps: Some(200),
                 gpu_required: false,
                 special_capabilities: vec!["metrics".to_string(), "time-series".to_string()],
             },

@@ -13,12 +13,12 @@ use crate::types::{self};
 pub mod agent_utils {
     use super::*;
 
-    /// Generate a new unique agent ID
+    /// Enhanced: Generate a new unique agent ID with type safety
     pub fn generate_agent_id() -> AgentId {
-        Uuid::new_v4()
+        AgentId::new()
     }
 
-    /// Create a deterministic AgentId from a name string
+    /// Enhanced: Create a deterministic AgentId from a name string with type safety
     /// Uses UUID v5 (name-based) for consistent ID generation across sessions
     pub fn agent_id_from_name(name: &str) -> AgentId {
         // Use a namespace UUID for agent names
@@ -27,7 +27,7 @@ pub mod agent_utils {
             0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ]);
 
-        uuid::Uuid::new_v5(&AGENT_NAMESPACE, name.as_bytes())
+        AgentId::from_uuid(uuid::Uuid::new_v5(&AGENT_NAMESPACE, name.as_bytes()))
     }
 
     /// Create agent metadata with default values
@@ -77,9 +77,9 @@ pub mod agent_utils {
 pub mod task_utils {
     use super::*;
 
-    /// Generate a new unique task ID
+    /// Enhanced: Generate a new unique task ID with type safety
     pub fn generate_task_id() -> TaskId {
-        Uuid::new_v4()
+        TaskId::new()
     }
 
     /// Create a new task with default values
@@ -443,7 +443,7 @@ pub mod noa_utils {
                 .context("Missing agent type in manifest")?;
 
             let deployment_entry = DeploymentManifestEntry {
-                agent_id: Uuid::new_v4(),
+                agent_id: AgentId::new(),
                 agent_name: agent_name.to_string(),
                 agent_type: agent_type.to_string(),
                 deployment_config: entry.clone(),

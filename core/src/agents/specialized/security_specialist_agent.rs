@@ -582,7 +582,7 @@ impl SecuritySpecialistAgent {
                 cpu_cores: Some(2),
                 memory_mb: Some(2048),
                 storage_mb: Some(512),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },
@@ -812,14 +812,15 @@ impl SecuritySpecialistAgent {
             + access_result.findings;
 
         let mut combined_severity = HashMap::new();
-        for (severity, count) in [
-            vuln_result.severity_breakdown,
-            threat_result.severity_breakdown,
-            compliance_result.severity_breakdown,
-            access_result.severity_breakdown,
+        // Enhanced: Combine severity breakdowns from all security scan types
+        for severity_map in [
+            &vuln_result.severity_breakdown,
+            &threat_result.severity_breakdown,
+            &compliance_result.severity_breakdown,
+            &access_result.severity_breakdown,
         ] {
-            for (sev, cnt) in severity {
-                *combined_severity.entry(sev).or_insert(0) += cnt;
+            for (sev, cnt) in severity_map {
+                *combined_severity.entry(sev.clone()).or_insert(0) += cnt;
             }
         }
 

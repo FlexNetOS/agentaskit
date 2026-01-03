@@ -3,8 +3,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-/// Common agent identifier type used across all AgentAsKit systems
-pub type AgentId = Uuid;
+/// Enhanced: Common agent identifier type with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct AgentId(pub Uuid);
 
 /// Namespace UUID for AgentAsKit agent IDs (deterministic generation)
 pub const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
@@ -193,15 +195,16 @@ pub struct ScalingPolicy {
 
 /// Message structure for inter-agent communication
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enhanced: Agent message with type-safe IDs
 pub struct AgentMessage {
-    pub message_id: Uuid,
+    pub message_id: MessageId,
     pub from_agent: AgentId,
     pub to_agent: AgentId,
     pub message_type: String,
     pub priority: Priority,
     pub timestamp: DateTime<Utc>,
     pub payload: serde_json::Value,
-    pub correlation_id: Option<Uuid>,
+    pub correlation_id: Option<TaskId>,
     pub reply_to: Option<AgentId>,
     pub ttl: Option<DateTime<Utc>>,
 }
