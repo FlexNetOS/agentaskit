@@ -24,8 +24,8 @@ XDG_CACHE_HOME = "{{env.HOME}}/.cache"
 XDG_STATE_HOME = "{{env.HOME}}/.local/state"
 
 # Rust settings
-CARGO_HOME = "{{env.XDG_DATA_HOME}}/cargo"
-RUSTUP_HOME = "{{env.XDG_DATA_HOME}}/rustup"
+CARGO_HOME = "{{env.HOME}}/.local/share/cargo"
+RUSTUP_HOME = "{{env.HOME}}/.local/share/rustup"
 
 # Tool paths
 PATH = [
