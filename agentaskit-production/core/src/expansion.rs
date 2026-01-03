@@ -531,10 +531,53 @@ impl ExpansionEngine {
         let security_issues = self.identify_security_issues().await?;
         let compliance_status = self.check_compliance().await?;
         
+        // Scan for exposed ports. On Linux, use /proc/net/{tcp,udp}; on other platforms, log and return an empty list.
+        let exposed_ports = {
+            #[cfg(target_os = "linux")]
+            {
+                let mut ports = Vec::new();
+
+                // Helper closure to parse /proc/net/* tables (TCP/UDP)
+                let mut parse_proc_net = |path: &str, ports: &mut Vec<u16>| {
+                    if let Ok(content) = std::fs::read_to_string(path) {
+                        for line in content.lines().skip(1) {
+                            let parts: Vec<&str> = line.split_whitespace().collect();
+                            if parts.len() >= 2 {
+                                // Parse local address (format: IP:PORT in hex)
+                                if let Some(addr) = parts.get(1) {
+                                    if let Some(port_hex) = addr.split(':').nth(1) {
+                                        if let Ok(port) = u16::from_str_radix(port_hex, 16) {
+                                            if port > 0 && !ports.contains(&port) {
+                                                ports.push(port);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                // Collect TCP and UDP ports on Linux
+                parse_proc_net("/proc/net/tcp", &mut ports);
+                parse_proc_net("/proc/net/udp", &mut ports);
+
+                ports
+            }
+
+            #[cfg(not(target_os = "linux"))]
+            {
+                tracing::warn!(
+                    "Port exposure analysis is currently only implemented for Linux;                      returning empty exposed_ports list on this platform"
+                );
+                Vec::new()
+            }
+        };
+
         Ok(SecurityAnalysis {
             timestamp: Utc::now(),
             file_permissions,
-            exposed_ports: Vec::new(), // TODO: Implement port scanning
+            exposed_ports,
             security_issues,
             compliance_status,
         })
