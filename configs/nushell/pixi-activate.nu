@@ -2,7 +2,7 @@
 # This script is automatically run when entering a pixi shell
 # REF: ADR-0005 Modern Tooling Strategy
 
-print "🔧 Activating AgentAskit pixi environment..."
+print "🔧 Activating AgentAsKit pixi environment..."
 
 # Verify we're in a pixi shell
 if ($env.PIXI_IN_SHELL? | is-empty) {
@@ -10,7 +10,18 @@ if ($env.PIXI_IN_SHELL? | is-empty) {
 }
 
 # Set project root
-let project_root = ($env.PIXI_PROJECT_ROOT? | default (pwd))
+let project_root_env = ($env.PIXI_PROJECT_ROOT? | default "")
+let project_root = if ($project_root_env | is-empty) {
+    # Fall back to current working directory, but warn if it doesn't look like the project root
+    let cwd = (pwd)
+    let expected_env_file = ($cwd | path join "configs" "nushell" "env.nu")
+    if (not ($expected_env_file | path exists)) {
+        print "⚠️  Warning: PIXI_PROJECT_ROOT is not set and current directory does not look like the AgentAskit project root (missing configs/nushell/env.nu). Paths may be incorrect."
+    }
+    $cwd
+} else {
+    $project_root_env
+}
 $env.AGENTASKIT_ROOT = $project_root
 
 # Source the full Nu shell environment if not already loaded
@@ -31,7 +42,7 @@ for tool in $tools {
     }
 }
 
-print $"✅ Pixi environment activated for (ansi green_bold)AgentAskit(ansi reset)"
+print $"✅ Pixi environment activated for (ansi green_bold)AgentAsKit(ansi reset)"
 print $"   Project root: ($env.AGENTASKIT_ROOT)"
 print $"   Shell: Nushell (char lparen)(version | get version)(char rparen)"
 print ""

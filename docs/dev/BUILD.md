@@ -1,6 +1,6 @@
 # Build System Documentation
 
-AgentAskit uses **Cargo** (Rust's build system) as the primary build tool.
+AgentAsKit uses **Cargo** (Rust's build system) as the primary build tool.
 
 ## Directory Structure
 

@@ -1,4 +1,4 @@
-# AgentAskit Infrastructure Review - Critical Findings
+# AgentAsKit Infrastructure Review - Critical Findings
 
 **Date:** 2026-01-03
 **Reviewer:** Claude (Automated Review)

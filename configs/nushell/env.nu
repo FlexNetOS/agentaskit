@@ -1,4 +1,4 @@
-# AgentAskit Nushell Environment Configuration
+# AgentAsKit Nushell Environment Configuration
 # REF: ADR-0005 Modern Tooling Strategy
 # This is the PRIMARY environment configuration - cross-platform
 
@@ -96,7 +96,7 @@ def "build tools" [] {
 
 # Print environment info
 def "env info" [] {
-    print "=== AgentAskit Environment ==="
+    print "=== AgentAsKit Environment ==="
     print $"AGENTASKIT_ROOT:     ($env.AGENTASKIT_ROOT)"
     print $"Package Manager:     ($env.AGENTASKIT_PACKAGE_MANAGER? | default 'not set')"
     print $"Pixi Active:         (if ($env.PIXI_IN_SHELL? | is-empty) { 'No ❌' } else { 'Yes ✅' })"
