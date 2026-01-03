@@ -217,7 +217,7 @@ pub struct ConnectorManager {
     connectors: HashMap<String, Box<dyn SystemConnector>>,
     connection_pool: Arc<ConnectionPool>,
     authentication_manager: Arc<AuthenticationManager>,
-    protocol_adapter: Arc<ProtocolAdapter>,
+    protocol_adapter: Arc<dyn ProtocolAdapter>,
     connector_factory: Arc<ConnectorFactory>,
     connection_monitor: Arc<ConnectionMonitor>,
     config: ConnectorConfig,
