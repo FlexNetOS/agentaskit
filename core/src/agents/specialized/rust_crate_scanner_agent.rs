@@ -5,7 +5,7 @@
 
 use crate::agents::{Agent, AgentCapability};
 use agentaskit_shared::{
-    AgentId, AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task, TaskId,
+    AgentId, AgentMetadata, AgentStatus, HealthStatus, Priority, ResourceRequirements, Task, TaskId,
     TaskResult, TaskStatus,
 };
 use anyhow::{anyhow, Context, Result};
