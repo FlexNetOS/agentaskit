@@ -8,11 +8,10 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
-use crate::orchestration::{Task, TaskResult, TaskStatus};
+use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
-    HealthStatus, Priority, ResourceRequirements, ResourceUsage,
+    HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
@@ -297,7 +296,7 @@ struct AgentWorkload {
 impl Default for AgentWorkload {
     fn default() -> Self {
         Self {
-            agent_id: AgentId::from_name("default"),
+            agent_id: Uuid::new_v4(),
             current_tasks: 0,
             queued_tasks: 0,
             total_capacity: 100,
@@ -572,10 +571,12 @@ struct SLAMetrics {
 
 impl PriorityManager {
     pub fn new(config: PriorityManagerConfig) -> Self {
+        let id = Uuid::new_v4();
         let metadata = AgentMetadata {
-            id: AgentId::from_name("priority-manager"),
+            id,
             name: "Priority Manager".to_string(),
-            role: AgentRole::Executive,
+            agent_type: "executive".to_string(),
+            version: "1.0.0".to_string(),
             capabilities: vec![
                 "priority-management".to_string(),
                 "task-scheduling".to_string(),
@@ -584,8 +585,10 @@ impl PriorityManager {
                 "escalation-handling".to_string(),
                 "load-balancing".to_string(),
             ],
-            version: "1.0.0".to_string(),
-            cluster_assignment: Some("orchestration".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Unknown,
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
             resource_requirements: ResourceRequirements {
                 min_cpu: 0.3,
                 min_memory: 256 * 1024 * 1024, // 256MB
@@ -594,7 +597,7 @@ impl PriorityManager {
                 max_memory: 2 * 1024 * 1024 * 1024, // 2GB
                 max_storage: 100 * 1024 * 1024,     // 100MB
             },
-            health_check_interval: Duration::from_secs(30),
+            tags: std::collections::HashMap::new(),
         };
 
         Self {
@@ -932,7 +935,7 @@ impl Agent for PriorityManager {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
+    async fn initialize(&mut self) -> AgentResult<()> {
         tracing::info!("Initializing Priority Manager");
 
         // Initialize priority factors
@@ -955,7 +958,7 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Priority Manager");
 
         // Start priority calculation cycle
@@ -1004,7 +1007,7 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Priority Manager");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1018,12 +1021,12 @@ impl Agent for PriorityManager {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: crate::agents::AgentMessage) -> AgentResult<Option<crate::agents::AgentMessage>> {
         match message {
-            AgentMessage::Request { id, from, task, .. } => {
+            crate::agents::AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
-                Ok(Some(AgentMessage::Response {
+                Ok(Some(crate::agents::AgentMessage::Response {
                     id: crate::agents::MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
@@ -1035,7 +1038,7 @@ impl Agent for PriorityManager {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1115,23 +1118,33 @@ impl Agent for PriorityManager {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let _state = self.state.read().await;
         let _scheduler = self.scheduler.read().await;
         let _priority_engine = self.priority_engine.read().await;
 
-        Ok(HealthStatus::Healthy)
+        Ok(HealthStatus {
+            agent_id: self.metadata.id,
+            state: AgentStatus::Active,
+            last_heartbeat: chrono::Utc::now(),
+            cpu_usage: 20.0,
+            memory_usage: 256 * 1024 * 1024,
+            task_queue_size: 0,
+            completed_tasks: 0,
+            failed_tasks: 0,
+            average_response_time: Duration::from_millis(50),
+        })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Priority Manager configuration");
 
         // TODO: Parse and update configuration
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 
