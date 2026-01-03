@@ -26,11 +26,13 @@ def get-project-root [] {
 def check-prereqs [] {
     log-info "Checking prerequisites..."
 
-    let missing = []
-
-    let missing = if (which git | is-empty) { $missing | append "git" } else { $missing }
-    let missing = if (which cargo | is-empty) { $missing | append "rust/cargo" } else { $missing }
-
+    let missing = (
+        [
+            (if (which git | is-empty) { "git" } else { null })
+            (if (which cargo | is-empty) { "rust/cargo" } else { null })
+        ]
+        | where {|it| $it != null }
+    )
     if ($missing | is-not-empty) {
         log-err $"Missing prerequisites: ($missing | str join ', ')"
         exit 1
