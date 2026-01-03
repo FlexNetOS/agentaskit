@@ -1,6 +1,31 @@
-# AgentAskit Nushell Environment Configuration
+# AgentAsKit Nushell Environment Configuration
 # REF: ADR-0005 Modern Tooling Strategy
 # This is the PRIMARY environment configuration - cross-platform
+
+# ==============================================================================
+# Pixi Integration - Preferred Package Manager
+# ==============================================================================
+
+# Check if we're in a pixi shell and warn if not
+if ($env.PIXI_IN_SHELL? | is-empty) {
+    print "(ansi yellow_bold)⚠️  Not in pixi shell!(ansi reset)"
+    print "   For best compatibility, activate pixi environment:"
+    print "   (ansi green)pixi shell(ansi reset) or (ansi green)pixi run <task>(ansi reset)"
+    print ""
+}
+
+# Ensure pixi-managed tools are prioritized in PATH
+# Pixi sets PIXI_PROJECT_ROOT when active
+if (not ($env.PIXI_PROJECT_ROOT? | is-empty)) {
+    # Pixi is active - tools are already in PATH from pixi
+    # Just record that we're using pixi
+    $env.AGENTASKIT_PACKAGE_MANAGER = "pixi"
+} else {
+    # Pixi not active - try to detect pixi installation
+    if not (which pixi | is-empty) {
+        print "(ansi cyan)💡 Tip: Run 'pixi shell' to activate the pixi environment(ansi reset)"
+    }
+}
 
 # Get project root (call from project directory)
 def get-project-root [] {
@@ -71,11 +96,24 @@ def "build tools" [] {
 
 # Print environment info
 def "env info" [] {
-    print $"AGENTASKIT_ROOT: ($env.AGENTASKIT_ROOT)"
-    print $"XDG_CONFIG_HOME: ($env.XDG_CONFIG_HOME)"
-    print $"XDG_DATA_HOME:   ($env.XDG_DATA_HOME)"
-    print $"CARGO_HOME:      ($env.CARGO_HOME)"
-    print $"Tools bin:       ($env.AGENTASKIT_ROOT)/tools/bin"
+    print "=== AgentAsKit Environment ==="
+    print $"AGENTASKIT_ROOT:     ($env.AGENTASKIT_ROOT)"
+    print $"Package Manager:     ($env.AGENTASKIT_PACKAGE_MANAGER? | default 'not set')"
+    print $"Pixi Active:         (if ($env.PIXI_IN_SHELL? | is-empty) { 'No ❌' } else { 'Yes ✅' })"
+    print ""
+    print "=== XDG Directories ==="
+    print $"XDG_CONFIG_HOME:     ($env.XDG_CONFIG_HOME)"
+    print $"XDG_DATA_HOME:       ($env.XDG_DATA_HOME)"
+    print $"XDG_CACHE_HOME:      ($env.XDG_CACHE_HOME)"
+    print $"CARGO_HOME:          ($env.CARGO_HOME)"
+    print $"RUSTUP_HOME:         ($env.RUSTUP_HOME)"
+    print ""
+    print "=== Tool Versions ==="
+    print $"Nu Shell:            (version | get version)"
+    if not (which python | is-empty) { print $"Python:              (^python --version | str trim)" }
+    if not (which cargo | is-empty) { print $"Cargo:               (^cargo --version | str trim)" }
+    if not (which node | is-empty) { print $"Node.js:             (^node --version | str trim)" }
+    if not (which pnpm | is-empty) { print $"pnpm:                (^pnpm --version | str trim)" }
 }
 
 # ==============================================================================

@@ -17,30 +17,9 @@ jobs:
       - name: Setup Nushell
         uses: ./.github/actions/setup-nushell
 
-      - name: Lint with Nushell
+      - name: Lint with pixi
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "Checking repo structure..."
-
-            # Verify required files exist
-            let required = [
-              "Cargo.toml"
-              "pixi.toml"
-              ".mise.toml"
-              "tools/bootstrap.nu"
-            ]
-
-            for file in $required {
-              if not ($file | path exists) {
-                print $"ERROR: Missing required file: ($file)"
-                exit 1
-              }
-            }
-
-            print "All required files present ✓"
-            print "Lint complete ✓"
-          '
+        run: pixi run lint
 
   build:
     runs-on: ${{ matrix.os }}
@@ -56,14 +35,9 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-action@stable
 
-      - name: Build with Nushell
+      - name: Build with pixi
         shell: bash
-        run: |
-          pixi run nu -c '
-            print $"Building on (sys host | get name)..."
-            cargo build --verbose
-            print "Build complete ✓"
-          '
+        run: pixi run build-dev
 
   test:
     runs-on: ubuntu-latest
@@ -77,14 +51,9 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-action@stable
 
-      - name: Test with Nushell
+      - name: Test with pixi
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "Running tests..."
-            cargo test --verbose
-            print "Tests complete ✓"
-          '
+        run: pixi run test
 
   fmt-check:
     runs-on: ubuntu-latest
@@ -101,13 +70,4 @@ jobs:
 
       - name: Format and Clippy Check
         shell: bash
-        run: |
-          pixi run nu -c '
-            print "Checking formatting..."
-            cargo fmt --all -- --check
-
-            print "Running clippy..."
-            cargo clippy --all-targets -- -D warnings
-
-            print "Format and lint checks complete ✓"
-          '
+        run: pixi run lint

@@ -1,27 +1,42 @@
-# Pixi configuration for AgentAskit
+# Pixi configuration for AgentAsKit
 # REF: ADR-0005 Modern Tooling Strategy
 # All scripts use Nushell for cross-platform compatibility
 
 [project]
 name = "agentaskit"
 version = "0.1.0"
-description = "AgentAskit Production System"
+description = "AgentAsKit Production System"
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [dependencies]
-# Core development tools
+# Core development tools - ALL managed by pixi for consistency
 python = ">=3.11"
 rust = ">=1.70"
 
-# Nushell - cross-platform shell (our PRIMARY shell for all scripts)
+# Nushell - PRIMARY cross-platform shell for all scripts
 nushell = ">=0.90"
 
-# Bash for CI compatibility (minimal use, prefer nushell)
+# Node.js ecosystem - required for web tooling and pnpm
+nodejs = ">=20"
+pnpm = ">=8"
+
+# Bash for legacy CI compatibility (minimal use, prefer nushell)
 bash = "*"
 
 # Build acceleration (faster rebuilds)
 sccache = "*"
+
+# Rust tooling enhancements
+# NOTE: These Rust tools are installed via conda-forge, not cargo install.
+# LIMITATIONS:
+# - conda-forge may lag behind latest cargo versions (check https://anaconda.org/conda-forge/)
+# - Not all Rust tools are available in conda-forge; some may require cargo install fallback
+# - Version constraints: Using "*" allows conda-forge to provide best available version
+# - If specific versions are needed, consult conda-forge package versions before pinning
+# ALTERNATIVES: For latest versions, use `cargo install <tool>` or rustup components instead
+cargo-binstall = "*"  # Fast binary installation
+cargo-watch = "*"     # Auto-rebuild on file changes
 
 # Protobuf for gRPC (used by core/build.rs)
 protobuf = ">=3.0"
@@ -32,6 +47,13 @@ pkg-config = "*"
 # Data science / AI (for agent workflows)
 numpy = ">=1.24"
 pandas = ">=2.0"
+
+# Git (ensure consistent version across platforms)
+git = "*"
+
+# mise - Tool version manager (complements pixi for local dev workflow)
+# Provides .mise.toml support for developers who prefer mise tasks
+mise = "*"
 
 [tasks]
 # Bootstrap - single cross-platform script
@@ -73,6 +95,18 @@ pre-commit = "*"
 default = { features = [], solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
 
-# No activation scripts - use nushell config instead
-# [activation]
-# scripts = [".envrc"]  # Removed - use nushell
+# Pixi activation - ensures consistent environment across all platforms
+[activation]
+# SECURITY NOTE:
+# - The script(s) listed here are executed automatically when entering a pixi shell.
+# - `configs/nushell/pixi-activate.nu` may source additional files such as
+#   `configs/nushell/env.nu`. Treat all of these Nushell scripts as trusted code.
+# - In shared or multi-user environments, ensure these files are only writable by
+#   trusted users (e.g., owner-writable, not group/world-writable) and consider
+#   enforcing integrity checks (e.g., checksums verified in CI) to detect tampering.
+scripts = ["configs/nushell/pixi-activate.nu"]
+
+# Auto-activate pixi environment for supported shells
+[activation.env]
+# Ensure pixi-managed tools are first in PATH
+PIXI_IN_SHELL = "true"

@@ -1,4 +1,4 @@
-# mise configuration for AgentAskit
+# mise configuration for AgentAsKit
 # REF: ADR-0005 Modern Tooling Strategy
 # All scripts use Nushell for cross-platform compatibility
 
@@ -39,7 +39,7 @@ PATH = [
 
 # All tasks use nushell for cross-platform compatibility
 [tasks.build]
-description = "Build the AgentAskit core"
+description = "Build the AgentAsKit core"
 run = "nu -c 'cd agentaskit-production; cargo build --release'"
 
 [tasks.test]
