@@ -90,6 +90,13 @@ dev = { features = ["dev"], solve-group = "default" }
 
 # Pixi activation - ensures consistent environment across all platforms
 [activation]
+# SECURITY NOTE:
+# - The script(s) listed here are executed automatically when entering a pixi shell.
+# - `configs/nushell/pixi-activate.nu` may source additional files such as
+#   `configs/nushell/env.nu`. Treat all of these Nushell scripts as trusted code.
+# - In shared or multi-user environments, ensure these files are only writable by
+#   trusted users (e.g., owner-writable, not group/world-writable) and consider
+#   enforcing integrity checks (e.g., checksums verified in CI) to detect tampering.
 scripts = ["configs/nushell/pixi-activate.nu"]
 
 # Auto-activate pixi environment for supported shells
