@@ -478,6 +478,7 @@
   - [ ] .gitmodules
   - [ ] .qoderignore
   - [ ] a2a.rs
+  - [ ] a2a_tests.rs
   - [ ] agent_directory_template.csv
   - [ ] agent_map_crosswalk.md
   - [ ] agent_schema_template.json
@@ -494,12 +495,17 @@
   - [ ] ark-os repository analysis_ comprehensive feature catalog.md
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
   - [ ] auth.rs
+  - [ ] auth_tests.rs
   - [ ] capsule.schema.v2_20251005-081849.json
   - [ ] capsule.schema_20251005-081849.json
+  - [ ] cargo_audit_agent.rs
+  - [ ] cargo_build_agent.rs
+  - [ ] cargo_license_agent.rs
   - [ ] check_errors.txt
   - [ ] check_errors_2.txt
   - [ ] comprehensive agenticai os repository analysis.md
   - [ ] config.rs
+  - [ ] config_tests.rs
   - [ ] crosscheck_report.md
   - [ ] csv_schema.md
   - [ ] csv_schema_v1_20251005-081849.md
@@ -515,14 +521,8 @@
   - [ ] final_summary.md
   - [ ] fitness-report.json
   - [ ] gateway.rs
+  - [ ] generator.rs
   - [ ] healing_report.md
-  - [ ] how-to-use.md
-  - [ ] how-to-use_v3_1_20251005-081849.md
-  - [ ] how-to-use_v3_1_extended_20251005-081849.md
-  - [ ] inference.capnp
-  - [ ] local.yaml
-  - [ ] manifest.sha256
-  - [ ] mcp.rs
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---

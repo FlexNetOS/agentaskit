@@ -1,0 +1,268 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TODO to GitHub Issues Sync Workflow
+# REF: OPS-ISSUE-SYNC - Sync .todo ↔ GitHub Issues
+# ─────────────────────────────────────────────────────────────────────────────
+name: Sync TODO to GitHub Issues
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '.todo'
+      - 'agentaskit-production/.todo'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no changes)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  issues: write
+  contents: read
+
+env:
+  TODO_FILE: 'agentaskit-production/.todo'
+
+jobs:
+  sync-issues:
+    name: Sync TODO Items to Issues
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install PyGithub pyyaml
+
+      - name: Parse TODO and sync issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import re
+          import sys
+          from github import Github
+
+          # Configuration
+          TODO_FILE = os.environ.get('TODO_FILE', '.todo')
+          DRY_RUN = os.environ.get('DRY_RUN', 'false').lower() == 'true'
+          GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+          REPO_NAME = os.environ.get('GITHUB_REPOSITORY')
+
+          if not GITHUB_TOKEN:
+              print("::error::GITHUB_TOKEN not set")
+              sys.exit(1)
+
+          # Priority to label mapping
+          PRIORITY_LABELS = {
+              '(A)': 'priority:critical',
+              '(B)': 'priority:high',
+              '(C)': 'priority:medium'
+          }
+
+          # Context to label mapping
+          CONTEXT_LABELS = {
+              '@prod': 'env:production',
+              '@staging': 'env:staging',
+              '@dev': 'env:development'
+          }
+
+          def parse_todo_line(line):
+              """Parse a single TODO line and extract metadata."""
+              # Skip completed items, comments, and empty lines
+              if not line.strip() or line.strip().startswith('#'):
+                  return None
+              if '- [x]' in line or line.strip().startswith('[1;96m'):
+                  return None
+              if '- [ ]' not in line:
+                  return None
+
+              item = {
+                  'raw': line,
+                  'ref': None,
+                  'priority': None,
+                  'title': None,
+                  'tags': [],
+                  'context': None,
+                  'owner': None,
+                  'deps': [],
+                  'acc': None
+              }
+
+              # Extract REF
+              ref_match = re.search(r'\[REF:\s*([^\]]+)\]', line)
+              if ref_match:
+                  item['ref'] = ref_match.group(1).strip()
+
+              # Extract priority
+              for p, label in PRIORITY_LABELS.items():
+                  if p in line:
+                      item['priority'] = label
+                      break
+
+              # Extract tags (+Tag)
+              tags = re.findall(r'\+(\w+)', line)
+              item['tags'] = tags
+
+              # Extract context (@context)
+              ctx_match = re.search(r'@(\w+)', line)
+              if ctx_match:
+                  ctx = f"@{ctx_match.group(1)}"
+                  item['context'] = CONTEXT_LABELS.get(ctx, f"context:{ctx_match.group(1)}")
+
+              # Extract owner
+              owner_match = re.search(r'owner:@?(\S+)', line)
+              if owner_match:
+                  item['owner'] = owner_match.group(1)
+
+              # Extract dependencies
+              deps_match = re.search(r'deps:\[([^\]]*)\]', line)
+              if deps_match:
+                  item['deps'] = [d.strip() for d in deps_match.group(1).split(',') if d.strip()]
+
+              # Extract acceptance criteria
+              acc_match = re.search(r'acc:"([^"]*)"', line)
+              if acc_match:
+                  item['acc'] = acc_match.group(1)
+
+              # Extract title (text after checkbox, before first metadata)
+              title_match = re.search(r'\[\s*\]\s*\[[\d;m()A-C]+\]\s*[\d-]+\s*(.+?)(?:\s+\[1m|\s+\[96m|\s+\[95m|\s+\[REF:|\s+owner:|\s+deps:|\s+acc:)', line)
+              if title_match:
+                  item['title'] = re.sub(r'\[\d+m', '', title_match.group(1)).strip()
+              else:
+                  # Fallback title extraction
+                  title_match = re.search(r'\[\s*\]\s*.*?\d{4}-\d{2}-\d{2}\s+(.+?)(?:\s+\+|\s+@|\s+\[REF:)', line)
+                  if title_match:
+                      item['title'] = re.sub(r'\[\d+m', '', title_match.group(1)).strip()
+
+              if not item['ref'] or not item['title']:
+                  return None
+
+              return item
+
+          def sync_to_github(items):
+              """Sync parsed TODO items to GitHub Issues."""
+              g = Github(GITHUB_TOKEN)
+              repo = g.get_repo(REPO_NAME)
+
+              # Get existing issues
+              existing_issues = {}
+              for issue in repo.get_issues(state='all'):
+                  ref_match = re.search(r'\[REF:\s*([^\]]+)\]', issue.title)
+                  if ref_match:
+                      existing_issues[ref_match.group(1)] = issue
+
+              synced = 0
+              created = 0
+              updated = 0
+
+              for item in items:
+                  ref = item['ref']
+                  title = f"[REF: {ref}] {item['title']}"
+
+                  # Build labels
+                  labels = ['todo-sync']
+                  if item['priority']:
+                      labels.append(item['priority'])
+                  if item['context']:
+                      labels.append(item['context'])
+                  for tag in item['tags'][:5]:  # Limit tags
+                      labels.append(f"tag:{tag.lower()}")
+
+                  # Build body
+                  body_parts = [
+                      f"## {item['title']}",
+                      "",
+                      f"**Reference:** `{ref}`",
+                  ]
+
+                  if item['owner']:
+                      body_parts.append(f"**Owner:** @{item['owner']}")
+
+                  if item['deps']:
+                      body_parts.append(f"**Dependencies:** {', '.join(item['deps'])}")
+
+                  if item['acc']:
+                      body_parts.append("")
+                      body_parts.append("### Acceptance Criteria")
+                      body_parts.append(item['acc'])
+
+                  body_parts.append("")
+                  body_parts.append("---")
+                  body_parts.append("*This issue is synced from `.todo` file. Do not edit the title REF tag.*")
+
+                  body = '\n'.join(body_parts)
+
+                  if DRY_RUN:
+                      print(f"[DRY RUN] Would sync: {title}")
+                      synced += 1
+                      continue
+
+                  if ref in existing_issues:
+                      issue = existing_issues[ref]
+                      # Update if needed
+                      if issue.state == 'closed':
+                          issue.edit(state='open')
+                      issue.edit(title=title, body=body, labels=labels)
+                      updated += 1
+                      print(f"Updated issue #{issue.number}: {title}")
+                  else:
+                      # Create new issue
+                      try:
+                          new_issue = repo.create_issue(title=title, body=body, labels=labels)
+                          created += 1
+                          print(f"Created issue #{new_issue.number}: {title}")
+                      except Exception as e:
+                          print(f"::warning::Failed to create issue for {ref}: {e}")
+
+                  synced += 1
+
+              print(f"\nSync complete: {synced} items processed, {created} created, {updated} updated")
+
+          def main():
+              # Find and parse TODO file
+              todo_path = TODO_FILE
+              if not os.path.exists(todo_path):
+                  todo_path = '.todo'
+              if not os.path.exists(todo_path):
+                  print(f"::error::TODO file not found at {TODO_FILE} or .todo")
+                  sys.exit(1)
+
+              print(f"Parsing TODO file: {todo_path}")
+
+              items = []
+              with open(todo_path, 'r', encoding='utf-8') as f:
+                  for line in f:
+                      item = parse_todo_line(line)
+                      if item:
+                          items.append(item)
+
+              print(f"Found {len(items)} open TODO items")
+
+              if not items:
+                  print("No items to sync")
+                  return
+
+              sync_to_github(items)
+
+          if __name__ == '__main__':
+              main()
+          EOF
+
+      - name: Create sync log
+        run: |
+          mkdir -p logs/gha
+          echo "TODO sync completed at $(date -u +%Y-%m-%dT%H:%M:%SZ)" > logs/gha/todo-sync.log

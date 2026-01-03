@@ -1,0 +1,52 @@
+# Wiki-rs (Litho) Production Configuration Template
+# Use environment variables for sensitive values
+
+[project]
+path = "${PROJECT_PATH:-./}"
+output_dir = "${WIKI_OUTPUT_DIR:-./docs}"
+target_language = "${WIKI_LANGUAGE:-en}"
+
+[llm]
+# Production LLM configuration
+# Set via environment variables:
+# - OPENAI_API_KEY or LLM_API_KEY
+# - LLM_API_BASE_URL (optional)
+
+api_base_url = "${LLM_API_BASE_URL}"
+model_efficient = "${LLM_MODEL_EFFICIENT:-gpt-4o-mini}"
+model_powerful = "${LLM_MODEL_POWERFUL:-gpt-4o}"
+enable_preset_tools = true
+max_tokens = 4096
+temperature = 0.7
+
+[processing]
+skip_preprocessing = false
+skip_research = false
+enable_cache = true
+cache_dir = "${WIKI_CACHE_DIR:-./.litho_cache}"
+
+exclude_patterns = [
+    "node_modules/**",
+    "target/**",
+    ".git/**",
+    "*.lock",
+    "dist/**",
+    "build/**",
+    "__pycache__/**",
+    "*.pyc",
+    ".venv/**",
+    "vendor/**",
+    "*.min.js",
+    "*.min.css",
+]
+
+max_file_size = 1048576
+
+[output]
+generate_overview = true
+generate_architecture = true
+generate_workflow = true
+generate_deep_dive = true
+generate_diagrams = true
+fix_mermaid_errors = true
+format = "markdown"

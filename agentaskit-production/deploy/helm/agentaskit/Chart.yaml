@@ -1,0 +1,24 @@
+apiVersion: v2
+name: agentaskit
+description: AgentAskit - Multi-Agent Orchestration Framework
+
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+keywords:
+  - agentaskit
+  - agents
+  - orchestration
+  - ai
+  - multi-agent
+
+home: https://github.com/FlexNetOS/agentaskit
+sources:
+  - https://github.com/FlexNetOS/agentaskit
+
+maintainers:
+  - name: FlexNetOS Team
+    email: team@flexnetos.io
+
+dependencies: []

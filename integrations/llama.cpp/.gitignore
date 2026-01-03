@@ -1,0 +1,16 @@
+# Cloned repositories (fetched by fetch.sh)
+llama.cpp/
+llama-cpp-rs/
+CMakeRust/
+
+# Build artifacts
+build/
+*.o
+*.so
+*.a
+*.dylib
+*.dll
+
+# Compiled binaries
+bin/
+main

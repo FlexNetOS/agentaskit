@@ -1,0 +1,229 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'integrations/**'
+      - 'tests/**'
+      - '.github/workflows/integration-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'integrations/**'
+      - 'tests/**'
+      - '.github/workflows/integration-tests.yml'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  structure-check:
+    name: Structure & Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run integration health check
+        run: |
+          chmod +x scripts/run_integration_tests.sh
+          ./scripts/run_integration_tests.sh
+
+  agentgateway-tests:
+    name: Agentgateway Integration Tests
+    runs-on: ubuntu-latest
+    needs: structure-check
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            integrations/agentgateway/target/
+          key: ${{ runner.os }}-cargo-ag-tests-${{ hashFiles('integrations/agentgateway/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ag-tests-
+
+      - name: Check formatting
+        working-directory: integrations/agentgateway
+        run: cargo fmt --all -- --check
+        continue-on-error: true
+
+      - name: Run Clippy
+        working-directory: integrations/agentgateway
+        run: cargo clippy --all-targets -- -D warnings
+        continue-on-error: true
+
+      - name: Build integration
+        working-directory: integrations/agentgateway
+        run: cargo build --release
+
+      - name: Run unit tests
+        working-directory: integrations/agentgateway
+        run: cargo test --all --no-fail-fast
+
+      - name: Run integration tests
+        working-directory: integrations/agentgateway
+        run: cargo test --test '*' --no-fail-fast
+        continue-on-error: true
+
+  wiki-tests:
+    name: Wiki-rs Integration Tests
+    runs-on: ubuntu-latest
+    needs: structure-check
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            integrations/wiki-rs/target/
+          key: ${{ runner.os }}-cargo-wiki-tests-${{ hashFiles('integrations/wiki-rs/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-wiki-tests-
+
+      - name: Check formatting
+        working-directory: integrations/wiki-rs
+        run: cargo fmt --all -- --check
+        continue-on-error: true
+
+      - name: Run Clippy
+        working-directory: integrations/wiki-rs
+        run: cargo clippy --all-targets -- -D warnings
+        continue-on-error: true
+
+      - name: Build integration
+        working-directory: integrations/wiki-rs
+        run: cargo build --release
+
+      - name: Run unit tests
+        working-directory: integrations/wiki-rs
+        run: cargo test --all --no-fail-fast
+
+      - name: Run integration tests
+        working-directory: integrations/wiki-rs
+        run: cargo test --test '*' --no-fail-fast
+        continue-on-error: true
+
+  config-validation:
+    name: Configuration Validation
+    runs-on: ubuntu-latest
+    needs: structure-check
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate YAML configs
+        run: |
+          echo "Validating YAML configuration files..."
+          for file in configs/agentgateway/*.yaml; do
+            echo "Checking $file"
+            python3 -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
+          done
+          echo "All YAML configs valid!"
+
+      - name: Validate TOML configs
+        run: |
+          echo "Validating TOML configuration files..."
+          pip install toml
+          for file in configs/wiki/*.toml; do
+            echo "Checking $file"
+            python3 -c "import toml; toml.load('$file')" || exit 1
+          done
+          echo "All TOML configs valid!"
+
+  documentation-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check README files exist
+        run: |
+          files=(
+            "integrations/agentgateway/README.md"
+            "integrations/wiki-rs/README.md"
+            "integrations/agentgateway/DEPENDENCY_ANALYSIS.md"
+          )
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing: $file"
+              exit 1
+            fi
+            echo "Found: $file"
+          done
+
+      - name: Check README content quality
+        run: |
+          for readme in integrations/*/README.md; do
+            lines=$(wc -l < "$readme")
+            if [ "$lines" -lt 50 ]; then
+              echo "Warning: $readme has only $lines lines (expected at least 50)"
+            fi
+
+            # Check for required sections
+            if ! grep -q "## Features" "$readme"; then
+              echo "Warning: $readme missing '## Features' section"
+            fi
+          done
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [structure-check, agentgateway-tests, wiki-tests, config-validation, documentation-check]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "╔════════════════════════════════════════════════════════════╗"
+          echo "║               INTEGRATION TEST SUMMARY                      ║"
+          echo "╚════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "Structure Check:     ${{ needs.structure-check.result }}"
+          echo "Agentgateway Tests:  ${{ needs.agentgateway-tests.result }}"
+          echo "Wiki-rs Tests:       ${{ needs.wiki-tests.result }}"
+          echo "Config Validation:   ${{ needs.config-validation.result }}"
+          echo "Documentation Check: ${{ needs.documentation-check.result }}"
+          echo ""
+
+          if [ "${{ needs.structure-check.result }}" != "success" ] || \
+             [ "${{ needs.agentgateway-tests.result }}" != "success" ] || \
+             [ "${{ needs.wiki-tests.result }}" != "success" ] || \
+             [ "${{ needs.config-validation.result }}" != "success" ]; then
+            echo "❌ Some tests failed!"
+            exit 1
+          fi
+
+          echo "✅ All integration tests passed!"

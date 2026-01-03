@@ -4,6 +4,9 @@ members = [
 
     "shared"
 ]
+exclude = [
+    "integrations/agentgateway"
+]
 resolver = "2"
 
 [workspace.package]
