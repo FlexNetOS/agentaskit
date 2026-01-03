@@ -10,7 +10,6 @@ exclude = [
 resolver = "2"
 
 [workspace.package]
-name = "agentaskit-production"
 version = "0.1.0"
 edition = "2021"
 authors = ["AgentasKit Contributors"]
