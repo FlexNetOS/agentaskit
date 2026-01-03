@@ -57,8 +57,16 @@ def --env "mise-activate" [] {
     }
 }
 
-# AgentAskit project aliases
-alias aa = cd $env.AGENTASKIT_ROOT
+# AgentAskit project aliases (require AGENTASKIT_ROOT to be set)
+# Use 'mise activate' or source .envrc to set AGENTASKIT_ROOT
+def --env "aa" [] {
+    let root = ($env | get -i AGENTASKIT_ROOT | default "")
+    if $root == "" {
+        error make { msg: "AGENTASKIT_ROOT is not set. Run 'mise activate' or source .envrc first." }
+    } else {
+        cd $root
+    }
+}
 alias aab = cargo build --release
 alias aat = cargo test --all
 alias aal = cargo clippy --all-targets

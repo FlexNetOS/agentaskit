@@ -12,20 +12,17 @@
       "file": "/root/.cargo",
       "variable": "CARGO_HOME",
       "suggested_fix": "XDG_DATA_HOME/cargo"
-    }
-,
+    },
     {
       "file": "/root/.rustup",
       "variable": "RUSTUP_HOME",
       "suggested_fix": "XDG_DATA_HOME/rustup"
-    }
-,
+    },
     {
       "file": "/root/.npm",
       "variable": "npm config",
       "suggested_fix": "XDG_DATA_HOME/npm"
     }
-
   ],
   "recommendations": [
     "Set CARGO_HOME=$XDG_DATA_HOME/cargo",

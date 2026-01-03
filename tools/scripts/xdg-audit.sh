@@ -35,8 +35,6 @@ else
   "violations": [
 JSONEOF
 
-    VIOLATIONS=()
-
     # Check for common XDG violators in $HOME
     CHECK_FILES=(
         ".bash_history:HISTFILE:XDG_STATE_HOME/bash/history"
@@ -51,29 +49,32 @@ JSONEOF
         ".cache:N/A:XDG compliant"
     )
 
+    # Build array of violations
+    VIOLATIONS_JSON=""
     FIRST=true
     for check in "${CHECK_FILES[@]}"; do
         IFS=':' read -r file var fix <<< "$check"
         if [ -e "$HOME/$file" ]; then
             if [[ "$fix" != *"compliant"* && "$fix" != *"acceptable"* ]]; then
-                if [ "$FIRST" = true ]; then
-                    FIRST=false
-                else
-                    echo "," >> "$OUTPUT_FILE"
+                if [ "$FIRST" = false ]; then
+                    VIOLATIONS_JSON+=","
                 fi
-                cat >> "$OUTPUT_FILE" << ENTRYEOF
+                FIRST=false
+                VIOLATIONS_JSON+="
     {
-      "file": "$HOME/$file",
-      "variable": "$var",
-      "suggested_fix": "$fix"
-    }
-ENTRYEOF
+      \"file\": \"$HOME/$file\",
+      \"variable\": \"$var\",
+      \"suggested_fix\": \"$fix\"
+    }"
             fi
         fi
     done
 
-    cat >> "$OUTPUT_FILE" << JSONEOF
+    cat >> "$OUTPUT_FILE" << ENTRYEOF
+$VIOLATIONS_JSON
+ENTRYEOF
 
+    cat >> "$OUTPUT_FILE" << JSONEOF
   ],
   "recommendations": [
     "Set CARGO_HOME=\$XDG_DATA_HOME/cargo",
