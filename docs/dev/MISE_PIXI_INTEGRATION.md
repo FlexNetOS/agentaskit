@@ -144,7 +144,7 @@ mise tasks
 Update .mise.toml to match pixi.toml tasks.
 
 ### "Which should I use?"
-**Recommendation for AgentAskit:**
+**Recommendation for AgentAsKit:**
 - Use **pixi** for most tasks (simpler, better CI/CD)
 - Use **mise** if you already know it or need advanced task features
 

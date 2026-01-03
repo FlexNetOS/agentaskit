@@ -2,13 +2,13 @@
 
 ## Overview
 
-This document describes how the AgentAskit agent gateway integrates with the orchestration layer (claude-flow) and the centralized AI CLI (aichat).
+This document describes how the AgentAsKit agent gateway integrates with the orchestration layer (claude-flow) and the centralized AI CLI (aichat).
 
 ## Current Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              AgentAskit                                      │
+│                              AgentAsKit                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
