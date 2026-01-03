@@ -19,7 +19,7 @@ use uuid::Uuid;
 /// Security Specialist Agent - Domain expert for security implementation and compliance
 #[derive(Clone)]
 pub struct SecuritySpecialistAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: SecurityConfig,
     metadata: AgentMetadata,

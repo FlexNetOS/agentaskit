@@ -102,7 +102,7 @@ pub struct CrossArtifact {
 }
 
 pub struct RustCrossAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustCrossConfig,
     metadata: AgentMetadata,

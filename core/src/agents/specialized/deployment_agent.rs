@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, AgentId, Task, TaskId, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Deployment Agent - Comprehensive CI/CD and deployment automation
@@ -23,7 +23,7 @@ use agentaskit_shared::{
 /// - Deployment monitoring and validation
 /// - Blue-green and canary deployments
 pub struct DeploymentAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

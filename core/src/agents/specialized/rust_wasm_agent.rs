@@ -99,7 +99,7 @@ pub struct PerformanceMetrics {
 }
 
 pub struct RustWasmAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustWasmConfig,
     metadata: AgentMetadata,

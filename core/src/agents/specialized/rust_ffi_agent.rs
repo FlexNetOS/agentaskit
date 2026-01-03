@@ -63,7 +63,7 @@ pub enum FFIBindingType {
 }
 
 pub struct RustFFIAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustFFIConfig,
     metadata: AgentMetadata,

@@ -88,7 +88,7 @@ pub enum ReleaseArtifactType {
 }
 
 pub struct RustReleaseAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustReleaseConfig,
     metadata: AgentMetadata,

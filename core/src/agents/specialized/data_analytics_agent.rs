@@ -20,7 +20,7 @@ use uuid::Uuid;
 /// Data Analytics Agent - Domain expert for data processing and analytics
 #[derive(Clone)]
 pub struct DataAnalyticsAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     config: DataAnalyticsConfig,

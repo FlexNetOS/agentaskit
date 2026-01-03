@@ -159,7 +159,7 @@ pub struct CacheStats {
 
 /// Cargo Build Agent
 pub struct CargoBuildAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: CargoBuildConfig,
     metadata: AgentMetadata,

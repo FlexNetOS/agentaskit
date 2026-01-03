@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, AgentId, Task, TaskId, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Learning Agent - Machine Learning and AI capabilities
@@ -23,7 +23,7 @@ use agentaskit_shared::{
 /// - Model deployment and serving
 /// - Continuous learning and adaptation
 pub struct LearningAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

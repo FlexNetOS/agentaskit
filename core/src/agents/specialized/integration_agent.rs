@@ -19,7 +19,7 @@ use uuid::Uuid;
 /// Integration Agent - Domain expert for system integration and API management
 #[derive(Clone)]
 pub struct IntegrationAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     config: IntegrationConfig,

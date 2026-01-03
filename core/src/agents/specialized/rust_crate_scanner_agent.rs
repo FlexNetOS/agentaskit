@@ -238,7 +238,7 @@ pub enum ViolationSeverity {
 
 /// Rust Crate Scanner Agent
 pub struct RustCrateScannerAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustCrateScannerConfig,
     metadata: AgentMetadata,

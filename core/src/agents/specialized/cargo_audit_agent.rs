@@ -71,7 +71,7 @@ pub struct Vulnerability {
 }
 
 pub struct CargoAuditAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: CargoAuditConfig,
     metadata: AgentMetadata,

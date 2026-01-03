@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, AgentId, Task, TaskId, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Code Generation Agent - Specialized code generation and optimization
@@ -23,7 +23,7 @@ use agentaskit_shared::{
 /// - Multi-language code generation support
 /// - Integration with development workflows
 pub struct CodeGenerationAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,

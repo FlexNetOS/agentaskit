@@ -77,7 +77,7 @@ pub enum LintSeverity {
 }
 
 pub struct RustClippyAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustClippyConfig,
     metadata: AgentMetadata,

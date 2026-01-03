@@ -55,7 +55,7 @@ pub struct FormatIssue {
 }
 
 pub struct RustFmtAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustFmtConfig,
     metadata: AgentMetadata,

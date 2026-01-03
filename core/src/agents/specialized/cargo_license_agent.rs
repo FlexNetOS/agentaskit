@@ -65,7 +65,7 @@ pub struct LicenseViolation {
 }
 
 pub struct CargoLicenseAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: CargoLicenseConfig,
     metadata: AgentMetadata,

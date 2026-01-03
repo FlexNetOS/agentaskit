@@ -48,7 +48,7 @@ pub struct DocResult {
 }
 
 pub struct RustDocAgent {
-    id: Uuid,
+    id: AgentId,
     name: String,
     config: RustDocConfig,
     metadata: AgentMetadata,
