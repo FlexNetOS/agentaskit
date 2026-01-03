@@ -34,6 +34,7 @@ pub enum AgentLayer {
 pub struct Agent {
     pub id: Uuid,
     pub name: String,
+    pub agent_type: String,  // Type of agent (e.g., "executive", "specialized", "board")
     pub layer: AgentLayer,
     pub capabilities: Vec<String>,
     pub status: AgentStatus,
