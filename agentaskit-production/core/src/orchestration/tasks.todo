@@ -472,57 +472,57 @@
 
 #### Subtasks (auto-generated)
 <!-- AUTO:WORKFLOW-009:SUBTASKS:BEGIN -->
-- [x] Review basenames present outside production (top sample):
-  - [x] .gitattributes
-  - [x] .gitignore
-  - [x] .gitmodules
-  - [x] .qoderignore
-  - [x] a2a.rs
-  - [x] a2a_tests.rs
-  - [x] agent_directory_template.csv
-  - [x] agent_map_crosswalk.md
-  - [x] agent_schema_template.json
-  - [x] agentask.subject.todo
-  - [x] agentask.todo
-  - [x] agentaskit.todo
-  - [x] ai_sop_interface.rs
-  - [x] all_inclusive_agent_directory.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.fixed_20251005-081849.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.full_20251005-081849.csv
-  - [x] all_inclusive_agent_directory_v6_plus.normalized.healed_20251005-081849.csv
-  - [x] analyze_all_repositories.csv
-  - [x] anchor-20251005-080803.json
-  - [x] ark-os repository analysis_ comprehensive feature catalog.md
-  - [x] ark-os_ architectural positioning for agenticai os scaffold.md
-  - [x] auth.rs
-  - [x] auth_tests.rs
-  - [x] capsule.schema.v2_20251005-081849.json
-  - [x] capsule.schema_20251005-081849.json
-  - [x] cargo_audit_agent.rs
-  - [x] cargo_build_agent.rs
-  - [x] cargo_license_agent.rs
-  - [x] check_errors.txt
-  - [x] check_errors_2.txt
-  - [x] comprehensive agenticai os repository analysis.md
-  - [x] config.rs
-  - [x] config_tests.rs
-  - [x] crosscheck_report.md
-  - [x] csv_schema.md
-  - [x] csv_schema_v1_20251005-081849.md
-  - [x] csv_schema_v2_20251005-081849.md
-  - [x] csv_schema_v3_20251005-081849.md
-  - [x] data.csv
-  - [x] dependency_analysis.md
-  - [x] dispatch_run_todo.ps1
-  - [x] enhanced_workflow_components_report.md
-  - [x] enhanced_workflow_implementation.md
-  - [x] enhanced_workflow_tests.rs
-  - [x] final_report.md
-  - [x] final_summary.md
-  - [x] fitness-report.json
-  - [x] gateway.rs
-  - [x] generator.rs
-  - [x] healing_report.md
+- [ ] Review basenames present outside production (top sample):
+  - [ ] .gitattributes
+  - [ ] .gitignore
+  - [ ] .gitmodules
+  - [ ] .qoderignore
+  - [ ] a2a.rs
+  - [ ] a2a_tests.rs
+  - [ ] agent_directory_template.csv
+  - [ ] agent_map_crosswalk.md
+  - [ ] agent_schema_template.json
+  - [ ] agentask.subject.todo
+  - [ ] agentask.todo
+  - [ ] agentaskit.todo
+  - [ ] ai_sop_interface.rs
+  - [ ] all_inclusive_agent_directory.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.fixed_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.full_20251005-081849.csv
+  - [ ] all_inclusive_agent_directory_v6_plus.normalized.healed_20251005-081849.csv
+  - [ ] analyze_all_repositories.csv
+  - [ ] anchor-20251005-080803.json
+  - [ ] ark-os repository analysis_ comprehensive feature catalog.md
+  - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
+  - [ ] auth.rs
+  - [ ] auth_tests.rs
+  - [ ] capsule.schema.v2_20251005-081849.json
+  - [ ] capsule.schema_20251005-081849.json
+  - [ ] cargo_audit_agent.rs
+  - [ ] cargo_build_agent.rs
+  - [ ] cargo_license_agent.rs
+  - [ ] check_errors.txt
+  - [ ] check_errors_2.txt
+  - [ ] comprehensive agenticai os repository analysis.md
+  - [ ] config.rs
+  - [ ] config_tests.rs
+  - [ ] crosscheck_report.md
+  - [ ] csv_schema.md
+  - [ ] csv_schema_v1_20251005-081849.md
+  - [ ] csv_schema_v2_20251005-081849.md
+  - [ ] csv_schema_v3_20251005-081849.md
+  - [ ] data.csv
+  - [ ] dependency_analysis.md
+  - [ ] dispatch_run_todo.ps1
+  - [ ] enhanced_workflow_components_report.md
+  - [ ] enhanced_workflow_implementation.md
+  - [ ] enhanced_workflow_tests.rs
+  - [ ] final_report.md
+  - [ ] final_summary.md
+  - [ ] fitness-report.json
+  - [ ] gateway.rs
+  - [ ] generator.rs
+  - [ ] healing_report.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
@@ -605,4 +605,318 @@
   2. Add `.github/workflows/sca.yml` (e.g., OSS Review/Trivy/GHAS)
 - **Acceptance:** CI green; zero high/critical findings
 - **Evidence:** CI runs, security/reports/
+
+
+---
+
+## NEW GAPS IDENTIFIED - Session 2026-01-03
+
+### Task: CODE-001 - Fix Orphaned Files in core/src
+
+**Priority:** Critical  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Code Quality
+
+#### Description
+23 orphaned .rs files exist in `core/src/` root that are NOT declared in lib.rs or main.rs, making them unreachable (~4,000+ lines of dead code).
+
+#### Orphaned Files
+- broker.rs, effect.rs, engine.rs, evolution.rs, executor.rs
+- expansion.rs (555 lines), governance_integration.rs (319 lines)
+- governance_integration_simple.rs, governance_stubs.rs
+- hootl.rs (516 lines), noop.rs, orchestrator.rs (406 lines)
+- production_config.rs, rust_workers.rs, shell.rs, task.rs
+
+#### Acceptance Criteria
+- All files either integrated into module tree or removed
+- No dead code in core/src/ root
+- Cargo check passes with no unused warnings
+
+---
+
+### Task: CODE-002 - Create AI Module and Wire to lib.rs
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Module Structure
+
+#### Description
+The `core/src/ai/` directory exists with `model_selector_bridge.rs` and `sop_analyzer.rs` but has no `mod.rs` and is not declared in `lib.rs`, making it inaccessible.
+
+#### Acceptance Criteria
+- Create `core/src/ai/mod.rs` with proper exports
+- Add `pub mod ai;` to `core/src/lib.rs`
+- All AI module functions accessible from crate root
+
+---
+
+### Task: CODE-003 - Fix Undefined Field References
+
+**Priority:** Critical  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Compile Errors
+
+#### Description
+Multiple undefined field references will cause compile failures:
+1. `agents/mod.rs:365` - `agent.agent_type` doesn't exist on Agent struct
+2. `orchestration/mod.rs:262` - `self.state` doesn't exist on OrchestratorEngine
+3. `communication/mod.rs:256` - `msg.metadata` doesn't exist (Message has `payload`)
+
+#### Acceptance Criteria
+- All undefined field references fixed
+- Cargo check passes with zero errors
+- Request-response correlation working in MessageBroker
+
+---
+
+### Task: CODE-004 - Implement Protocol Trait Concrete Implementations
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Provider Wiring
+
+#### Description
+7 protocol traits defined in `shared/src/protocols/mod.rs` have ZERO concrete implementations:
+- AgentCommunicationProtocol
+- HealthMonitoringProtocol
+- TaskOrchestrationProtocol
+- AgentLifecycleProtocol
+- CapabilityManagementProtocol
+- DeploymentManagementProtocol
+- MetricsCollectionProtocol
+
+#### Acceptance Criteria
+- Each protocol has at least one concrete implementation
+- Implementations wired to OrchestratorEngine
+- Integration tests for each protocol
+
+---
+
+### Task: INFRA-001 - Add Services to Cargo Workspace
+
+**Priority:** Medium  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Build System
+
+#### Description
+The `services/` directory contains Rust code (`health/mod.rs`) but is NOT included in workspace members in `Cargo.toml`.
+
+#### Acceptance Criteria
+- services/ added to workspace members
+- Services crate compiles successfully
+- Health service accessible from main binary
+
+---
+
+### Task: INFRA-002 - Implement Dependency Injection Container
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Architecture
+
+#### Description
+No DI container or service registry exists. Services are manually instantiated in main.rs without proper registration or lifecycle management.
+
+#### Acceptance Criteria
+- Service registry pattern implemented
+- Agents registered with MessageBroker on creation
+- Capability token lifecycle managed
+- Clean shutdown propagation
+
+---
+
+### Task: TEST-001 - Implement Observability Tests
+
+**Priority:** Medium  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Testing
+
+#### Description
+`tests/observability/` directory is completely empty. No tests for metrics collection, health monitoring, or alerting.
+
+#### Acceptance Criteria
+- Tests for MetricsCollector
+- Tests for health check protocols
+- Tests for alert evaluation
+- Coverage >= 80%
+
+---
+
+### Task: TEST-002 - Implement Performance Test Suite
+
+**Priority:** Medium  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Testing
+
+#### Description
+`tests/performance/` contains only README placeholders. No actual performance tests exist.
+
+#### Acceptance Criteria
+- Load tests for MessageBroker (100k+ msgs/sec target)
+- Latency tests for task execution (<50ms p95)
+- Memory profiling tests
+- Benchmarks in CI
+
+---
+
+### Task: TEST-003 - Implement Security Test Suite
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Testing
+
+#### Description
+`tests/security/` contains only README placeholders. No security validation tests.
+
+#### Acceptance Criteria
+- Capability token validation tests
+- ACL enforcement tests
+- Audit logging verification
+- Penetration test framework
+
+---
+
+### Task: AGENT-001 - Implement Vector Intelligence Integration
+
+**Priority:** Critical  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** AI/ML Integration
+
+#### Description
+`autonomous.rs` has 10+ TODOs for Qdrant and FastEmbed integration that are currently returning placeholders.
+
+#### Key TODOs
+- Line 520: Connect to Qdrant
+- Line 521: Initialize FastEmbed
+- Line 531: Generate embeddings with FastEmbed
+- Line 547: Store in Qdrant instance
+- Line 558: Implement Qdrant search
+
+#### Acceptance Criteria
+- Qdrant client connected and operational
+- FastEmbed engine generating embeddings
+- Vector storage and retrieval working
+- Performance: <20ms embedding generation
+
+---
+
+### Task: AGENT-002 - Complete NOA Commander Implementation
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Agent Implementation
+
+#### Description
+`noa_commander.rs` has 26 TODO comments for critical decision-making functions.
+
+#### Key TODOs
+- Performance/resource/strategic assessment
+- System health calculation
+- Emergency response procedures
+- Graceful shutdown
+- Configuration updates
+
+#### Acceptance Criteria
+- All TODO implementations complete
+- Decision-making algorithms functional
+- Emergency response tested
+
+---
+
+### Task: AGENT-003 - Complete System Orchestrator Implementation
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Agent Implementation
+
+#### Description
+`system_orchestrator.rs` has 10 TODO comments for workflow execution and dependency management.
+
+#### Key TODOs
+- Workflow step execution logic
+- Dependency graph building
+- Cycle detection algorithm
+- Deadlock detection
+- Task assignment logic
+
+#### Acceptance Criteria
+- Dependency graph fully functional
+- Cycle/deadlock detection working
+- Task assignment operational
+
+---
+
+### Task: AGENT-004 - Register Agents with Communication Bus
+
+**Priority:** High  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Provider Wiring
+
+#### Description
+Agents created by AgentManager are NOT registered with MessageBroker, breaking inter-agent communication.
+
+#### Acceptance Criteria
+- All agents registered on creation
+- Message channels established
+- Heartbeat mechanism working
+- Health checks via messaging
+
+---
+
+### Task: CI-001 - Replace CI Workflow Stubs
+
+**Priority:** Medium  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** CI/CD
+
+#### Description
+Multiple GitHub workflow files contain stub implementations:
+- ci.yml: "Lint stub", "Test stub"
+- verify.yml: "Verify hashes/signatures (stub)"
+- sbom.yml: "Generate SBOM (stub)"
+- todo-sync.yml: "Sync .todo with issues (stub)"
+
+#### Acceptance Criteria
+- Real lint implementation (cargo clippy)
+- Real test runner (cargo test)
+- SBOM generation with cyclonedx
+- Hash verification with sha256sum
+
+---
+
+### Task: PHASE-001 - Complete 7-Phase Workflow Implementations
+
+**Priority:** Critical  
+**Created:** 2026-01-03  
+**Status:** Pending  
+**Category:** Core Workflow
+
+#### Description
+Multiple phases have TODO placeholders:
+- Phase 3: Task execution with PT/POP system
+- Phase 4: Communication coordination
+- Phase 6: Model D evolutionary merge
+- Phase 7: Post-delivery operations
+
+#### Acceptance Criteria
+- All 7 phases fully implemented
+- No placeholder metrics
+- SHA-256 evidence hashes generated
+- Triple verification protocol complete
+
+---
 
