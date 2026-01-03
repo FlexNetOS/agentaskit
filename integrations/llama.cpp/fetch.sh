@@ -9,7 +9,7 @@ if [ ! -d llama.cpp ]; then
 fi
 cd llama.cpp
 # Pin to a known good commit (update as needed)
-COMMIT=${LLAMACPP_COMMIT:-"main"}
+COMMIT=${LLAMACPP_COMMIT:-"master"}
 git fetch --all
 git checkout "$COMMIT"
 echo "Checked out llama.cpp @ $(git rev-parse --short HEAD)"
