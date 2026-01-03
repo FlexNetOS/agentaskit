@@ -22,7 +22,6 @@ use uuid::Uuid;
 pub struct DataAnalyticsAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     config: DataAnalyticsConfig,
     data_processor: Arc<DataProcessor>,
@@ -712,7 +711,6 @@ impl DataAnalyticsAgent {
         Self {
             id,
             name: "DataAnalytics".to_string(),
-            capabilities,
             metadata,
             config,
             data_processor,
@@ -1009,7 +1007,7 @@ impl Agent for DataAnalyticsAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {

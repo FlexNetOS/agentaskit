@@ -21,7 +21,6 @@ use uuid::Uuid;
 pub struct IntegrationAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     config: IntegrationConfig,
     api_gateway: Arc<ApiGateway>,
@@ -740,7 +739,6 @@ impl IntegrationAgent {
         Self {
             id,
             name: "Integration".to_string(),
-            capabilities,
             metadata,
             config,
             api_gateway,
@@ -982,7 +980,7 @@ impl Agent for IntegrationAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {

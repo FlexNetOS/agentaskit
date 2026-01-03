@@ -21,7 +21,6 @@ use uuid::Uuid;
 pub struct SecuritySpecialistAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     config: SecurityConfig,
     metadata: AgentMetadata,
     security_engine: Arc<SecurityEngine>,
@@ -601,7 +600,6 @@ impl SecuritySpecialistAgent {
         Self {
             id,
             name,
-            capabilities,
             config,
             metadata,
             security_engine,
@@ -1002,7 +1000,7 @@ impl Agent for SecuritySpecialistAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 
     async fn start(&mut self) -> AgentResult<()> {
