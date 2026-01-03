@@ -486,6 +486,7 @@
   - [ ] a2a.rs
   - [ ] a2a_tests.rs
   - [ ] agent_directory_template.csv
+  - [ ] agent_gateway_integration.md
   - [ ] agent_map_crosswalk.md
   - [ ] agent_schema_template.json
   - [ ] agentask.subject.todo
@@ -502,8 +503,8 @@
   - [ ] ark-os_ architectural positioning for agenticai os scaffold.md
   - [ ] auth.rs
   - [ ] auth_tests.rs
-  - [ ] bootstrap.ps1
-  - [ ] bootstrap.sh
+  - [ ] bootstrap.nu
+  - [ ] build.md
   - [ ] capsule.schema.v2_20251005-081849.json
   - [ ] capsule.schema_20251005-081849.json
   - [ ] cargo_audit_agent.rs
@@ -516,13 +517,12 @@
   - [ ] comprehensive agenticai os repository analysis.md
   - [ ] config.nu
   - [ ] config.rs
+  - [ ] config.toml
   - [ ] config_tests.rs
   - [ ] crosscheck_report.md
   - [ ] csv_schema.md
   - [ ] csv_schema_v1_20251005-081849.md
   - [ ] csv_schema_v2_20251005-081849.md
-  - [ ] csv_schema_v3_20251005-081849.md
-  - [ ] data.csv
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
