@@ -46,10 +46,10 @@ pub use rust_wasm_agent::RustWasmAgent;
 pub use rust_cross_agent::RustCrossAgent;
 pub use rust_release_agent::RustReleaseAgent;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentMessage};
+use crate::orchestration::Task;
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    AgentId, AgentStatus, TaskResult,
 };
 use anyhow::Result as AgentResult;
 use std::collections::HashMap;
@@ -89,50 +89,50 @@ impl SpecializedLayer {
         // Code Generation Agent
         let code_gen_agent = Box::new(CodeGenerationAgent::new(None));
         let code_gen_id = code_gen_agent.metadata().id;
-        registry.insert("code_generation".to_string(), code_gen_id.0);
-        agents.insert(code_gen_id.0, code_gen_agent);
+        registry.insert("code_generation".to_string(), code_gen_id);
+        agents.insert(code_gen_id, code_gen_agent);
 
         // Testing Agent
         let testing_agent = Box::new(TestingAgent::new(None));
         let testing_id = testing_agent.metadata().id;
-        registry.insert("testing".to_string(), testing_id.0);
-        agents.insert(testing_id.0, testing_agent);
+        registry.insert("testing".to_string(), testing_id);
+        agents.insert(testing_id, testing_agent);
 
         // Deployment Agent
         let deployment_agent = Box::new(DeploymentAgent::new(None));
         let deployment_id = deployment_agent.metadata().id;
-        registry.insert("deployment".to_string(), deployment_id.0);
-        agents.insert(deployment_id.0, deployment_agent);
+        registry.insert("deployment".to_string(), deployment_id);
+        agents.insert(deployment_id, deployment_agent);
 
         // Monitoring Agent
         let monitoring_agent = Box::new(MonitoringAgent::new(None));
         let monitoring_id = monitoring_agent.metadata().id;
-        registry.insert("monitoring".to_string(), monitoring_id.0);
-        agents.insert(monitoring_id.0, monitoring_agent);
+        registry.insert("monitoring".to_string(), monitoring_id);
+        agents.insert(monitoring_id, monitoring_agent);
 
         // Learning Agent
         let learning_agent = Box::new(LearningAgent::new(None));
         let learning_id = learning_agent.metadata().id;
-        registry.insert("learning".to_string(), learning_id.0);
-        agents.insert(learning_id.0, learning_agent);
+        registry.insert("learning".to_string(), learning_id);
+        agents.insert(learning_id, learning_agent);
 
         // Security Specialist Agent
         let security_agent = Box::new(SecuritySpecialistAgent::new(None));
         let security_id = security_agent.metadata().id;
-        registry.insert("security_specialist".to_string(), security_id.0);
-        agents.insert(security_id.0, security_agent);
+        registry.insert("security_specialist".to_string(), security_id);
+        agents.insert(security_id, security_agent);
 
         // Data Analytics Agent
         let analytics_agent = Box::new(DataAnalyticsAgent::new(None));
         let analytics_id = analytics_agent.metadata().id;
-        registry.insert("data_analytics".to_string(), analytics_id.0);
-        agents.insert(analytics_id.0, analytics_agent);
+        registry.insert("data_analytics".to_string(), analytics_id);
+        agents.insert(analytics_id, analytics_agent);
 
         // Integration Agent
         let integration_agent = Box::new(IntegrationAgent::new(None));
         let integration_id = integration_agent.metadata().id;
-        registry.insert("integration".to_string(), integration_id.0);
-        agents.insert(integration_id.0, integration_agent);
+        registry.insert("integration".to_string(), integration_id);
+        agents.insert(integration_id, integration_agent);
 
         // Rust/Cargo Sub-Agents
         
@@ -252,25 +252,20 @@ impl SpecializedLayer {
         let agents = self.agents.read().await;
         let mut agent_statuses = HashMap::new();
         let mut active_count = 0;
-        let mut total_tasks = 0;
+        let total_tasks = 0; // Task counting would require additional tracking
 
         for (id, agent) in agents.iter() {
-            match agent.get_status().await {
-                Ok(status) => {
-                    if let Some(active) = status.get("active").and_then(|v| v.as_bool()) {
-                        if active {
-                            active_count += 1;
-                        }
-                    }
-                    if let Some(tasks) = status.get("task_count").and_then(|v| v.as_u64()) {
-                        total_tasks += tasks;
-                    }
-                    agent_statuses.insert(*id, status);
-                }
-                Err(e) => {
-                    error!("Failed to get status for agent {}: {}", id, e);
-                }
+            let status = agent.state().await;
+
+            // Convert AgentStatus to JSON value for storage
+            let status_json = serde_json::to_value(&status).unwrap_or_default();
+
+            // Count active agents (Active or Busy status)
+            if matches!(status, AgentStatus::Active | AgentStatus::Busy) {
+                active_count += 1;
             }
+
+            agent_statuses.insert(*id, status_json);
         }
 
         Ok(SpecializedLayerStatus {
@@ -287,21 +282,32 @@ impl SpecializedLayer {
     }
 
     /// Find the appropriate agent for a given task
+    /// Note: This is a placeholder implementation. In practice, task routing
+    /// would be based on task metadata, agent capabilities, and load balancing.
     async fn find_agent_for_task(&self, task: &Task) -> AgentResult<AgentId> {
         let agents = self.agents.read().await;
 
-        // Simple agent selection based on task type
+        // Simple agent selection based on task type or tags
         // This is a basic implementation - could be enhanced with more sophisticated routing
         for (id, agent) in agents.iter() {
-            if agent.can_handle_task(task) {
-                return Ok(AgentId(*id));
+            let capabilities = agent.capabilities();
+
+            // Check if any of the agent's capabilities match the task requirements
+            // In a real implementation, this would check task.tags or task.required_capabilities
+            if !capabilities.is_empty() {
+                return Ok(*id);
             }
         }
 
-        Err(AgentError::AgentNotFound(format!(
+        // If no specific match, return the first available agent
+        if let Some((id, _)) = agents.iter().next() {
+            return Ok(*id);
+        }
+
+        Err(anyhow::anyhow!(
             "No agent found for task: {}",
             task.name
-        )))
+        ))
     }
 
     /// Broadcast message to all specialized agents
@@ -325,12 +331,12 @@ impl SpecializedLayer {
         let agent_id = self
             .get_agent_by_name(agent_name)
             .await
-            .ok_or_else(|| AgentError::AgentNotFound(agent_name.to_string()))?;
+            .ok_or_else(|| anyhow::anyhow!("Agent not found: {}", agent_name))?;
 
         let agents = self.agents.read().await;
         let agent = agents
             .get(&agent_id)
-            .ok_or_else(|| AgentError::AgentNotFound(agent_name.to_string()))?;
+            .ok_or_else(|| anyhow::anyhow!("Agent not found: {}", agent_name))?;
 
         Ok(agent.capabilities().to_vec())
     }
@@ -339,6 +345,21 @@ impl SpecializedLayer {
     pub async fn list_agent_names(&self) -> Vec<String> {
         let registry = self.agent_registry.read().await;
         registry.keys().cloned().collect()
+    }
+
+    /// Execute a task on a specific agent by name
+    pub async fn execute_task_on_agent(&self, agent_name: &str, task: Task) -> AgentResult<TaskResult> {
+        let agent_id = self
+            .get_agent_by_name(agent_name)
+            .await
+            .ok_or_else(|| anyhow::anyhow!("Agent not found: {}", agent_name))?;
+
+        let mut agents = self.agents.write().await;
+        let agent = agents
+            .get_mut(&agent_id)
+            .ok_or_else(|| anyhow::anyhow!("Agent not found: {}", agent_name))?;
+
+        agent.execute_task(task).await
     }
 }
 
@@ -448,19 +469,19 @@ mod tests {
 pub mod utils {
     use super::*;
 
-    /// Get recommended agent for specific capability
+    /// Get recommended agent for specific capability name
     pub fn get_agent_for_capability(
-        capability: crate::agents::AgentCapability,
+        capability_name: &str,
     ) -> Option<&'static str> {
-        match capability {
-            crate::agents::AgentCapability::CodeGeneration => Some("code_generation"),
-            crate::agents::AgentCapability::Testing => Some("testing"),
-            crate::agents::AgentCapability::Deployment => Some("deployment"),
-            crate::agents::AgentCapability::Monitoring => Some("monitoring"),
-            crate::agents::AgentCapability::MachineLearning => Some("learning"),
-            crate::agents::AgentCapability::SecurityScanning => Some("security_specialist"),
-            crate::agents::AgentCapability::DataProcessing => Some("data_analytics"),
-            crate::agents::AgentCapability::SystemIntegration => Some("integration"),
+        match capability_name {
+            "code_generation" => Some("code_generation"),
+            "testing" => Some("testing"),
+            "deployment" => Some("deployment"),
+            "monitoring" => Some("monitoring"),
+            "machine_learning" | "learning" => Some("learning"),
+            "security_scanning" | "security" => Some("security_specialist"),
+            "data_processing" | "data_analytics" => Some("data_analytics"),
+            "system_integration" | "integration" => Some("integration"),
             _ => None,
         }
     }
