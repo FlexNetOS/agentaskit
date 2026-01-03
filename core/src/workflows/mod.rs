@@ -162,9 +162,7 @@ pub struct ExecutionStep {
     pub artifacts: Vec<String>,
 }
 
-/// Triple-verification protocol implementation
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-/// Enhanced: Verification protocol with comparison support
+/// Enhanced: Triple-verification protocol implementation with comparison support
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerificationProtocol {
     pub pass_a_self_check: VerificationPass,
