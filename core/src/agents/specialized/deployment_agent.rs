@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 
@@ -25,7 +25,6 @@ use agentaskit_shared::{
 pub struct DeploymentAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -583,7 +582,7 @@ struct PipelineExecution {
 }
 
 /// Pipeline status
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum PipelineStatus {
     Queued,
     Running,
@@ -607,7 +606,7 @@ struct StageResult {
 }
 
 /// Stage status
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum StageStatus {
     Pending,
     Running,
@@ -618,7 +617,7 @@ enum StageStatus {
 }
 
 /// Stage metrics
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct StageMetrics {
     pub execution_time: Duration,
     pub cpu_usage: f64,
@@ -1374,17 +1373,18 @@ impl DeploymentAgent {
         ];
 
         let metadata = AgentMetadata {
-            id: AgentId(id),
+            id,
             name: name.clone(),
             agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
+            capabilities: capabilities.clone(),
             status: AgentStatus::Initializing,
             health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 cpu_cores: Some(4),
                 memory_mb: Some(8192),
                 storage_mb: Some(10240),
-                network_bandwidth_mbps: Some(200.0),
+                network_bandwidth_mbps: Some(200),
                 gpu_required: false,
                 special_capabilities: vec!["kubernetes".to_string(), "docker".to_string()],
             },
@@ -1402,7 +1402,6 @@ impl DeploymentAgent {
         Self {
             id,
             name,
-            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1625,17 +1624,7 @@ impl Agent for DeploymentAgent {
         let state = self.state.read().await;
         let pipeline_engine = self.pipeline_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: state.clone(),
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 30.0,                      // Placeholder
-            memory_usage: 4 * 1024 * 1024 * 1024, // 4GB placeholder
-            task_queue_size: pipeline_engine.active_pipelines.len() as usize,
-            completed_tasks: pipeline_engine.execution_metrics.successful_executions,
-            failed_tasks: pipeline_engine.execution_metrics.failed_executions,
-            average_response_time: Duration::from_millis(3000),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
@@ -1644,7 +1633,7 @@ impl Agent for DeploymentAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 }
 

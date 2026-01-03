@@ -8,9 +8,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::Agent;
+use crate::agents::AgentMessage;
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage,
 };
 
@@ -23,6 +24,7 @@ use agentaskit_shared::{
 /// - Operational risk management and compliance
 /// - Resource efficiency and capacity planning
 /// - Operational governance and oversight
+#[derive(Debug)]
 pub struct OperationsBoardAgent {
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
@@ -1047,24 +1049,6 @@ impl Agent for OperationsBoardAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Operations Board Agent");
-
-        // Initialize operations management
-        let mut operations_manager = self.operations_manager.write().await;
-        self.initialize_operational_processes(&mut operations_manager)
-            .await?;
-
-        // Initialize performance monitoring
-        let mut performance_monitor = self.performance_monitor.write().await;
-        self.initialize_performance_dashboards(&mut performance_monitor)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Operations Board Agent initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> Result<()> {
         tracing::info!("Starting Operations Board Agent");
@@ -1192,8 +1176,8 @@ impl Agent for OperationsBoardAgent {
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 

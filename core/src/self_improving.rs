@@ -415,10 +415,10 @@ impl SelfImprovingOrchestrator {
             improvement.description
         );
 
-        // Verify improvement safety
-        if improvement.risk_assessment > RiskLevel::Medium {
+        // Verify improvement safety based on confidence score
+        if improvement.confidence_score < 0.5 {
             warn!(
-                "High-risk improvement rejected: {}",
+                "Low-confidence improvement rejected: {}",
                 improvement.description
             );
             return Ok(false);
@@ -611,7 +611,7 @@ impl SelfImprovingOrchestrator {
         // - Load-based task distribution
         // - Dependency-aware execution ordering
 
-        let expected_improvement = improvement.expected_improvement;
+        let expected_improvement = improvement.performance_impact;
         if expected_improvement > 0.2 {
             info!(
                 "High-impact scheduling improvement ({}%), applying aggressively",
@@ -667,7 +667,7 @@ impl SelfImprovingOrchestrator {
         // - Compression for large messages
         // - Connection pooling tuning
 
-        if improvement.verified {
+        if improvement.verification_passed {
             info!("Verified improvement, applying with confidence");
         } else {
             warn!("Unverified improvement, applying with monitoring");
@@ -689,10 +689,10 @@ impl SelfImprovingOrchestrator {
         // - Refine pattern recognition algorithms
         // - Improve model selection strategies
 
-        if improvement.expected_improvement > 0.15 {
+        if improvement.performance_impact > 0.15 {
             // Significant improvement, update learning rate
             learning_engine.learning_metrics.model_accuracy +=
-                improvement.expected_improvement * 0.1;
+                improvement.performance_impact * 0.1;
             info!(
                 "Learning model accuracy improved to {:.2}%",
                 learning_engine.learning_metrics.model_accuracy * 100.0

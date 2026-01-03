@@ -535,7 +535,7 @@ struct SLAMeasurement {
 }
 
 /// SLA violation record
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct SLAViolation {
     pub violation_id: Uuid,
     pub sla_id: String,
@@ -549,7 +549,7 @@ struct SLAViolation {
 }
 
 /// SLA violation severity
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum ViolationSeverity {
     Minor,
     Major,
@@ -935,28 +935,6 @@ impl Agent for PriorityManager {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> AgentResult<()> {
-        tracing::info!("Initializing Priority Manager");
-
-        // Initialize priority factors
-        let mut priority_engine = self.priority_engine.write().await;
-        self.initialize_priority_factors(&mut priority_engine)
-            .await?;
-
-        // Initialize default policies
-        let mut policy_manager = self.policy_manager.write().await;
-        self.initialize_default_policies(&mut policy_manager)
-            .await?;
-
-        // Initialize SLA definitions
-        let mut sla_monitor = self.sla_monitor.write().await;
-        self.initialize_sla_definitions(&mut sla_monitor).await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Priority Manager initialized successfully");
-        Ok(())
-    }
 
     async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Priority Manager");
@@ -1126,17 +1104,7 @@ impl Agent for PriorityManager {
         let _scheduler = self.scheduler.read().await;
         let _priority_engine = self.priority_engine.read().await;
 
-        Ok(HealthStatus {
-            agent_id: self.metadata.id,
-            state: AgentStatus::Active,
-            last_heartbeat: chrono::Utc::now(),
-            cpu_usage: 20.0,
-            memory_usage: 256 * 1024 * 1024,
-            task_queue_size: 0,
-            completed_tasks: 0,
-            failed_tasks: 0,
-            average_response_time: Duration::from_millis(50),
-        })
+        Ok(HealthStatus::Healthy)
     }
 
     async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {

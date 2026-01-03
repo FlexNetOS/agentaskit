@@ -2,9 +2,9 @@
 // Provides comprehensive system integration, API management, data transformation,
 // workflow orchestration, and external system connectivity capabilities
 
-use crate::agents::{Agent, AgentResult, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentResult, MessageId};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
 use anyhow::Result;
@@ -21,7 +21,6 @@ use uuid::Uuid;
 pub struct IntegrationAgent {
     id: Uuid,
     name: String,
-    capabilities: Vec<String>,
     metadata: AgentMetadata,
     config: IntegrationConfig,
     api_gateway: Arc<ApiGateway>,
@@ -217,7 +216,7 @@ pub struct ConnectorManager {
     connectors: HashMap<String, Box<dyn SystemConnector>>,
     connection_pool: Arc<ConnectionPool>,
     authentication_manager: Arc<AuthenticationManager>,
-    protocol_adapter: Arc<ProtocolAdapter>,
+    protocol_adapter: Arc<dyn ProtocolAdapter>,
     connector_factory: Arc<ConnectorFactory>,
     connection_monitor: Arc<ConnectionMonitor>,
     config: ConnectorConfig,
@@ -740,7 +739,6 @@ impl IntegrationAgent {
         Self {
             id,
             name: "Integration".to_string(),
-            capabilities,
             metadata,
             config,
             api_gateway,
@@ -982,7 +980,7 @@ impl Agent for IntegrationAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.capabilities
+        &self.metadata.capabilities
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {

@@ -10,7 +10,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::agents::AgentId;
+use agentaskit_shared::AgentId;
 
 #[derive(Debug)]
 pub struct TaskExecutionEngine;

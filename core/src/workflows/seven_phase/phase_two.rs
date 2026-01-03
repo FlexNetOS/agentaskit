@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::phase_one::Phase1Result;
-use crate::agents::AgentId;
+use agentaskit_shared::AgentId;
 
 /// Agent Selection Manager for Phase 2
 #[derive(Debug)]

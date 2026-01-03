@@ -9,10 +9,10 @@ use uuid::Uuid;
 
 use crate::agents::communication::CommunicationManager;
 use crate::agents::specialized::integration_agent::MessageBroker;
-use crate::agents::{Agent, AgentRegistry, AgentResult, AlertSeverity, MessageId};
+use crate::agents::{Agent, AgentMessage, AgentRegistry, AgentResult, AlertSeverity, MessageId};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
-    AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
+    AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage,
 };
 
@@ -1236,7 +1236,7 @@ impl Agent for NoaCommander {
             } => {
                 tracing::debug!(
                     "NOA Commander received task request from {}: {}",
-                    from.0,
+                    from,
                     task.name
                 );
 
@@ -1278,7 +1278,7 @@ impl Agent for NoaCommander {
                 let mut agent_coordinator = self.agent_coordinator.write().await;
                 // TODO: Update agent health tracking
 
-                tracing::debug!("Received heartbeat from agent {}", from.0);
+                tracing::debug!("Received heartbeat from agent {}", from);
                 Ok(None)
             }
             _ => {

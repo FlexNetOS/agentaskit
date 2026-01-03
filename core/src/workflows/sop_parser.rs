@@ -347,7 +347,7 @@ pub fn get_required_env_vars(sop: &SOPDocument) -> Vec<String> {
 }
 
 /// Get procedures by ID
-pub fn get_procedure_by_id(sop: &SOPDocument, id: &str) -> Option<&SOPProcedure> {
+pub fn get_procedure_by_id<'a>(sop: &'a SOPDocument, id: &str) -> Option<&'a SOPProcedure> {
     sop.procedures.iter().find(|p| p.id == id)
 }
 
