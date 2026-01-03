@@ -9,7 +9,7 @@
 
 pub mod agent_tools;
 
-use crate::ai::{GatewayConfig, McpTool, SharedGateway, ToolCallRequest, ToolCallResponse};
+use crate::ai::{GatewayConfig, McpTool, SharedGateway, ToolCallRequest};
 
 pub use agent_tools::{ToolEnabledAgent, ToolEnabledAgentFactory};
 use anyhow::{anyhow, Result};
