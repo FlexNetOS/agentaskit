@@ -3,7 +3,8 @@ members = [
     "core",
     "unified_execution/core",
     "unified_execution/wasm_host",
-    "shared"
+    "shared",
+    "services"
 ]
 resolver = "2"
 

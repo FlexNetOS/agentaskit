@@ -644,33 +644,151 @@ impl SystemOrchestrator {
     }
     
     /// Build dependency graph from current system state
-    async fn build_dependency_graph(&self, _graph: &mut DependencyGraph) -> Result<()> {
-        // TODO: Implement dependency graph building
-        // This would involve:
-        // 1. Querying all agents for their current dependencies
-        // 2. Analyzing resource allocations
-        // 3. Building the graph structure
-        // 4. Updating waiting relationships
-        
+    async fn build_dependency_graph(&self, graph: &mut DependencyGraph) -> Result<()> {
+        let workflow_engine = self.workflow_engine.read().await;
+        let scheduler = self.scheduler.read().await;
+
+        // Clear existing graph
+        graph.nodes.clear();
+        graph.edges.clear();
+        graph.waiting_for.clear();
+
+        // Add workflow steps as nodes
+        for (workflow_id, workflow) in &workflow_engine.active_workflows {
+            for step in &workflow.steps {
+                let node_id = format!("workflow:{}:step:{}", workflow_id, step.id);
+
+                graph.nodes.insert(node_id.clone(), DependencyNode {
+                    id: node_id.clone(),
+                    node_type: DependencyNodeType::Task,
+                    owner: step.target_agent,
+                    waiters: Vec::new(),
+                    last_updated: Instant::now(),
+                });
+
+                // Add edges for dependencies
+                for dep in &step.dependencies {
+                    let dep_node_id = format!("workflow:{}:step:{}", workflow_id, dep);
+                    graph.edges.entry(dep_node_id).or_insert_with(Vec::new).push(node_id.clone());
+                }
+            }
+        }
+
+        // Add agent nodes and their resource dependencies
+        for (agent_id, load) in &scheduler.agent_loads {
+            let agent_node_id = format!("agent:{}", agent_id.0);
+
+            graph.nodes.insert(agent_node_id.clone(), DependencyNode {
+                id: agent_node_id.clone(),
+                node_type: DependencyNodeType::Agent,
+                owner: Some(*agent_id),
+                waiters: Vec::new(),
+                last_updated: Instant::now(),
+            });
+
+            // Track queued tasks as waiting relationships
+            for task in &load.queued_tasks {
+                graph.waiting_for.entry(*agent_id)
+                    .or_insert_with(Vec::new)
+                    .push(format!("task:{}", task.id));
+            }
+        }
+
         Ok(())
     }
-    
+
     /// Find cycles in dependency graph using DFS
     async fn find_cycles_in_dependency_graph(
         &self,
-        _graph: &DependencyGraph,
+        graph: &DependencyGraph,
     ) -> Result<Vec<Vec<String>>> {
-        // TODO: Implement cycle detection algorithm
-        // This would use depth-first search to find cycles
-        // indicating potential deadlocks
-        
-        Ok(Vec::new()) // Placeholder
+        let mut cycles = Vec::new();
+        let mut visited = std::collections::HashSet::new();
+        let mut rec_stack = std::collections::HashSet::new();
+        let mut path = Vec::new();
+
+        // DFS-based cycle detection
+        for node_id in graph.nodes.keys() {
+            if !visited.contains(node_id) {
+                self.dfs_find_cycle(
+                    graph,
+                    node_id,
+                    &mut visited,
+                    &mut rec_stack,
+                    &mut path,
+                    &mut cycles,
+                );
+            }
+        }
+
+        Ok(cycles)
     }
-    
+
+    /// Helper DFS function for cycle detection
+    fn dfs_find_cycle(
+        &self,
+        graph: &DependencyGraph,
+        node_id: &str,
+        visited: &mut std::collections::HashSet<String>,
+        rec_stack: &mut std::collections::HashSet<String>,
+        path: &mut Vec<String>,
+        cycles: &mut Vec<Vec<String>>,
+    ) {
+        visited.insert(node_id.to_string());
+        rec_stack.insert(node_id.to_string());
+        path.push(node_id.to_string());
+
+        // Get neighbors (nodes that depend on this node)
+        if let Some(neighbors) = graph.edges.get(node_id) {
+            for neighbor in neighbors {
+                if !visited.contains(neighbor) {
+                    self.dfs_find_cycle(graph, neighbor, visited, rec_stack, path, cycles);
+                } else if rec_stack.contains(neighbor) {
+                    // Found a cycle - extract it from path
+                    if let Some(cycle_start) = path.iter().position(|n| n == neighbor) {
+                        let cycle: Vec<String> = path[cycle_start..].to_vec();
+                        cycles.push(cycle);
+                    }
+                }
+            }
+        }
+
+        path.pop();
+        rec_stack.remove(node_id);
+    }
+
     /// Extract agent IDs from cycle path
-    async fn extract_agents_from_cycle(&self, _cycle: &[String]) -> Result<Vec<AgentId>> {
-        // TODO: Map cycle resources back to agents
-        Ok(Vec::new()) // Placeholder
+    async fn extract_agents_from_cycle(&self, cycle: &[String]) -> Result<Vec<AgentId>> {
+        let mut agents = Vec::new();
+
+        for node_id in cycle {
+            // Parse agent ID from node_id format "agent:ID" or "workflow:UUID:step:ID"
+            if node_id.starts_with("agent:") {
+                if let Some(id_part) = node_id.strip_prefix("agent:") {
+                    agents.push(AgentId::from_name(id_part));
+                }
+            } else if node_id.starts_with("workflow:") {
+                // Extract agent from workflow step if assigned
+                let parts: Vec<&str> = node_id.split(':').collect();
+                if parts.len() >= 4 {
+                    if let Ok(workflow_id) = Uuid::parse_str(parts[1]) {
+                        let workflow_engine = self.workflow_engine.read().await;
+                        if let Some(workflow) = workflow_engine.active_workflows.get(&workflow_id) {
+                            let step_id = parts[3];
+                            if let Some(step) = workflow.steps.iter().find(|s| s.id == step_id) {
+                                if let Some(agent) = step.target_agent {
+                                    if !agents.contains(&agent) {
+                                        agents.push(agent);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(agents)
     }
     
     /// Get orchestration performance metrics
