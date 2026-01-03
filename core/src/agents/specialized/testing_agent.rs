@@ -1052,13 +1052,13 @@ impl Agent for TestingAgent {
         match task.name.as_str() {
             "run-tests" => {
                 let test_type = task
-                    .parameters
+                    .input_data
                     .get("test_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unit");
 
                 let environment = task
-                    .parameters
+                    .input_data
                     .get("environment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("local")

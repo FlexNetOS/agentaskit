@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
@@ -707,29 +707,7 @@ impl Agent for SystemOrchestrator {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing System Orchestrator");
-
-        // Initialize workflow templates
-        let mut workflow_engine = self.workflow_engine.write().await;
-        self.initialize_workflow_templates(&mut workflow_engine)
-            .await?;
-
-        // Initialize scheduler with load balancer
-        let mut scheduler = self.scheduler.write().await;
-        scheduler.load_balancer.strategy = self.config.load_balancing_strategy.clone();
-
-        // Initialize performance thresholds
-        let mut performance_monitor = self.performance_monitor.write().await;
-        performance_monitor.thresholds = PerformanceThresholds::default();
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("System Orchestrator initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting System Orchestrator");
 
         // Start task scheduling loop
@@ -777,7 +755,7 @@ impl Agent for SystemOrchestrator {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping System Orchestrator");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -791,7 +769,7 @@ impl Agent for SystemOrchestrator {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
@@ -808,13 +786,13 @@ impl Agent for SystemOrchestrator {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "schedule-task" => {
                 let priority = task
-                    .parameters
+                    .input_data
                     .get("priority")
                     .and_then(|v| v.as_str())
                     .and_then(|s| match s {
@@ -841,13 +819,13 @@ impl Agent for SystemOrchestrator {
             }
             "execute-workflow" => {
                 let template_id = task
-                    .parameters
+                    .input_data
                     .get("template_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
 
                 let workflow_id = self
-                    .execute_workflow(template_id, task.parameters.clone())
+                    .execute_workflow(template_id, task.input_data.clone())
                     .await?;
 
                 Ok(TaskResult {
@@ -895,7 +873,7 @@ impl Agent for SystemOrchestrator {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let _state = self.state.read().await;
         let _workflow_engine = self.workflow_engine.read().await;
         let _scheduler = self.scheduler.read().await;
@@ -903,15 +881,15 @@ impl Agent for SystemOrchestrator {
         Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating System Orchestrator configuration");
 
         // TODO: Parse and update configuration
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 

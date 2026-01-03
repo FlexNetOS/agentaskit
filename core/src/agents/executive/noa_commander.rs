@@ -1153,70 +1153,7 @@ impl Agent for NoaCommander {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing NOA Commander");
-
-        // Initialize strategic engine with default goals
-        let mut strategic_engine = self.strategic_engine.write().await;
-
-        // Set initial strategic goals
-        let initial_goals = vec![
-            StrategicGoal {
-                id: "system-stability".to_string(),
-                name: "Maintain System Stability".to_string(),
-                description: "Ensure 99.9% uptime and stable performance".to_string(),
-                priority: 1.0,
-                target_completion: chrono::Utc::now() + chrono::Duration::days(1),
-                current_progress: 0.0,
-                required_resources: HashMap::new(),
-                dependent_goals: Vec::new(),
-                success_metrics: vec!["uptime".to_string(), "error_rate".to_string()],
-            },
-            StrategicGoal {
-                id: "performance-optimization".to_string(),
-                name: "Optimize System Performance".to_string(),
-                description: "Improve throughput and reduce latency".to_string(),
-                priority: 0.8,
-                target_completion: chrono::Utc::now() + chrono::Duration::days(7),
-                current_progress: 0.0,
-                required_resources: HashMap::new(),
-                dependent_goals: Vec::new(),
-                success_metrics: vec!["throughput".to_string(), "latency".to_string()],
-            },
-            StrategicGoal {
-                id: "resource-efficiency".to_string(),
-                name: "Improve Resource Efficiency".to_string(),
-                description: "Optimize resource utilization across all clusters".to_string(),
-                priority: 0.7,
-                target_completion: chrono::Utc::now() + chrono::Duration::days(30),
-                current_progress: 0.0,
-                required_resources: HashMap::new(),
-                dependent_goals: Vec::new(),
-                success_metrics: vec![
-                    "cpu_efficiency".to_string(),
-                    "memory_efficiency".to_string(),
-                ],
-            },
-        ];
-
-        for goal in initial_goals {
-            strategic_engine
-                .strategic_goals
-                .insert(goal.id.clone(), goal);
-        }
-
-        // Initialize emergency response procedures
-        let mut emergency_system = self.emergency_system.write().await;
-
-        // TODO: Initialize emergency response procedures
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("NOA Commander initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting NOA Commander");
 
         // Start strategic planning cycle
@@ -1272,7 +1209,7 @@ impl Agent for NoaCommander {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping NOA Commander");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1286,7 +1223,7 @@ impl Agent for NoaCommander {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request {
                 id,
@@ -1349,13 +1286,13 @@ impl Agent for NoaCommander {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = std::time::Instant::now();
 
         match task.name.as_str() {
             "strategic-decision" => {
                 let decision_type = task
-                    .parameters
+                    .input_data
                     .get("decision_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown");
@@ -1364,21 +1301,21 @@ impl Agent for NoaCommander {
                     "resource-allocation" => {
                         self.make_strategic_decision(
                             DecisionType::ResourceAllocation,
-                            task.parameters.clone(),
+                            task.input_data.clone(),
                         )
                         .await?
                     }
                     "agent-deployment" => {
                         self.make_strategic_decision(
                             DecisionType::AgentDeployment,
-                            task.parameters.clone(),
+                            task.input_data.clone(),
                         )
                         .await?
                     }
                     "system-modification" => {
                         self.make_strategic_decision(
                             DecisionType::SystemModification,
-                            task.parameters.clone(),
+                            task.input_data.clone(),
                         )
                         .await?
                     }
@@ -1416,7 +1353,7 @@ impl Agent for NoaCommander {
                 })
             }
             "emergency-response" => {
-                let response = self.coordinate_emergency_response(task.parameters).await?;
+                let response = self.coordinate_emergency_response(task.input_data).await?;
 
                 Ok(TaskResult {
                     task_id: task.id,
@@ -1436,14 +1373,14 @@ impl Agent for NoaCommander {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let _state = self.state.read().await;
 
         // TODO: Calculate real health metrics
         Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating NOA Commander configuration");
 
         // TODO: Update configuration from JSON
@@ -1452,8 +1389,8 @@ impl Agent for NoaCommander {
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 

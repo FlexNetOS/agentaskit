@@ -970,7 +970,7 @@ impl Agent for IntegrationAgent {
         if *active {
             AgentStatus::Active
         } else {
-            AgentStatus::Idle
+            AgentStatus::Inactive
         }
     }
 
@@ -983,7 +983,7 @@ impl Agent for IntegrationAgent {
 
         // Return appropriate health status based on agent state
         match state {
-            AgentStatus::Active | AgentStatus::Idle => Ok(HealthStatus::Healthy),
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
             AgentStatus::Busy => Ok(HealthStatus::Healthy),
             AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
             AgentStatus::Error => Ok(HealthStatus::Critical),

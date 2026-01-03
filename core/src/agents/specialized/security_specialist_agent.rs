@@ -10,8 +10,6 @@ use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
     Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
 };
-use anyhow::Result;
-use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
@@ -1056,27 +1054,8 @@ impl Agent for SecuritySpecialistAgent {
         if active {
             crate::agents::AgentStatus::Active
         } else {
-            crate::agents::AgentStatus::Idle
+            crate::agents::AgentStatus::Inactive
         }
-    }
-
-    async fn initialize(&mut self) -> Result<()> {
-        info!("Initializing Security Specialist Agent {}", self.name);
-
-        // Initialize all security components
-        self.security_engine.initialize().await?;
-        self.vulnerability_scanner.initialize().await?;
-        self.threat_detector.initialize().await?;
-        self.compliance_monitor.initialize().await?;
-        self.access_controller.initialize().await?;
-        self.incident_responder.initialize().await?;
-        self.security_audit.initialize().await?;
-
-        info!(
-            "Security Specialist Agent {} initialized successfully",
-            self.name
-        );
-        Ok(())
     }
 
     async fn health_check(&self) -> AgentResult<HealthStatus> {
@@ -1084,7 +1063,7 @@ impl Agent for SecuritySpecialistAgent {
 
         // Return appropriate health status based on agent state
         match state {
-            AgentStatus::Active | AgentStatus::Idle => Ok(HealthStatus::Healthy),
+            AgentStatus::Active | AgentStatus::Inactive => Ok(HealthStatus::Healthy),
             AgentStatus::Busy => Ok(HealthStatus::Healthy),
             AgentStatus::Maintenance => Ok(HealthStatus::Degraded),
             AgentStatus::Error => Ok(HealthStatus::Critical),
@@ -1111,12 +1090,12 @@ impl Agent for SecuritySpecialistAgent {
         let task_status = match task.task_type.as_str() {
             "security_scan" => {
                 let target = task
-                    .parameters
+                    .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "target".to_string()))?;
                 let scan_type = task
-                    .parameters
+                    .input_data
                     .get("scan_type")
                     .and_then(|v| v.as_str())
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "scan_type".to_string()))?;
@@ -1132,7 +1111,7 @@ impl Agent for SecuritySpecialistAgent {
             "incident_response" => {
                 // Parse incident from parameters
                 let incident_data = task
-                    .parameters
+                    .input_data
                     .get("incident")
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "incident".to_string()))?;
 
@@ -1149,12 +1128,12 @@ impl Agent for SecuritySpecialistAgent {
             }
             "policy_enforcement" => {
                 let policy_id = task
-                    .parameters
+                    .input_data
                     .get("policy_id")
                     .and_then(|v| v.as_str())
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "policy_id".to_string()))?;
                 let target = task
-                    .parameters
+                    .input_data
                     .get("target")
                     .and_then(|v| v.as_str())
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "target".to_string()))?;
@@ -1169,7 +1148,7 @@ impl Agent for SecuritySpecialistAgent {
             }
             "audit_report" => {
                 let scope_str = task
-                    .parameters
+                    .input_data
                     .get("scope")
                     .ok_or(anyhow::anyhow!("Missing parameter: {}", "scope".to_string()))?;
 

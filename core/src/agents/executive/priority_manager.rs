@@ -839,7 +839,7 @@ impl PriorityManager {
                 .unwrap_or(50.0)),
             PriorityFactorType::Deadline => {
                 // Calculate deadline proximity
-                if let Some(deadline_str) = task.parameters.get("deadline").and_then(|v| v.as_str())
+                if let Some(deadline_str) = task.input_data.get("deadline").and_then(|v| v.as_str())
                 {
                     // TODO: Parse deadline and calculate proximity
                     Ok(70.0) // Placeholder
@@ -879,7 +879,7 @@ impl PriorityManager {
     fn calculate_age_factor(&self, task: &Task) -> f64 {
         // Prefer a created_at timestamp stored in task parameters.
         // Expected format: RFC3339 (e.g., "2024-01-01T12:34:56Z").
-        if let Some(created_at_str) = task.parameters.get("created_at").and_then(|v| v.as_str()) {
+        if let Some(created_at_str) = task.input_data.get("created_at").and_then(|v| v.as_str()) {
             if let Ok(created_at) = chrono::DateTime::parse_from_rfc3339(created_at_str) {
                 let created_at_utc = created_at.with_timezone(&chrono::Utc);
                 let age = chrono::Utc::now().signed_duration_since(created_at_utc);

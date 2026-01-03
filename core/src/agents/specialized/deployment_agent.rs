@@ -1559,14 +1559,14 @@ impl Agent for DeploymentAgent {
         match task.name.as_str() {
             "deploy" => {
                 let pipeline_name = task
-                    .parameters
+                    .input_data
                     .get("pipeline")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-pipeline")
                     .to_string();
 
                 let trigger_source = task
-                    .parameters
+                    .input_data
                     .get("trigger")
                     .and_then(|v| v.as_str())
                     .unwrap_or("manual")

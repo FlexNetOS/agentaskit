@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult};
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
@@ -963,30 +963,7 @@ impl Agent for ResourceAllocator {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Resource Allocator");
-
-        // Initialize resource pools
-        let mut resource_manager = self.resource_manager.write().await;
-        self.initialize_resource_pools(&mut resource_manager)
-            .await?;
-
-        // Initialize monitoring targets
-        let mut monitor = self.monitor.write().await;
-        self.initialize_monitoring(&mut monitor).await?;
-
-        // Initialize optimization objectives
-        let mut optimizer = self.optimizer.write().await;
-        self.initialize_optimization_objectives(&mut optimizer)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Resource Allocator initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Resource Allocator");
 
         // Start resource monitoring
@@ -1024,7 +1001,7 @@ impl Agent for ResourceAllocator {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Resource Allocator");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1038,7 +1015,7 @@ impl Agent for ResourceAllocator {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
@@ -1055,13 +1032,13 @@ impl Agent for ResourceAllocator {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
             "allocate-resources" => {
                 let agent_id = task
-                    .parameters
+                    .input_data
                     .get("agent_id")
                     .and_then(|v| v.as_str())
                     .map(AgentId::from_name)
@@ -1138,7 +1115,7 @@ impl Agent for ResourceAllocator {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let _state = self.state.read().await;
         let _resource_manager = self.resource_manager.read().await;
         let _monitor = self.monitor.read().await;
@@ -1146,15 +1123,15 @@ impl Agent for ResourceAllocator {
         Ok(HealthStatus::Healthy)
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Resource Allocator configuration");
 
         // TODO: Parse and update configuration
         Ok(())
     }
 
-    fn capabilities(&self) -> Vec<String> {
-        self.metadata.capabilities.clone()
+    fn capabilities(&self) -> &[String] {
+        &self.metadata.capabilities
     }
 }
 
