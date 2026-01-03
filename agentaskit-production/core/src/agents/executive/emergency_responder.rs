@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use uuid::Uuid;
+use sysinfo::{System, SystemExt};
 
 use crate::agents::{
     Agent, AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentState,
@@ -1392,7 +1393,25 @@ impl Agent for EmergencyResponder {
                 })
             }
             "respond-to-emergency" => {
-                // Parse emergency details from task parameters
+                // Parse and validate emergency details from task parameters
+                // Validate that critical parameters are present
+                let description = task.parameters.get("description")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Missing required parameter: description"))?
+                    .to_string();
+
+                let severity = task.parameters.get("severity")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Missing required parameter: severity"))
+                    .and_then(|s| match s.to_lowercase().as_str() {
+                        "critical" => Ok(EmergencySeverity::Critical),
+                        "high" => Ok(EmergencySeverity::High),
+                        "medium" => Ok(EmergencySeverity::Medium),
+                        "low" => Ok(EmergencySeverity::Low),
+                        _ => Err(anyhow::anyhow!("Invalid severity level: {}", s)),
+                    })?;
+
+                // Optional parameters can use defaults
                 let detection_id = task.parameters.get("detection_id")
                     .and_then(|v| v.as_str())
                     .and_then(|s| Uuid::parse_str(s).ok())
@@ -1401,22 +1420,6 @@ impl Agent for EmergencyResponder {
                 let rule_id = task.parameters.get("rule_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("manual-trigger")
-                    .to_string();
-
-                let severity = task.parameters.get("severity")
-                    .and_then(|v| v.as_str())
-                    .map(|s| match s.to_lowercase().as_str() {
-                        "critical" => EmergencySeverity::Critical,
-                        "high" => EmergencySeverity::High,
-                        "medium" => EmergencySeverity::Medium,
-                        "low" => EmergencySeverity::Low,
-                        _ => EmergencySeverity::High,
-                    })
-                    .unwrap_or(EmergencySeverity::High);
-
-                let description = task.parameters.get("description")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("Emergency response triggered")
                     .to_string();
 
                 let affected_components = task.parameters.get("affected_components")
@@ -1498,12 +1501,13 @@ impl Agent for EmergencyResponder {
         let recovery_memory = recovery_coordinator.recovery_plans.len() as u64 * 10 * 1024 * 1024; // 10MB per plan
         let memory_usage = base_memory + emergency_memory + rule_memory + recovery_memory;
 
-        // Calculate average response time from actual metrics
+        // Calculate average response time from actual metrics with overflow protection
         let avg_response_time = if crisis_manager.metrics.resolved_emergencies > 0 {
-            Duration::from_millis(
-                (crisis_manager.metrics.total_response_time.as_millis() as u64)
-                    / crisis_manager.metrics.resolved_emergencies.max(1)
-            )
+            let total_ms = crisis_manager.metrics.total_response_time.as_millis();
+            let resolved = crisis_manager.metrics.resolved_emergencies.max(1) as u128;
+            let avg_ms_u128 = total_ms / resolved;
+            let avg_ms_u64 = u64::try_from(avg_ms_u128).unwrap_or(u64::MAX);
+            Duration::from_millis(avg_ms_u64)
         } else {
             self.config.max_response_time
         };
@@ -1783,33 +1787,20 @@ impl EmergencyResponder {
             // Collect real monitor values from system
             monitor.current_value = match monitor.monitor_type {
                 MonitorType::SystemLoad => {
-                    // Read system load from /proc/loadavg on Linux
-                    if let Ok(loadavg) = std::fs::read_to_string("/proc/loadavg") {
-                        loadavg.split_whitespace().next()
-                            .and_then(|s| s.parse::<f64>().ok())
-                            .map(|load| (load * 10.0).min(100.0))
-                            .unwrap_or(45.0)
-                    } else {
-                        45.0
-                    }
+                    // Read system load using cross-platform sysinfo crate
+                    let mut sys = System::new_all();
+                    sys.refresh_cpu();
+                    let load = sys.load_average().one;
+                    (load * 10.0).min(100.0)
                 }
                 MonitorType::MemoryUsage => {
-                    // Read memory info from /proc/meminfo on Linux
-                    if let Ok(meminfo) = std::fs::read_to_string("/proc/meminfo") {
-                        let mut total: f64 = 0.0;
-                        let mut available: f64 = 0.0;
-                        for line in meminfo.lines() {
-                            if line.starts_with("MemTotal:") {
-                                total = line.split_whitespace().nth(1)
-                                    .and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                            } else if line.starts_with("MemAvailable:") {
-                                available = line.split_whitespace().nth(1)
-                                    .and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                            }
-                        }
-                        if total > 0.0 {
-                            ((total - available) / total * 100.0).min(100.0)
-                        } else { 65.0 }
+                    // Read memory info using cross-platform sysinfo crate
+                    let mut sys = System::new_all();
+                    sys.refresh_memory();
+                    let total = sys.total_memory() as f64;
+                    let used = sys.used_memory() as f64;
+                    if total > 0.0 {
+                        (used / total * 100.0).min(100.0)
                     } else {
                         65.0
                     }

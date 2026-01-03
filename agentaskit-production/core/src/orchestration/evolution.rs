@@ -39,9 +39,15 @@ impl AutonomousComponent for EvolutionEngine {
             .and_then(|v| v.as_f64())
             .unwrap_or(0.5);
 
-        // 3. Apply evolutionary operators (mutation, crossover)
+        // 3. Apply evolutionary operators (mutation) - deterministic based on generation
+        // Use generation number to create reproducible mutations for testing/debugging
+        let generation = state.metrics.get("generation")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
         let mutation_rate = 0.1;
-        let evolved_fitness = fitness_score + (rand::random::<f64>() - 0.5) * mutation_rate;
+        // Create deterministic mutation factor from generation using simple hash
+        let mutation_factor = ((generation.wrapping_mul(1103515245).wrapping_add(12345)) % 10000) as f64 / 10000.0;
+        let evolved_fitness = fitness_score + (mutation_factor - 0.5) * 2.0 * mutation_rate;
 
         // 4. Update state with evolution results
         state.metrics.insert("fitness".to_string(), serde_json::json!(evolved_fitness.clamp(0.0, 1.0)));

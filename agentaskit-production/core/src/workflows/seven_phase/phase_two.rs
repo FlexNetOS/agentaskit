@@ -10,6 +10,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
+use sysinfo::{System, SystemExt, CpuExt};
 
 use crate::agents::AgentId;
 use super::phase_one::Phase1Result;
@@ -464,22 +465,31 @@ impl AgentSelectionManager {
             }
         }
         
-        // Calculate hierarchy health with actual metrics
+        // Calculate hierarchy health with actual metrics (deterministic based on agent count)
         let calculate_layer_health = |agents: &[AgentId], layer_name: &str, base_latency: f64, base_throughput: f64| -> LayerHealth {
             let active_count = agents.len();
             let health_percentage = if active_count > 0 {
-                // Health based on agent availability and base performance
-                85.0 + (rand::random::<f64>() * 15.0) // 85-100% health
+                // Health based on agent availability: scales from 85% (1 agent) to 100% (many agents)
+                // Deterministic calculation based on active agent count
+                let agent_factor = (active_count as f64).min(10.0) / 10.0; // Cap at 10 agents for scaling
+                85.0 + (agent_factor * 15.0) // 85-100% health
             } else {
                 0.0
             };
+            
+            // Latency increases slightly with more agents due to coordination overhead
+            let latency_factor = (active_count as f64).sqrt() / 10.0;
+            
+            // Throughput improves with more agents, but with diminishing returns
+            let throughput_factor = (active_count as f64).ln().max(0.0) / 10.0;
+            
             LayerHealth {
                 layer_name: layer_name.to_string(),
                 active_agents: active_count,
                 total_agents: active_count,
                 health_percentage,
-                communication_latency_ms: base_latency + (rand::random::<f64>() * 5.0),
-                throughput_tasks_per_second: base_throughput * (0.9 + rand::random::<f64>() * 0.2),
+                communication_latency_ms: base_latency + (latency_factor * 5.0),
+                throughput_tasks_per_second: base_throughput * (0.9 + throughput_factor.min(0.2)),
             }
         };
 
@@ -658,10 +668,29 @@ impl AgentSelectionManager {
             })
             .collect();
         
-        // Calculate actual redundancy based on agent coverage
+        // Calculate actual redundancy based on how many agents cover each capability
         let redundancy_level = {
-            let avg_coverage = if !requirements.required_capabilities.is_empty() {
-                covered_capabilities.len() as f64 / requirements.required_capabilities.len() as f64
+            // Count how many agents can provide each required capability
+            let mut capability_coverage_counts: HashMap<&String, usize> = HashMap::new();
+            for cap in &requirements.required_capabilities {
+                capability_coverage_counts.insert(cap, 0);
+            }
+            
+            // Count coverage for each capability across all matched agents
+            for agent_id in matching_agents.iter() {
+                if let Some(profile) = self.agents.get(agent_id) {
+                    for cap in &requirements.required_capabilities {
+                        if profile.capabilities.contains(cap) {
+                            *capability_coverage_counts.entry(cap).or_insert(0) += 1;
+                        }
+                    }
+                }
+            }
+            
+            // Calculate average coverage per capability
+            let avg_coverage = if !capability_coverage_counts.is_empty() {
+                let total_coverage: usize = capability_coverage_counts.values().sum();
+                total_coverage as f64 / capability_coverage_counts.len() as f64
             } else {
                 0.0
             };
@@ -759,8 +788,8 @@ impl AgentRegistry {
         let mut agents = HashMap::new();
 
         // Load agents from database file or initialize defaults
-        let agents_db_path = "/tmp/agentaskit_agents/registry.json";
-        if let Ok(agents_data) = std::fs::read_to_string(agents_db_path) {
+        let agents_db_path = std::env::temp_dir().join("agentaskit_agents").join("registry.json");
+        if let Ok(agents_data) = std::fs::read_to_string(&agents_db_path) {
             if let Ok(loaded_agents) = serde_json::from_str::<HashMap<String, AgentProfile>>(&agents_data) {
                 for (id, profile) in loaded_agents {
                     agents.insert(AgentId::new(&id), profile);
@@ -805,11 +834,12 @@ impl AgentRegistry {
         }
 
         // Persist agent registry
-        let _ = std::fs::create_dir_all("/tmp/agentaskit_agents");
+        let agents_dir = std::env::temp_dir().join("agentaskit_agents");
+        let _ = std::fs::create_dir_all(&agents_dir);
         if let Ok(json) = serde_json::to_string_pretty(&agents.iter()
             .map(|(k, v)| (k.to_string(), v.clone()))
             .collect::<HashMap<String, AgentProfile>>()) {
-            let _ = std::fs::write(agents_db_path, json);
+            let _ = std::fs::write(&agents_db_path, json);
         }
 
         Ok(Self { agents })
@@ -824,11 +854,12 @@ impl AgentRegistry {
 impl HealthMonitor {
     /// Check overall health of selected agents
     pub async fn check_overall_health(&self, selected_agents: &[AgentId]) -> Result<OverallHealthStatus> {
-        // Read system health metrics
-        let system_load = std::fs::read_to_string("/proc/loadavg")
-            .ok()
-            .and_then(|s| s.split_whitespace().next().and_then(|v| v.parse::<f64>().ok()))
-            .unwrap_or(0.5);
+        // Read system health metrics using cross-platform sysinfo crate
+        let mut sys = System::new_all();
+        sys.refresh_all();
+        
+        // Get system load average (1-minute load)
+        let system_load = sys.load_average().one;
 
         // Calculate agent health based on system state
         let total = selected_agents.len();
@@ -896,8 +927,22 @@ impl LoadBalancer {
             .map(|(id, _)| id.clone())
             .collect();
 
-        // Calculate efficiency: 100% when variance is 0, decreases with variance
-        let load_balancing_efficiency = (100.0 - load_variance.sqrt() * 10.0).max(0.0).min(100.0);
+        // Calculate efficiency using coefficient of variation (CV = std_dev / mean):
+        // - 100% when variance is 0 (perfectly balanced)
+        // - decreases as relative dispersion increases
+        // - CV >= 1.0 is treated as 0% efficiency (highly imbalanced)
+        let load_balancing_efficiency = if average_load_per_agent > 0.0 {
+            let std_dev = load_variance.sqrt();
+            let cv = std_dev / average_load_per_agent;
+            let cv_clamped = cv.min(1.0);
+            (100.0 * (1.0 - cv_clamped)).max(0.0).min(100.0)
+        } else if load_variance == 0.0 {
+            // No load and no imbalance
+            100.0
+        } else {
+            // Defensive fallback for pathological cases (variance without mean)
+            0.0
+        };
 
         Ok(LoadDistribution {
             total_load_units,
