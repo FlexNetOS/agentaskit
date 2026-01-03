@@ -24,7 +24,35 @@ use crate::orchestration::Task;
 use crate::security::SecurityManager;
 
 pub type AgentResult<T> = Result<T, anyhow::Error>;
-pub type MessageId = Uuid;
+
+/// Enhanced: Message identifier with type safety
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MessageId(pub Uuid);
+
+impl MessageId {
+    /// Create a new random MessageId
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+
+    /// Create a MessageId from an existing Uuid
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+}
+
+impl std::fmt::Display for MessageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum BroadcastScope {

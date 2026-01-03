@@ -56,11 +56,11 @@ use tokio::sync::RwLock;
 use tracing::{error, info};
 use uuid::Uuid;
 
-/// Specialized Layer Coordinator
+/// Enhanced: Specialized Layer Coordinator with type-safe IDs
 /// Manages the collection of domain expert agents and their interactions
 pub struct SpecializedLayer {
-    agents: Arc<RwLock<HashMap<Uuid, Box<dyn Agent>>>>,
-    agent_registry: Arc<RwLock<HashMap<String, Uuid>>>,
+    agents: Arc<RwLock<HashMap<AgentId, Box<dyn Agent>>>>,
+    agent_registry: Arc<RwLock<HashMap<String, AgentId>>>,
 }
 
 impl SpecializedLayer {

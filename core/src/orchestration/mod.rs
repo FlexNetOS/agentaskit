@@ -16,8 +16,8 @@ use crate::agents::AgentManager;
 use crate::communication::MessageBroker;
 use crate::monitoring::MetricsCollector;
 
-// Re-export unified types from shared for consistency across codebase
-pub use agentaskit_shared::{Priority, Task, TaskResult, TaskStatus};
+// Enhanced: Re-export unified types from shared with type-safe IDs
+pub use agentaskit_shared::{Priority, Task, TaskId, TaskResult, TaskStatus};
 
 /// The main orchestration engine that coordinates all system activities
 pub struct OrchestratorEngine {
@@ -40,9 +40,10 @@ pub enum TaskType {
     Emergency,
 }
 
+/// Enhanced: Task queue with type-safe task IDs
 pub struct TaskQueue {
     pending_tasks: Vec<Task>,
-    active_tasks: HashMap<Uuid, Task>,
+    active_tasks: HashMap<TaskId, Task>,
     completed_tasks: Vec<Task>,
 }
 

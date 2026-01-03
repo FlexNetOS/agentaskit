@@ -18,7 +18,7 @@ use crate::agents::communication::CommunicationManager;
 use crate::agents::{Agent, AgentMessage, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 use std::time::Duration;
 use uuid::Uuid;
@@ -94,9 +94,9 @@ pub async fn coordinate_resource_reallocation(
 ) -> Result<serde_json::Value> {
     tracing::info!("Coordinating resource reallocation");
 
-    // Create task for resource allocator
+    // Enhanced: Create task with type-safe ID
     let task = Task {
-        id: Uuid::new_v4(),
+        id: TaskId::new(),
         name: "resource-reallocation".to_string(),
         description: "Coordinate system-wide resource reallocation".to_string(),
         task_type: "resource-allocation".to_string(),

@@ -28,7 +28,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::agents::AgentMessage;
-use crate::orchestration::{Task, TaskStatus};
+use crate::orchestration::{Task, TaskId, TaskStatus};
 use agentaskit_shared::{AgentCommunicationProtocol, AgentId, TaskOrchestrationProtocol};
 
 /// Enhanced chat request structure
@@ -493,7 +493,7 @@ impl EnhancedWorkflowProcessor {
 
         // Create initial task subject
         let task_subject = TaskSubject {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             title: self.generate_task_title(request, &deconstruct).await?,
             description: self
                 .generate_task_description(request, &deconstruct)
@@ -585,7 +585,7 @@ impl EnhancedWorkflowProcessor {
 
             // Convert to Deliverable structure
             let deliverable = Deliverable {
-                id: Uuid::new_v4(),
+                id: TaskId::new(),
                 name: planned.spec.name.clone(),
                 description: planned.spec.description.clone(),
                 deliverable_type: planned.spec.deliverable_type.clone(),
@@ -681,7 +681,7 @@ impl EnhancedWorkflowProcessor {
             .await?;
 
         Ok(Deliverable {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             name: self.generate_deliverable_name(output_requirement).await?,
             description: output_requirement.to_string(),
             deliverable_type: deliverable_type.clone(),
