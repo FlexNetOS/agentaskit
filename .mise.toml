@@ -1,6 +1,6 @@
 # mise configuration for AgentAskit
 # REF: ADR-0005 Modern Tooling Strategy
-# See: docs/decisions/adr/0005-modern-tooling-strategy.md
+# All scripts use Nushell for cross-platform compatibility
 
 [tools]
 # Rust toolchain (managed by rustup, mise tracks version)
@@ -23,11 +23,11 @@ XDG_DATA_HOME = "{{env.HOME}}/.local/share"
 XDG_CACHE_HOME = "{{env.HOME}}/.cache"
 XDG_STATE_HOME = "{{env.HOME}}/.local/state"
 
-# Rust settings
+# Rust settings (XDG compliant)
 CARGO_HOME = "{{env.HOME}}/.local/share/cargo"
 RUSTUP_HOME = "{{env.HOME}}/.local/share/rustup"
 
-# Tool paths - unified bin directory first, then fallbacks
+# Tool paths - unified bin directory first
 PATH = [
   "{{cwd}}/tools/bin",
   "{{cwd}}/tools/external/nushell/target/release",
@@ -37,45 +37,64 @@ PATH = [
   "{{env.PATH}}"
 ]
 
+# All tasks use nushell for cross-platform compatibility
 [tasks.build]
 description = "Build the AgentAskit core"
-run = "cargo build --release"
-dir = "{{cwd}}/agentaskit-production/core"
+run = "nu -c 'cd agentaskit-production; cargo build --release'"
 
 [tasks.test]
 description = "Run all tests"
-run = "cargo test --all"
-dir = "{{cwd}}/agentaskit-production/core"
+run = "nu -c 'cd agentaskit-production; cargo test --all'"
 
 [tasks.lint]
 description = "Run linting checks"
-run = """
-cargo clippy --all-targets --all-features -- -D warnings
-cargo fmt --all -- --check
-"""
+run = '''
+nu -c '
+  cargo clippy --all-targets --all-features -- -D warnings
+  cargo fmt --all -- --check
+'
+'''
 
 [tasks.build-tools]
-description = "Build external tools from source"
-run = """
-(cd "{{cwd}}/tools/external/pixi" && cargo build --release)
-(cd "{{cwd}}/tools/external/nushell" && cargo build --release)
-(cd "{{cwd}}/tools/external/coreutils" && cargo build --release)
-(cd "{{cwd}}/tools/external/rusty-tags" && cargo build --release)
-"""
+description = "Build external tools from source (nushell)"
+run = '''
+nu -c '
+  let tools = ["nushell" "coreutils" "rusty-tags"]
+  for tool in $tools {
+    let path = $"tools/external/($tool)"
+    if ($path | path exists) {
+      print $"Building ($tool)..."
+      cd $path
+      cargo build --release
+    }
+  }
+'
+'''
 
 [tasks.xdg-audit]
 description = "Run XDG compliance audit"
-run = "xdg-ninja --json > tools/analysis/xdg_audit.json"
+run = "nu -c 'xdg-ninja --json | save -f tools/analysis/xdg_audit.json'"
 
 [tasks.todo-validate]
 description = "Validate .todo file schema"
-run = "scripts/validate_sot.sh"
-dir = "{{cwd}}/agentaskit-production"
+run = "nu -c 'cd agentaskit-production; nu scripts/validate_sot.nu'"
 
 [tasks.bootstrap]
-description = "Bootstrap development environment"
-run = "bash tools/bootstrap.sh"
+description = "Bootstrap development environment (nushell)"
+run = "nu tools/bootstrap.nu"
 
 [tasks.aider]
 description = "Start aider AI pair programming session"
 run = "aider --config .aider.conf.yml"
+
+[tasks.clean]
+description = "Clean all build artifacts"
+run = "nu -c 'cargo clean; rm -rf tools/external/*/target'"
+
+[tasks.fmt]
+description = "Format all code"
+run = "cargo fmt --all"
+
+[tasks.doc]
+description = "Generate documentation"
+run = "cargo doc --no-deps --document-private-items"

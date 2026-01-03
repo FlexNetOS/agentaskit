@@ -1,19 +1,113 @@
 name: CI
+
 on:
   push:
   pull_request:
   workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lint repo structure (stub)
-        run: echo "Lint stub"
-  tests:
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Lint with Nushell
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print "Checking repo structure..."
+
+            # Verify required files exist
+            let required = [
+              "Cargo.toml"
+              "pixi.toml"
+              ".mise.toml"
+              "tools/bootstrap.nu"
+            ]
+
+            for file in $required {
+              if not ($file | path exists) {
+                print $"ERROR: Missing required file: ($file)"
+                exit 1
+              }
+            }
+
+            print "All required files present ✓"
+            print "Lint complete ✓"
+          '
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Build with Nushell
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print $"Building on (sys host | get name)..."
+            cargo build --verbose
+            print "Build complete ✓"
+          '
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Test with Nushell
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print "Running tests..."
+            cargo test --verbose
+            print "Tests complete ✓"
+          '
+
+  fmt-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests (stub)
-        run: echo "No tests yet"
+
+      - name: Setup Nushell
+        uses: ./.github/actions/setup-nushell
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format and Clippy Check
+        shell: bash
+        run: |
+          pixi run nu -c '
+            print "Checking formatting..."
+            cargo fmt --all -- --check
+
+            print "Running clippy..."
+            cargo clippy --all-targets -- -D warnings
+
+            print "Format and lint checks complete ✓"
+          '

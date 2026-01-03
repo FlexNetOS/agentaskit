@@ -1228,7 +1228,7 @@ impl Agent for SecuritySpecialistAgent {
                 let task_result = self.execute_task(task.clone()).await?;
 
                 let response = AgentMessage::Response {
-                    id: MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: to,
                     to: from,

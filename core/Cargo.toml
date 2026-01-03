@@ -20,6 +20,9 @@ serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 
+# AI/LLM Integration
+airust.workspace = true
+
 anyhow.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
@@ -46,6 +49,7 @@ num_cpus = "1.13"
 sysinfo = "0.30"
 walkdir = "2.5"
 md5 = "0.7"
+which = "6.0"
 
 [dev-dependencies]
 mockall.workspace = true
