@@ -602,7 +602,7 @@ impl ResourceAllocator {
                 cpu_cores: Some(2),
                 memory_mb: Some(2048),
                 storage_mb: Some(1024),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },
@@ -1056,7 +1056,7 @@ impl Agent for ResourceAllocator {
                     cpu_cores: Some(1),
                     memory_mb: Some(1024),
                     storage_mb: Some(100),
-                    network_bandwidth_mbps: Some(50.0),
+                    network_bandwidth_mbps: Some(50),
                     gpu_required: false,
                     special_capabilities: Vec::new(),
                 };

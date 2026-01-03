@@ -496,7 +496,7 @@ impl SystemOrchestrator {
                 cpu_cores: Some(2),
                 memory_mb: Some(4096),
                 storage_mb: Some(500),
-                network_bandwidth_mbps: Some(100.0),
+                network_bandwidth_mbps: Some(100),
                 gpu_required: false,
                 special_capabilities: Vec::new(),
             },

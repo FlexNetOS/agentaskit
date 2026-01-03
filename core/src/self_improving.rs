@@ -573,16 +573,15 @@ impl SelfImprovingOrchestrator {
         // Apply agent-specific optimizations
         info!("Applying agent optimization: {}", improvement.description);
 
-        // Optimization strategies based on improvement data
-        if let Some(confidence) = improvement.confidence_score {
-            if confidence < 0.7 {
-                warn!(
-                    "Low confidence optimization ({}), applying conservatively",
-                    confidence
-                );
-                // Apply with reduced effect
-                return Ok(false);
-            }
+        // Enhanced: Direct confidence check (confidence_score is f64, not Option)
+        let confidence = improvement.confidence_score;
+        if confidence < 0.7 {
+            warn!(
+                "Low confidence optimization ({}), applying conservatively",
+                confidence
+            );
+            // Apply with reduced effect
+            return Ok(false);
         }
 
         // Simulated agent optimization effects:
