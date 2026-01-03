@@ -47,8 +47,8 @@ def "todo list" [] {
     if ($todo_file | path exists) {
         open $todo_file
         | lines
-        | where { |line| $line | str starts-with "- [" }
-        | each { |line|
+        | where {|line| $line | str starts-with "- [" }
+        | each {|line|
             let status = if ($line | str contains "[x]") { "✓" } else { "○" }
             let ref = ($line | parse --regex '\[REF: ([^\]]+)\]' | get -i 0.capture0? | default "")
             { status: $status, ref: $ref, task: $line }
