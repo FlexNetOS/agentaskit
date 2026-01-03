@@ -162,7 +162,7 @@ impl Agent for RustFFIAgent {
         self.tasks.lock().await.insert(task_id, task.clone());
 
         let workspace_path = task
-            .parameters
+            .input_data
             .as_ref()
             .and_then(|p| p.get("workspace_path"))
             .and_then(|v| v.as_str())

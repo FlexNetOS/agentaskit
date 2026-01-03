@@ -1248,7 +1248,7 @@ impl Agent for DigestAgent {
         match task.name.as_str() {
             "generate-digest" => {
                 let digest_type = task
-                    .parameters
+                    .input_data
                     .get("type")
                     .and_then(|v| v.as_str())
                     .map(|s| match s {

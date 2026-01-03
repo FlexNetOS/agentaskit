@@ -86,6 +86,7 @@ pub mod task_utils {
             created_at: Utc::now(),
             started_at: None,
             completed_at: None,
+            deadline: None,
             timeout: None,
             retry_count: 0,
             max_retries: 3,

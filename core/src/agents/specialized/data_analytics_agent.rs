@@ -1088,7 +1088,7 @@ impl Agent for DataAnalyticsAgent {
             "data_processing" => {
                 // Parse dataset from parameters
                 let dataset_data = task
-                    .parameters
+                    .input_data
                     .get("dataset")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset"))?;
 
@@ -1104,11 +1104,11 @@ impl Agent for DataAnalyticsAgent {
             }
             "data_analysis" => {
                 let dataset_id = task
-                    .parameters
+                    .input_data
                     .get("dataset_id")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: dataset_id"))?;
                 let analysis_type_str = task
-                    .parameters
+                    .input_data
                     .get("analysis_type")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: analysis_type"))?;
 
@@ -1125,7 +1125,7 @@ impl Agent for DataAnalyticsAgent {
             "model_training" => {
                 // Parse training request from parameters
                 let training_data = task
-                    .parameters
+                    .input_data
                     .get("training_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: training_request"))?;
 
@@ -1142,7 +1142,7 @@ impl Agent for DataAnalyticsAgent {
             "visualization" => {
                 // Parse visualization request from parameters
                 let viz_data = task
-                    .parameters
+                    .input_data
                     .get("visualization_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: visualization_request"))?;
 
@@ -1159,7 +1159,7 @@ impl Agent for DataAnalyticsAgent {
             "report_generation" => {
                 // Parse report request from parameters
                 let report_data = task
-                    .parameters
+                    .input_data
                     .get("report_request")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: report_request"))?;
 
@@ -1176,7 +1176,7 @@ impl Agent for DataAnalyticsAgent {
             "query_execution" => {
                 // Parse query from parameters
                 let query_data = task
-                    .parameters
+                    .input_data
                     .get("query")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: query"))?;
 
@@ -1193,7 +1193,7 @@ impl Agent for DataAnalyticsAgent {
             "stream_processing" => {
                 // Parse stream config from parameters
                 let stream_data = task
-                    .parameters
+                    .input_data
                     .get("stream_config")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: stream_config"))?;
 

@@ -1332,7 +1332,7 @@ impl Agent for LearningAgent {
         match task.name.as_str() {
             "train-model" => {
                 let model_name = task
-                    .parameters
+                    .input_data
                     .get("model_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-model")

@@ -1219,7 +1219,7 @@ impl Agent for MonitoringAgent {
         match task.name.as_str() {
             "start-monitoring" => {
                 let service_name = task
-                    .parameters
+                    .input_data
                     .get("service_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default-service")

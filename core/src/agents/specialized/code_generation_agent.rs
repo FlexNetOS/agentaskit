@@ -933,14 +933,14 @@ impl Agent for CodeGenerationAgent {
         match task.name.as_str() {
             "generate-code" => {
                 let title = task
-                    .parameters
+                    .input_data
                     .get("title")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Generated Code")
                     .to_string();
 
                 let language = task
-                    .parameters
+                    .input_data
                     .get("language")
                     .and_then(|v| v.as_str())
                     .unwrap_or("rust")

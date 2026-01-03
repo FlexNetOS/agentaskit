@@ -830,13 +830,13 @@ impl PriorityManager {
             PriorityFactorType::Urgency => {
                 // Extract urgency from task metadata or use default
                 Ok(task
-                    .parameters
+                    .input_data
                     .get("urgency")
                     .and_then(|v| v.as_f64())
                     .unwrap_or(50.0))
             }
             PriorityFactorType::Importance => Ok(task
-                .parameters
+                .input_data
                 .get("importance")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(50.0)),
@@ -853,7 +853,7 @@ impl PriorityManager {
             PriorityFactorType::Dependencies => {
                 // Count dependent tasks
                 let dep_count = task
-                    .parameters
+                    .input_data
                     .get("dependencies")
                     .and_then(|v| v.as_array())
                     .map(|arr| arr.len())
@@ -861,12 +861,12 @@ impl PriorityManager {
                 Ok((dep_count as f64 * 10.0).clamp(0.0, 100.0))
             }
             PriorityFactorType::BusinessValue => Ok(task
-                .parameters
+                .input_data
                 .get("business_value")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(40.0)),
             PriorityFactorType::UserPriority => Ok(task
-                .parameters
+                .input_data
                 .get("user_priority")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(50.0)),
@@ -1069,14 +1069,14 @@ impl Agent for PriorityManager {
             }
             "escalate-priority" => {
                 let task_id = task
-                    .parameters
+                    .input_data
                     .get("task_id")
                     .and_then(|v| v.as_str())
                     .and_then(|s| Uuid::parse_str(s).ok())
                     .ok_or_else(|| anyhow::anyhow!("Invalid task_id parameter"))?;
 
                 let escalation_factor = task
-                    .parameters
+                    .input_data
                     .get("escalation_factor")
                     .and_then(|v| v.as_f64())
                     .unwrap_or(0.2);

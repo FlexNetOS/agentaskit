@@ -1069,7 +1069,7 @@ impl Agent for IntegrationAgent {
             "service_registration" => {
                 // Parse service registration from parameters
                 let service_data = task
-                    .parameters
+                    .input_data
                     .get("service")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: service"))?;
 
@@ -1086,7 +1086,7 @@ impl Agent for IntegrationAgent {
             "api_route_creation" => {
                 // Parse route config from parameters
                 let route_data = task
-                    .parameters
+                    .input_data
                     .get("route")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: route"))?;
 
@@ -1103,7 +1103,7 @@ impl Agent for IntegrationAgent {
             "data_transformation" => {
                 // Parse transformation request from parameters
                 let transform_data = task
-                    .parameters
+                    .input_data
                     .get("transformation")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: transformation"))?;
 
@@ -1120,7 +1120,7 @@ impl Agent for IntegrationAgent {
             "workflow_execution" => {
                 // Parse workflow request from parameters
                 let workflow_data = task
-                    .parameters
+                    .input_data
                     .get("workflow")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: workflow"))?;
 
@@ -1137,7 +1137,7 @@ impl Agent for IntegrationAgent {
             "system_connection" => {
                 // Parse connection request from parameters
                 let connection_data = task
-                    .parameters
+                    .input_data
                     .get("connection")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: connection"))?;
 
@@ -1154,7 +1154,7 @@ impl Agent for IntegrationAgent {
             "message_publish" => {
                 // Parse message request from parameters
                 let message_data = task
-                    .parameters
+                    .input_data
                     .get("message")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: message"))?;
 
@@ -1171,7 +1171,7 @@ impl Agent for IntegrationAgent {
             "protocol_conversion" => {
                 // Parse conversion request from parameters
                 let conversion_data = task
-                    .parameters
+                    .input_data
                     .get("conversion")
                     .ok_or_else(|| anyhow::anyhow!("Missing parameter: conversion"))?;
 

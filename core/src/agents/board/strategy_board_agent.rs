@@ -766,7 +766,7 @@ impl Agent for StrategyBoardAgent {
         match task.name.as_str() {
             "create-strategic-plan" => {
                 let vision = task
-                    .parameters
+                    .input_data
                     .get("vision")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Default vision")
@@ -791,7 +791,7 @@ impl Agent for StrategyBoardAgent {
             }
             "conduct-market-analysis" => {
                 let market_segment = task
-                    .parameters
+                    .input_data
                     .get("market_segment")
                     .and_then(|v| v.as_str())
                     .unwrap_or("general")

@@ -1152,7 +1152,7 @@ impl Agent for OperationsBoardAgent {
             }
             "optimize-process" => {
                 let process_id = task
-                    .parameters
+                    .input_data
                     .get("process_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default");
