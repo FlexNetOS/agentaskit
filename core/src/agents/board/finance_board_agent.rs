@@ -956,7 +956,7 @@ impl Agent for FinanceBoardAgent {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: crate::agents::new_message_id(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,

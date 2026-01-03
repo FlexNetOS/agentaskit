@@ -7,9 +7,6 @@
 # Install: cargo install sccache
 # rustc-wrapper = "sccache"
 
-# Number of parallel jobs (0 = auto-detect)
-jobs = 0
-
 # Incremental compilation (faster dev builds)
 incremental = true
 

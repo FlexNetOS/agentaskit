@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::phase_one::Phase1Result;
-use agentaskit_shared::AgentId;
+use agentaskit_shared::{agent_id_from_name, AgentId};
 
 /// Agent Selection Manager for Phase 2
 #[derive(Debug)]
@@ -744,16 +744,16 @@ impl CapabilityMatcher {
         capability_database.insert(
             "system_orchestration".to_string(),
             vec![
-                AgentId::new("orchestrator_001"),
-                AgentId::new("orchestrator_002"),
+                agent_id_from_name("orchestrator_001"),
+                agent_id_from_name("orchestrator_002"),
             ],
         );
 
         capability_database.insert(
             "performance_analysis".to_string(),
             vec![
-                AgentId::new("performance_001"),
-                AgentId::new("performance_002"),
+                agent_id_from_name("performance_001"),
+                agent_id_from_name("performance_002"),
             ],
         );
 
@@ -791,7 +791,7 @@ impl AgentRegistry {
         // TODO: Load from actual agent database
         // For now, create mock agents
         let mock_agent = AgentProfile {
-            agent_id: AgentId::new("orchestrator_001"),
+            agent_id: agent_id_from_name("orchestrator_001"),
             agent_name: "System Orchestrator 001".to_string(),
             agent_type: AgentRole::SystemsArchitect,
             capabilities: vec![
@@ -811,7 +811,7 @@ impl AgentRegistry {
             specializations: vec!["Rust".to_string(), "Systems Design".to_string()],
         };
 
-        agents.insert(AgentId::new("orchestrator_001"), mock_agent);
+        agents.insert(agent_id_from_name("orchestrator_001"), mock_agent);
 
         Ok(Self { agents })
     }

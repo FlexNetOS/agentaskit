@@ -6,6 +6,19 @@ use uuid::Uuid;
 /// Common agent identifier type used across all AgentAsKit systems
 pub type AgentId = Uuid;
 
+/// Namespace UUID for AgentAsKit agent IDs (deterministic generation)
+pub const AGENT_NAMESPACE: Uuid = Uuid::from_bytes([
+    0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
+    0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
+]);
+
+/// Create a deterministic AgentId from a string name
+/// Uses UUID v5 (SHA-1 based) for consistent IDs across runs
+#[inline]
+pub fn agent_id_from_name(name: &str) -> AgentId {
+    Uuid::new_v5(&AGENT_NAMESPACE, name.as_bytes())
+}
+
 /// Common task identifier type
 pub type TaskId = Uuid;
 

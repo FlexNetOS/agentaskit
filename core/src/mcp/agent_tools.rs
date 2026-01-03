@@ -79,7 +79,7 @@ impl Agent for ToolEnabledAgent {
 
     async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         // Check if task requires tool execution
-        if let Some(tool_calls) = task.input_data.as_ref().and_then(|d| d.get("tool_calls")) {
+        if let Some(tool_calls) = task.input_data.get("tool_calls") {
             if let Some(calls) = tool_calls.as_array() {
                 let mut results = Vec::new();
 
