@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::agents::Agent;
+use crate::agents::{Agent, AgentResult, MessageId};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus,
     HealthStatus, Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
@@ -23,6 +23,9 @@ use agentaskit_shared::{
 /// - Deployment monitoring and validation
 /// - Blue-green and canary deployments
 pub struct DeploymentAgent {
+    id: Uuid,
+    name: String,
+    capabilities: Vec<String>,
     metadata: AgentMetadata,
     state: RwLock<AgentStatus>,
     context: Option<AgentContext>,
@@ -591,7 +594,7 @@ enum PipelineStatus {
 }
 
 /// Stage result
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct StageResult {
     pub stage_name: String,
     pub status: StageStatus,
@@ -1359,20 +1362,24 @@ struct InfrastructureMetrics {
 impl DeploymentAgent {
     pub fn new(config: Option<DeploymentConfig>) -> Self {
         let config = config.unwrap_or_default();
+        let id = Uuid::new_v4();
+        let name = "Deployment Agent".to_string();
+        let capabilities = vec![
+            "ci-cd-pipelines".to_string(),
+            "environment-management".to_string(),
+            "release-orchestration".to_string(),
+            "infrastructure-management".to_string(),
+            "deployment-automation".to_string(),
+            "rollback-management".to_string(),
+        ];
+
         let metadata = AgentMetadata {
-            id: AgentId::from_name("deployment-agent"),
-            name: "Deployment Agent".to_string(),
-            role: AgentRole::Specialized,
-            capabilities: vec![
-                "ci-cd-pipelines".to_string(),
-                "environment-management".to_string(),
-                "release-orchestration".to_string(),
-                "infrastructure-management".to_string(),
-                "deployment-automation".to_string(),
-                "rollback-management".to_string(),
-            ],
+            id: AgentId(id),
+            name: name.clone(),
+            agent_type: "specialized".to_string(),
             version: "1.0.0".to_string(),
-            cluster_assignment: Some("specialized".to_string()),
+            status: AgentStatus::Initializing,
+            health_status: HealthStatus::Healthy,
             resource_requirements: ResourceRequirements {
                 min_cpu: 2.0,
                 min_memory: 4 * 1024 * 1024 * 1024,   // 4GB
@@ -1381,10 +1388,15 @@ impl DeploymentAgent {
                 max_memory: 64 * 1024 * 1024 * 1024,    // 64GB
                 max_storage: 1000 * 1024 * 1024 * 1024, // 1TB
             },
-            health_check_interval: Duration::from_secs(30),
+            created_at: chrono::Utc::now(),
+            last_updated: chrono::Utc::now(),
+            tags: [("deployment".to_string(), "deployment".to_string()), ("specialized".to_string(), "specialized".to_string())].iter().cloned().collect(),
         };
 
         Self {
+            id,
+            name,
+            capabilities,
             metadata,
             state: RwLock::new(AgentStatus::Initializing),
             context: None,
@@ -1495,31 +1507,7 @@ impl Agent for DeploymentAgent {
         self.state.read().await.clone()
     }
 
-    async fn initialize(&mut self) -> Result<()> {
-        tracing::info!("Initializing Deployment Agent");
-
-        // Initialize pipeline templates
-        let mut pipeline_engine = self.pipeline_engine.write().await;
-        self.initialize_pipeline_templates(&mut pipeline_engine)
-            .await?;
-
-        // Initialize cloud providers
-        let mut infrastructure_manager = self.infrastructure_manager.write().await;
-        self.initialize_cloud_providers(&mut infrastructure_manager)
-            .await?;
-
-        // Initialize release strategies
-        let mut release_orchestrator = self.release_orchestrator.write().await;
-        self.initialize_release_strategies(&mut release_orchestrator)
-            .await?;
-
-        *self.state.write().await = AgentStatus::Active;
-
-        tracing::info!("Deployment Agent initialized successfully");
-        Ok(())
-    }
-
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> AgentResult<()> {
         tracing::info!("Starting Deployment Agent");
 
         // Start pipeline monitoring
@@ -1539,7 +1527,7 @@ impl Agent for DeploymentAgent {
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> AgentResult<()> {
         tracing::info!("Stopping Deployment Agent");
 
         *self.state.write().await = AgentStatus::Terminating;
@@ -1548,13 +1536,13 @@ impl Agent for DeploymentAgent {
         Ok(())
     }
 
-    async fn handle_message(&mut self, message: AgentMessage) -> Result<Option<AgentMessage>> {
+    async fn handle_message(&mut self, message: AgentMessage) -> AgentResult<Option<AgentMessage>> {
         match message {
             AgentMessage::Request { id, from, task, .. } => {
                 let result = self.execute_task(task).await?;
 
                 Ok(Some(AgentMessage::Response {
-                    id: crate::agents::MessageId::new(),
+                    id: MessageId::new(),
                     request_id: id,
                     from: self.metadata.id,
                     to: from,
@@ -1565,7 +1553,7 @@ impl Agent for DeploymentAgent {
         }
     }
 
-    async fn execute_task(&mut self, task: Task) -> Result<TaskResult> {
+    async fn execute_task(&mut self, task: Task) -> AgentResult<TaskResult> {
         let start_time = Instant::now();
 
         match task.name.as_str() {
@@ -1627,7 +1615,7 @@ impl Agent for DeploymentAgent {
         }
     }
 
-    async fn health_check(&self) -> Result<HealthStatus> {
+    async fn health_check(&self) -> AgentResult<HealthStatus> {
         let state = self.state.read().await;
         let pipeline_engine = self.pipeline_engine.read().await;
 
@@ -1644,13 +1632,13 @@ impl Agent for DeploymentAgent {
         })
     }
 
-    async fn update_config(&mut self, config: serde_json::Value) -> Result<()> {
+    async fn update_config(&mut self, config: serde_json::Value) -> AgentResult<()> {
         tracing::info!("Updating Deployment Agent configuration");
         Ok(())
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilities
+        &self.capabilities
     }
 }
 
