@@ -503,6 +503,7 @@
   - [ ] cargo_license_agent.rs
   - [ ] check_errors.txt
   - [ ] check_errors_2.txt
+  - [ ] compilation_fix_complete.md
   - [ ] comprehensive agenticai os repository analysis.md
   - [ ] config.rs
   - [ ] config_tests.rs
@@ -522,7 +523,6 @@
   - [ ] fitness-report.json
   - [ ] gateway.rs
   - [ ] generator.rs
-  - [ ] healing_report.md
 <!-- AUTO:WORKFLOW-009:SUBTASKS:END -->
 
 ---
