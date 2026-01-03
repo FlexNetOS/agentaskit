@@ -1405,7 +1405,7 @@ impl Agent for LearningAgent {
     }
 
     fn capabilities(&self) -> &[String] {
-        &self.metadata.capabilitiesself.capabilities
+        &self.metadata.capabilities
     }
 }
 

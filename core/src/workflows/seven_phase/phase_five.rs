@@ -304,7 +304,7 @@ impl QualityAssuranceValidator {
 
         // Challenge 3: Verify all phases succeeded
         adversarial_checks_total += 1;
-        let all_succeeded = phase_results.values().all(|r| r.success);
+        let all_succeeded = phase_results.values().all(|r| r.status == PhaseStatus::Completed);
         if all_succeeded {
             evidence.push("✓ All phases reported success".to_string());
             adversarial_checks_passed += 1;
