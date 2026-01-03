@@ -609,27 +609,460 @@
 
 ---
 
-## NEW GAPS IDENTIFIED - Session 2026-01-03
+## ORPHANED FILE INTEGRATION TASKS - Session 2026-01-03
 
-### Task: CODE-001 - Fix Orphaned Files in core/src
+> These tasks integrate orphaned .rs files into the module tree.
+> Principle: **No downgrades. Upgrades only.** All code preserved and wired.
 
-**Priority:** Critical  
-**Created:** 2026-01-03  
-**Status:** Pending  
-**Category:** Code Quality
+### Task: INTEG-001 - Integrate agent.rs (94 lines)
+
+**Priority:** High
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
 
 #### Description
-23 orphaned .rs files exist in `core/src/` root that are NOT declared in lib.rs or main.rs, making them unreachable (~4,000+ lines of dead code).
+`core/src/agent.rs` (94 lines) contains agent base implementation but is orphaned from module tree.
 
-#### Orphaned Files
-- broker.rs, effect.rs, engine.rs, evolution.rs, executor.rs
-- expansion.rs (555 lines), governance_integration.rs (319 lines)
-- governance_integration_simple.rs, governance_stubs.rs
-- hootl.rs (516 lines), noop.rs, orchestrator.rs (406 lines)
-- production_config.rs, rust_workers.rs, shell.rs, task.rs
+#### Integration Approach
+- Create `core/src/agents/base/mod.rs` and move agent.rs contents
+- Or add `pub mod agent;` to lib.rs and re-export through agents module
+- Wire to AgentManager for unified agent lifecycle
 
 #### Acceptance Criteria
-- All files either integrated into module tree or removed
+- agent.rs integrated into agents module hierarchy
+- No duplicate Agent structs
+- Cargo check passes
+
+---
+
+### Task: INTEG-002 - Integrate broker.rs (19 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/broker.rs` (19 lines) contains message broker stub but is orphaned.
+
+#### Integration Approach
+- Merge into `communication/mod.rs` MessageBroker implementation
+- Or create `communication/broker.rs` as submodule
+- Wire to existing MessageBroker for unified messaging
+
+#### Acceptance Criteria
+- broker.rs merged with communication module
+- No redundant broker implementations
+- Cargo check passes
+
+---
+
+### Task: INTEG-003 - Integrate build.rs (3 lines)
+
+**Priority:** Low
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Build System
+
+#### Description
+`core/src/build.rs` (3 lines) is misplaced - build.rs should be at crate root.
+
+#### Integration Approach
+- Move to `core/build.rs` (crate root level)
+- Or merge into existing build script if one exists
+- Ensure Cargo recognizes it as build script
+
+#### Acceptance Criteria
+- build.rs at correct location (core/build.rs)
+- Build script executes during cargo build
+- Cargo check passes
+
+---
+
+### Task: INTEG-004 - Integrate effect.rs (12 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/effect.rs` (12 lines) contains effect system types but is orphaned.
+
+#### Integration Approach
+- Create `core/src/workflows/effects/mod.rs` and integrate
+- Or add to autonomous module for side-effect tracking
+- Wire to workflow execution for effect management
+
+#### Acceptance Criteria
+- effect.rs integrated into workflows or autonomous
+- Effect types accessible from crate
+- Cargo check passes
+
+---
+
+### Task: INTEG-005 - Integrate engine.rs (183 lines)
+
+**Priority:** High
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/engine.rs` (183 lines) contains core engine implementation but is orphaned.
+
+#### Integration Approach
+- Integrate into `orchestration/mod.rs` as OrchestratorEngine extension
+- Or create `orchestration/engine.rs` submodule
+- Wire to main.rs startup sequence
+
+#### Acceptance Criteria
+- engine.rs integrated into orchestration module
+- Engine lifecycle managed properly
+- Startup/shutdown sequences work
+- Cargo check passes
+
+---
+
+### Task: INTEG-006 - Integrate evolution.rs (83 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/evolution.rs` (83 lines) contains evolution logic for self-improving agents but is orphaned.
+
+#### Integration Approach
+- Integrate into `self_improving/mod.rs`
+- Or create `self_improving/evolution.rs` submodule
+- Wire to SelfImprovingAgent for evolutionary capabilities
+
+#### Acceptance Criteria
+- evolution.rs integrated into self_improving module
+- Evolution strategies accessible
+- Model D merge logic connected
+- Cargo check passes
+
+---
+
+### Task: INTEG-007 - Integrate executor.rs (253 lines)
+
+**Priority:** Critical
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/executor.rs` (253 lines) contains task executor implementation but is orphaned.
+
+#### Integration Approach
+- Integrate into `orchestration/mod.rs` as TaskExecutor
+- Or create `orchestration/executor.rs` submodule
+- Wire to OrchestratorEngine for task execution
+
+#### Acceptance Criteria
+- executor.rs integrated into orchestration
+- Task execution pipeline functional
+- Async runtime properly managed
+- Cargo check passes
+
+---
+
+### Task: INTEG-008 - Integrate expansion.rs (555 lines)
+
+**Priority:** Critical
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/expansion.rs` (555 lines) is the largest orphaned file - contains expansion system for agent scaling.
+
+#### Integration Approach
+- Create `core/src/orchestration/expansion/mod.rs`
+- Integrate with AgentManager for dynamic scaling
+- Wire to monitoring for scale-up/down triggers
+
+#### Acceptance Criteria
+- expansion.rs integrated into orchestration
+- Scaling logic functional
+- Resource monitoring connected
+- Cargo check passes
+
+---
+
+### Task: INTEG-009 - Integrate governance_integration.rs (319 lines)
+
+**Priority:** High
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/governance_integration.rs` (319 lines) contains full governance integration but is orphaned.
+
+#### Integration Approach
+- Create `core/src/security/governance/mod.rs`
+- Integrate with security module for policy enforcement
+- Wire to workflow execution for compliance checks
+
+#### Acceptance Criteria
+- governance_integration.rs in security module
+- Governance policies enforceable
+- Audit trail generation working
+- Cargo check passes
+
+---
+
+### Task: INTEG-010 - Integrate governance_integration_simple.rs (168 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/governance_integration_simple.rs` (168 lines) contains simplified governance but is orphaned.
+
+#### Integration Approach
+- Merge with governance_integration.rs as lightweight mode
+- Or create `security/governance/simple.rs` for minimal deployments
+- Feature-flag for full vs simple governance
+
+#### Acceptance Criteria
+- Simple governance accessible via feature flag
+- No code duplication with full governance
+- Cargo check passes
+
+---
+
+### Task: INTEG-011 - Integrate governance_stubs.rs (158 lines)
+
+**Priority:** Low
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/governance_stubs.rs` (158 lines) contains governance stubs for testing but is orphaned.
+
+#### Integration Approach
+- Move to `core/src/security/governance/stubs.rs`
+- Mark with `#[cfg(test)]` for test-only compilation
+- Use in integration tests for governance mocking
+
+#### Acceptance Criteria
+- Stubs in security/governance module
+- Only compiled in test builds
+- Used by governance tests
+- Cargo check passes
+
+---
+
+### Task: INTEG-012 - Integrate hootl.rs (516 lines)
+
+**Priority:** Critical
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/hootl.rs` (516 lines) contains Human-On-Outside-The-Loop implementation but is orphaned.
+
+#### Integration Approach
+- Create `core/src/autonomous/hootl/mod.rs`
+- Integrate with AutonomousAgent for human oversight
+- Wire to decision points requiring human approval
+
+#### Acceptance Criteria
+- HOOTL integrated into autonomous module
+- Human approval workflow functional
+- Escalation paths defined
+- Cargo check passes
+
+---
+
+### Task: INTEG-013 - Integrate noop.rs (95 lines)
+
+**Priority:** Low
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/noop.rs` (95 lines) contains no-op implementations for testing but is orphaned.
+
+#### Integration Approach
+- Move to `core/src/testing/noop.rs` or inline in test modules
+- Mark with `#[cfg(test)]` for test-only compilation
+- Use as mock implementations in unit tests
+
+#### Acceptance Criteria
+- NoOp implementations in test utilities
+- Only compiled for tests
+- Used across test suites
+- Cargo check passes
+
+---
+
+### Task: INTEG-014 - Integrate orchestrator.rs (406 lines)
+
+**Priority:** Critical
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/orchestrator.rs` (406 lines) contains orchestrator logic but is orphaned - conflicts with orchestration module.
+
+#### Integration Approach
+- Merge into `orchestration/mod.rs` OrchestratorEngine
+- Or create `orchestration/core_orchestrator.rs` submodule
+- Resolve any conflicts with existing OrchestratorEngine
+
+#### Acceptance Criteria
+- Orchestrator logic merged into orchestration module
+- No duplicate orchestration structs
+- All orchestration features preserved
+- Cargo check passes
+
+---
+
+### Task: INTEG-015 - Integrate production_config.rs (164 lines)
+
+**Priority:** High
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/production_config.rs` (164 lines) contains production configuration but is orphaned.
+
+#### Integration Approach
+- Create `core/src/config/mod.rs` and integrate
+- Add `pub mod config;` to lib.rs
+- Wire to main.rs for configuration loading
+
+#### Acceptance Criteria
+- Config module in lib.rs
+- Production config loadable at startup
+- Environment-aware configuration
+- Cargo check passes
+
+---
+
+### Task: INTEG-016 - Integrate rust_workers.rs (100 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/rust_workers.rs` (100 lines) contains worker pool implementation but is orphaned.
+
+#### Integration Approach
+- Integrate into `orchestration/mod.rs` as WorkerPool
+- Or create `orchestration/workers.rs` submodule
+- Wire to TaskExecutor for parallel task execution
+
+#### Acceptance Criteria
+- Worker pool in orchestration module
+- Tokio runtime integration working
+- Task parallelism functional
+- Cargo check passes
+
+---
+
+### Task: INTEG-017 - Integrate shell.rs (247 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/shell.rs` (247 lines) contains shell interface but is orphaned.
+
+#### Integration Approach
+- Create `core/src/cli/shell.rs` for interactive mode
+- Or integrate with main.rs CLI commands
+- Wire to REPL functionality if needed
+
+#### Acceptance Criteria
+- Shell in CLI module or main.rs
+- Interactive commands functional
+- History and completion working
+- Cargo check passes
+
+---
+
+### Task: INTEG-018 - Integrate task.rs (30 lines)
+
+**Priority:** Medium
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Module Integration
+
+#### Description
+`core/src/task.rs` (30 lines) contains task definitions but is orphaned.
+
+#### Integration Approach
+- Merge into `orchestration/mod.rs` TaskDefinition
+- Or create `orchestration/task.rs` submodule
+- Unify with existing Task types
+
+#### Acceptance Criteria
+- Task types in orchestration module
+- No duplicate Task definitions
+- Compatible with existing workflows
+- Cargo check passes
+
+---
+
+## NEW GAPS IDENTIFIED - Session 2026-01-03
+
+### Task: CODE-001 - Fix Orphaned Files in core/src (META-TASK)
+
+**Priority:** Critical
+**Created:** 2026-01-03
+**Status:** Pending
+**Category:** Code Quality
+**Note:** See INTEG-001 through INTEG-018 for individual file integration tasks.
+
+#### Description
+18 orphaned .rs files exist in `core/src/` root that are NOT declared in lib.rs or main.rs, making them unreachable (~3,405 lines of dead code).
+
+#### Orphaned Files (See INTEG-* for details)
+| Task | File | Lines | Priority |
+|------|------|-------|----------|
+| INTEG-001 | agent.rs | 94 | High |
+| INTEG-002 | broker.rs | 19 | Medium |
+| INTEG-003 | build.rs | 3 | Low |
+| INTEG-004 | effect.rs | 12 | Medium |
+| INTEG-005 | engine.rs | 183 | High |
+| INTEG-006 | evolution.rs | 83 | Medium |
+| INTEG-007 | executor.rs | 253 | Critical |
+| INTEG-008 | expansion.rs | 555 | Critical |
+| INTEG-009 | governance_integration.rs | 319 | High |
+| INTEG-010 | governance_integration_simple.rs | 168 | Medium |
+| INTEG-011 | governance_stubs.rs | 158 | Low |
+| INTEG-012 | hootl.rs | 516 | Critical |
+| INTEG-013 | noop.rs | 95 | Low |
+| INTEG-014 | orchestrator.rs | 406 | Critical |
+| INTEG-015 | production_config.rs | 164 | High |
+| INTEG-016 | rust_workers.rs | 100 | Medium |
+| INTEG-017 | shell.rs | 247 | Medium |
+| INTEG-018 | task.rs | 30 | Medium |
+
+**Total:** 3,405 lines to integrate
+
+#### Acceptance Criteria
+- All INTEG-* tasks completed (18/18)
+- All files integrated into module tree (no removals per "upgrades only" principle)
 - No dead code in core/src/ root
 - Cargo check passes with no unused warnings
 
