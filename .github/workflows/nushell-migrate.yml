@@ -23,9 +23,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Detect Legacy Scripts
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Checking for legacy shell scripts ==="
             print ""
 
@@ -87,9 +87,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Validate Nushell Scripts
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print "=== Validating Nushell scripts ==="
 
             let nu_scripts = (glob "**/*.nu" | where { |f|
@@ -133,9 +133,9 @@ jobs:
         uses: ./.github/actions/setup-nushell
 
       - name: Test Bootstrap Script
-        shell: pixi run bash -e {0}
+        shell: bash
         run: |
-          nu -c '
+          pixi run nu -c '
             print $"=== Testing bootstrap on (sys host | get name) ==="
 
             # Source the environment config

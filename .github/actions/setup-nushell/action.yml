@@ -31,14 +31,14 @@ runs:
 
     - name: Get Nushell Path
       id: get-path
-      shell: pixi run bash -e {0}
+      shell: bash
       run: |
-        NU_PATH=$(which nu)
+        NU_PATH=$(pixi run which nu)
         echo "nu-path=$NU_PATH" >> $GITHUB_OUTPUT
         echo "Nushell path: $NU_PATH"
 
     - name: Verify Nushell Installation
-      shell: pixi run bash -e {0}
+      shell: bash
       run: |
-        nu --version
+        pixi run nu --version
         echo "✓ Nushell installed via Pixi for cross-platform portability"
