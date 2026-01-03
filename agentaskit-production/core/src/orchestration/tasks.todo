@@ -1146,11 +1146,11 @@ The `services/` directory contains Rust code (`health/mod.rs`) but is NOT includ
 
 ---
 
-### Task: INFRA-002 - Implement Dependency Injection Container
+### Task: INFRA-002 ✓ COMPLETED - Implement Dependency Injection Container
 
-**Priority:** High  
-**Created:** 2026-01-03  
-**Status:** Pending  
+**Priority:** High
+**Created:** 2026-01-03
+**Status:** Complete
 **Category:** Architecture
 
 #### Description

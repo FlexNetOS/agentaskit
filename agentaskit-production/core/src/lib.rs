@@ -65,6 +65,9 @@ pub mod agent;             // Agent base implementation (94 lines)
 // Protocol implementations (CODE-004)
 pub mod protocol_impl;     // Concrete implementations of shared protocol traits
 
+// Dependency injection (INFRA-002)
+pub mod service_registry;  // Service registry / DI container
+
 // Re-export commonly used types for convenience
 pub use agents::{Agent, AgentLayer, AgentManager, AgentStatus};
 pub use orchestration::{OrchestratorEngine, Task, TaskStatus, TaskType, Priority};
@@ -84,6 +87,9 @@ pub use workflows::{
 pub use verification::{NoaVerificationSystem, VerificationPass, VerificationStatus, TruthGate, EvidenceLedger};
 pub use autonomous::{AutonomousPipeline, PipelineConfig, MLEngine, BuildSystem};
 pub use self_improving::{SelfImprovingOrchestrator, OrchestratorConfig, LearningEngine, ImprovementTracker};
+
+// Export service registry / DI container
+pub use service_registry::{ServiceRegistry, ServiceRegistryBuilder, ServiceState, Service};
 
 /// Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
