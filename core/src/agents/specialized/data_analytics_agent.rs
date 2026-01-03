@@ -733,10 +733,11 @@ impl DataAnalyticsAgent {
             dataset.name, dataset.record_count
         );
 
+        // Enhanced: Clone dataset.id to avoid partial move
         let processing_id = Uuid::new_v4();
         let job = ProcessingJob {
             job_id: processing_id,
-            dataset_id: dataset.id,
+            dataset_id: dataset.id.clone(),
             status: JobStatus::Running,
             started_at: chrono::Utc::now(),
             completed_at: None,
@@ -1838,7 +1839,7 @@ impl DataProcessor {
         // Implementation would execute actual data processing pipeline
         Ok(ProcessingResult {
             processing_id: Uuid::new_v4(),
-            dataset_id: dataset.id,
+            dataset_id: dataset.id.clone(),  // Clone to avoid partial move
             records_processed: dataset.record_count,
             records_failed: 0,
             processing_time_ms: 1000,
