@@ -2,7 +2,7 @@
 # This script is automatically run when entering a pixi shell
 # REF: ADR-0005 Modern Tooling Strategy
 
-print "🔧 Activating AgentAskit pixi environment..."
+print "🔧 Activating AgentAsKit pixi environment..."
 
 # Verify we're in a pixi shell
 if ($env.PIXI_IN_SHELL? | is-empty) {
@@ -42,7 +42,7 @@ for tool in $tools {
     }
 }
 
-print $"✅ Pixi environment activated for (ansi green_bold)AgentAskit(ansi reset)"
+print $"✅ Pixi environment activated for (ansi green_bold)AgentAsKit(ansi reset)"
 print $"   Project root: ($env.AGENTASKIT_ROOT)"
 print $"   Shell: Nushell (char lparen)(version | get version)(char rparen)"
 print ""

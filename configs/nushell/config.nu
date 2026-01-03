@@ -1,4 +1,4 @@
-# Nushell Configuration for AgentAskit
+# Nushell Configuration for AgentAsKit
 # REF: ADR-0005 Modern Tooling Strategy
 #
 # Usage: Add to your ~/.config/nushell/config.nu:
@@ -27,7 +27,7 @@ $env.config = ($env.config | merge {
     hooks: {
         env_change: {
             PWD: [{ |before, after|
-                # Check if entering an AgentAskit project
+                # Check if entering an AgentAsKit project
                 let cargo_toml = ($after | path join "Cargo.toml")
                 if ($cargo_toml | path exists) {
                     # Could auto-source env.nu here if desired
