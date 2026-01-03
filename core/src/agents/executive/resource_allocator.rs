@@ -831,7 +831,7 @@ impl ResourceAllocator {
             cpu_cores: requirements.cpu_cores.unwrap_or(1) as f64,
             memory_bytes: requirements.memory_mb.unwrap_or(512) * 1024 * 1024,
             storage_bytes: requirements.storage_mb.unwrap_or(100) * 1024 * 1024,
-            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100.0),
+            network_mbps: requirements.network_bandwidth_mbps.unwrap_or(100),
             gpu_units: if requirements.gpu_required { 1 } else { 0 },
             custom_units: HashMap::new(),
         }
