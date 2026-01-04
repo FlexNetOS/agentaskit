@@ -103,10 +103,17 @@ check_config_validity() {
     for config_file in "$PROJECT_ROOT/configs/tracing.yaml" "$PROJECT_ROOT/configs/rate_limits.yaml"; do
         if [ -f "$config_file" ]; then
             if command -v python3 &> /dev/null; then
-                if python3 "$PROJECT_ROOT/configs/tools/validate_config.py" "$config_file" > /dev/null 2>&1; then
-                    log_success "Config valid: $(basename $config_file)"
+                local validation_output
+                validation_output="$(python3 "$PROJECT_ROOT/configs/tools/validate_config.py" "$config_file" 2>&1)"
+                local validation_status=$?
+
+                if [ "$validation_status" -eq 0 ]; then
+                    log_success "Config valid: $(basename "$config_file")"
                 else
-                    log_error "Config invalid: $(basename $config_file)"
+                    log_error "Config invalid: $(basename "$config_file")"
+                    if [ -n "$validation_output" ]; then
+                        log_error "Validation details for $(basename "$config_file"): $validation_output"
+                    fi
                     ((config_errors++))
                 fi
             else
