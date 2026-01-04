@@ -1,0 +1,133 @@
+# OpenTelemetry Tracing Configuration for AgentAsKit
+# Defines distributed tracing, logging, and observability settings
+
+version: "1.0"
+system: "AgentAsKit-Unified"
+
+# Global tracer configuration
+tracer:
+  service_name: "agentaskit-core"
+  service_version: "1.0.0-unified"
+  environment: "development"  # Override with: staging, production
+
+  # Resource attributes that identify this service
+  resources:
+    host.name: "localhost"
+    deployment.environment: "development"
+
+# Span processing and exporting
+exporters:
+  # OTLP (OpenTelemetry Protocol) exporter for Jaeger/Tempo
+  otlp:
+    enabled: true
+    endpoint: "http://localhost:4317"  # gRPC endpoint
+    timeout_seconds: 10
+
+  # Console exporter for local development
+  console:
+    enabled: true
+    log_level: "info"
+
+# Span sampling strategy
+sampling:
+  strategy: "probability"
+  probability: 1.0  # Sample 100% of traces in development
+  # For production, set to 0.1 or lower (10%, 1%, etc.)
+
+# Trace levels and verbosity
+levels:
+  default: "info"
+
+  # Module-specific trace levels
+  modules:
+    agentaskit_core: "info"
+    agentaskit_ai: "debug"
+    agentaskit_orchestration: "info"
+    agentaskit_execution: "debug"
+    unified_tools: "info"
+
+# Span attribute filtering
+attributes:
+  # Span attributes to include
+  include:
+    - "http.method"
+    - "http.status_code"
+    - "rpc.method"
+    - "span.kind"
+
+  # Sensitive attributes to exclude/redact
+  exclude:
+    - "db.password"
+    - "http.request.header.authorization"
+    - "http.request.header.x-api-key"
+    - "db.connection_string"
+
+# Logging configuration
+logging:
+  format: "json"  # json or text
+  level: "info"
+
+  # Log output destinations
+  outputs:
+    console:
+      enabled: true
+      format: "json"
+
+    file:
+      enabled: false  # Enable in production
+      path: "/var/log/agentaskit/"
+      max_size_mb: 100
+      max_backups: 5
+
+# Performance profiling
+profiling:
+  enabled: false  # Enable only for performance analysis
+  sample_rate: 0.1  # Profile 10% of requests
+
+# Error tracking
+errors:
+  capture: true
+  level: "warn"
+  include_stack_trace: true
+
+  # Send errors to external service
+  exporter:
+    type: "console"  # or: "sentry", "honeycomb", etc.
+    enabled: true
+
+# Metrics collection
+metrics:
+  enabled: true
+
+  # Metric collection interval
+  interval_seconds: 60
+
+  # Runtime metrics
+  runtime:
+    enabled: true
+    include:
+      - "process.cpu.usage"
+      - "process.memory.usage"
+      - "runtime.go.goroutines"  # if applicable
+      - "process.uptime"
+
+# Development-only settings
+development:
+  verbose: false
+  pretty_print: true
+  flush_on_drop: true
+
+# Production-only settings
+production:
+  verbose: false
+  pretty_print: false
+  batch_size: 512
+  flush_interval_seconds: 5
+
+# Distributed tracing correlation
+correlation:
+  # Use W3C Trace Context format
+  format: "w3c"
+
+  # Propagate trace context through messages
+  baggage_enabled: true
