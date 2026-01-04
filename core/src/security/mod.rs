@@ -150,6 +150,9 @@ impl SecurityManager {
         let signature = hmac::sign(&self.signing_key, token_data.as_bytes());
         let signature_hex = hex::encode(signature.as_ref());
 
+        // Clone capabilities for logging before moving into token
+        let capabilities_for_log = capabilities.clone();
+
         let token = CapabilityToken {
             id: token_id,
             agent_id,
@@ -175,7 +178,7 @@ impl SecurityManager {
             None,
             serde_json::json!({
                 "token_id": token_id,
-                "capabilities": capabilities,
+                "capabilities": capabilities_for_log,
                 "expires_at": expires_at
             }),
         )
@@ -292,6 +295,10 @@ impl SecurityManager {
         capabilities: Vec<Capability>,
         granted_by: Uuid,
     ) -> Result<()> {
+        // Clone for later use in logging
+        let capabilities_for_log = capabilities.clone();
+        let resource_id_for_log = resource_id.clone();
+
         let access_entry = AccessControlEntry {
             resource_id: resource_id.clone(),
             agent_id,
@@ -315,14 +322,14 @@ impl SecurityManager {
             None,
             serde_json::json!({
                 "target_agent": agent_id,
-                "capabilities": capabilities
+                "capabilities": capabilities_for_log
             }),
         )
         .await;
 
         info!(
             "Granted access to resource {} for agent {}",
-            resource_id, agent_id
+            resource_id_for_log, agent_id
         );
         Ok(())
     }

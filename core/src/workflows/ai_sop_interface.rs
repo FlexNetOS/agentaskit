@@ -390,12 +390,12 @@ mod tests {
             generated: "2025-01-01".to_string(),
             title: "Test SOP".to_string(),
             purpose: "Test purpose".to_string(),
-            scope: None,
+            scope: Default::default(),
             roles: vec![],
-            materials: None,
-            architecture: None,
+            materials: Default::default(),
+            architecture: Default::default(),
             procedures: vec![],
-            quality_checks: None,
+            quality_checks: Default::default(),
             glossary: Default::default(),
         };
 

@@ -55,6 +55,7 @@ which = "6.0"
 mockall.workspace = true
 tempfile.workspace = true
 tokio-test = "0.4"
+tracing-test = "0.2"
 
 [features]
 default = []

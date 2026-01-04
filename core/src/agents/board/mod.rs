@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::agents::Agent;
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Board coordination layer

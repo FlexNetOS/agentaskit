@@ -32,6 +32,8 @@ pub mod phase_six;
 pub mod phase_three;
 pub mod phase_two;
 
+use phase_one::Phase1Result;
+
 /// Seven-Phase Workflow Orchestrator
 #[derive(Debug)]
 pub struct SevenPhaseOrchestrator {
@@ -256,13 +258,17 @@ impl SevenPhaseOrchestrator {
         workflow_state.current_phase = PhaseType::AgentSelection;
 
         // Get previous phase result
-        let phase1_result = workflow_state
+        let phase1_phase_result = workflow_state
             .phase_results
             .get(&PhaseType::UserRequestIngestion)
             .ok_or_else(|| anyhow::anyhow!("Phase 1 result not found"))?;
 
+        // Deserialize Phase1Result from the output
+        let phase1_result: Phase1Result = serde_json::from_value(phase1_phase_result.output.clone())
+            .map_err(|e| anyhow::anyhow!("Failed to deserialize Phase1Result: {}", e))?;
+
         // Execute agent selection with 928-agent capability matching
-        let result = self.phase_two.select_agents(phase1_result).await?;
+        let result = self.phase_two.select_agents(&phase1_result).await?;
         workflow_state.assigned_agents = result.selected_agents.clone();
 
         let phase_result = PhaseResult {
@@ -540,7 +546,7 @@ impl SevenPhaseOrchestrator {
     fn extract_task_subject(&self, phase_result: &PhaseResult) -> Result<TaskSubject> {
         // TODO: Implement actual TaskSubject extraction from output
         Ok(TaskSubject {
-            id: Uuid::new_v4(),
+            id: TaskId::new(),
             title: "7-Phase Workflow Task".to_string(),
             description: "Generated from 7-phase workflow execution".to_string(),
             deconstruct: crate::workflows::DeconstructPhase {

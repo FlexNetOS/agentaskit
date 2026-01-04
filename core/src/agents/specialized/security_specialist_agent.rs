@@ -733,6 +733,7 @@ impl SecuritySpecialistAgent {
 
         let mut severity_breakdown = HashMap::new();
         let mut recommendations = vec![];
+        let findings_count = compliance_results.len() as u64;
 
         for (framework, status) in compliance_results {
             match status.overall_status {
@@ -753,7 +754,7 @@ impl SecuritySpecialistAgent {
             scan_id,
             scan_type: "compliance".to_string(),
             target: target.to_string(),
-            findings: compliance_results.len() as u64,
+            findings: findings_count,
             severity_breakdown,
             recommendations,
             scan_duration: 0,
