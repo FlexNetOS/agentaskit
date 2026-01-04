@@ -224,17 +224,17 @@ EOF
     # Add alerts
     if [ $cpu -gt $CPU_WARN_THRESHOLD ]; then
         log_warning "CPU usage high: ${cpu}%"
-        local alerts=$(jq ".alerts += [\"High CPU usage: ${cpu}%\"]" "$HEALTH_REPORT" | tee "$HEALTH_REPORT")
+        jq ".alerts += [\"High CPU usage: ${cpu}%\"]" "$HEALTH_REPORT" > "${HEALTH_REPORT}.tmp" && mv "${HEALTH_REPORT}.tmp" "$HEALTH_REPORT"
     fi
 
     if [ $memory -gt $MEMORY_WARN_THRESHOLD ]; then
         log_warning "Memory usage high: ${memory}%"
-        local alerts=$(jq ".alerts += [\"High memory usage: ${memory}%\"]" "$HEALTH_REPORT" | tee "$HEALTH_REPORT")
+        jq ".alerts += [\"High memory usage: ${memory}%\"]" "$HEALTH_REPORT" > "${HEALTH_REPORT}.tmp" && mv "${HEALTH_REPORT}.tmp" "$HEALTH_REPORT"
     fi
 
     if [ $disk -gt $DISK_WARN_THRESHOLD ]; then
         log_warning "Disk usage high: ${disk}%"
-        local alerts=$(jq ".alerts += [\"High disk usage: ${disk}%\"]" "$HEALTH_REPORT" | tee "$HEALTH_REPORT")
+        jq ".alerts += [\"High disk usage: ${disk}%\"]" "$HEALTH_REPORT" > "${HEALTH_REPORT}.tmp" && mv "${HEALTH_REPORT}.tmp" "$HEALTH_REPORT"
     fi
 
     log_success "Health report generated: $HEALTH_REPORT"
