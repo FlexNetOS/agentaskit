@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentMessage};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Emergency Responder Agent - Crisis management and system recovery
@@ -818,6 +818,9 @@ impl EmergencyResponder {
         self.update_system_health(&mut emergency_detector.system_state)
             .await?;
 
+        // Collect detections to add to history
+        let mut detections_to_add = Vec::new();
+
         // Check all detection rules
         for rule in &emergency_detector.detection_rules {
             if !rule.enabled {
@@ -847,10 +850,15 @@ impl EmergencyResponder {
                 };
 
                 detections.push(detection.clone());
-                emergency_detector.detection_history.push_back(detection);
+                detections_to_add.push(detection);
 
                 tracing::warn!("Emergency detected: {} - {}", rule.name, rule.description);
             }
+        }
+
+        // Add detections to history after iteration completes
+        for detection in detections_to_add {
+            emergency_detector.detection_history.push_back(detection);
         }
 
         // Keep detection history manageable

@@ -12,7 +12,7 @@ use crate::agents::AgentMessage;
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage,
+    Priority, ResourceRequirements, ResourceUsage, TaskId,
 };
 
 /// Strategy Board Agent - Strategic planning and decision-making

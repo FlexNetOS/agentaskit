@@ -96,7 +96,7 @@ pub async fn coordinate_resource_reallocation(
 
     // Enhanced: Create task with type-safe ID
     let task = Task {
-        id: Uuid::new_v4(),
+        id: TaskId::new(),
         name: "resource-reallocation".to_string(),
         description: "Coordinate system-wide resource reallocation".to_string(),
         task_type: "resource-allocation".to_string(),

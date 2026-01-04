@@ -23,7 +23,7 @@ pub struct SOPDocument {
     pub glossary: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SOPScope {
     pub applies_to: String,
     pub inclusions: Vec<String>,
@@ -37,14 +37,14 @@ pub struct SOPRole {
     pub responsibilities: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SOPMaterials {
     pub required_tools: Vec<String>,
     pub environment_variables: HashMap<String, String>,
     pub optional_tools: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SOPArchitecture {
     pub root_paths: Vec<String>,
     pub orchestrator: Vec<String>,
@@ -69,7 +69,7 @@ pub struct SOPStep {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SOPQualityChecks {
     pub build_time_gates: Vec<String>,
     pub runtime_guards: Vec<String>,
