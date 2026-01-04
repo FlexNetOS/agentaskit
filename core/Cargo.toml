@@ -57,6 +57,24 @@ tempfile.workspace = true
 tokio-test = "0.4"
 tracing-test = "0.2"
 
+[features]
+default = []
+
+# Inference engine options
+inference-llama = []
+inference-candle = ["candle-core", "candle-nn"]
+inference-burn = ["burn"]
+ml-vector = ["fastembed", "qdrant-client"]
+
+# Deployment modes
+desktop = ["tauri"]
+server = []
+embedded = []
+
+# Optional integrations
+mcp-protocol = []
+wasm-execution = []
+
 [build-dependencies]
 tonic-build = "0.9"
 prost-build = "0.11"

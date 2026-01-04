@@ -10,6 +10,7 @@
 //! all AgentAsKit subsystems while following the "Heal, Don't Harm" principle.
 
 // Re-export all public modules
+pub mod config;
 pub mod data_models;
 pub mod protocols;
 pub mod types;
