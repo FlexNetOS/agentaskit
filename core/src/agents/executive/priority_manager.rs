@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::agents::{Agent, AgentResult};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMessage, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage, Task, TaskResult, TaskStatus,
+    Priority, ResourceRequirements, ResourceUsage, Task, TaskId, TaskResult, TaskStatus,
 };
 
 /// Priority Manager Agent - Dynamic priority assignment and task scheduling
@@ -469,7 +469,7 @@ struct SLAMonitor {
 }
 
 /// SLA definition
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct SLADefinition {
     pub sla_id: String,
     pub name: String,
@@ -483,7 +483,7 @@ struct SLADefinition {
 }
 
 /// SLA target types
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum SLATargetType {
     ResponseTime,
     Throughput,
@@ -494,7 +494,7 @@ enum SLATargetType {
 }
 
 /// SLA measurement units
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum SLAMeasurementUnit {
     Seconds,
     Minutes,
@@ -777,6 +777,8 @@ impl PriorityManager {
         let mut sla_monitor = self.sla_monitor.write().await;
         let mut violations = Vec::new();
 
+        // Collect violations first to avoid borrow conflicts
+        let mut violations_to_add = Vec::new();
         for (sla_id, compliance) in &mut sla_monitor.compliance_tracking {
             // Check for SLA violations
             if compliance.current_value > compliance.target_value * 1.1 {
@@ -797,11 +799,16 @@ impl PriorityManager {
                 };
 
                 violations.push(violation.clone());
-                sla_monitor.violations.push_back(violation);
+                violations_to_add.push(violation);
 
                 // Update compliance status
                 compliance.status = ComplianceStatus::Violation;
             }
+        }
+
+        // Now add violations to monitor
+        for violation in violations_to_add {
+            sla_monitor.violations.push_back(violation);
         }
 
         // Update SLA metrics
@@ -1244,15 +1251,14 @@ impl PriorityManager {
             }
         }
 
-        // Update statistics
-        let mut stats = &mut priority_engine.statistics;
-        stats.total_assignments = priority_engine.priority_assignments.len() as u64;
-        stats.emergency_count = priority_engine
+        // Update statistics - collect values first to avoid borrow conflicts
+        let total_assignments = priority_engine.priority_assignments.len() as u64;
+        let emergency_count = priority_engine
             .priority_assignments
             .values()
             .filter(|a| a.current_priority >= 95.0)
             .count() as u64;
-        stats.critical_count = priority_engine
+        let critical_count = priority_engine
             .priority_assignments
             .values()
             .filter(|a| a.current_priority >= 80.0 && a.current_priority < 95.0)
@@ -1265,7 +1271,11 @@ impl PriorityManager {
             .sum::<f64>()
             / priority_engine.priority_assignments.len().max(1) as f64;
 
-        stats.avg_priority = avg_priority;
+        // Now update statistics
+        priority_engine.statistics.total_assignments = total_assignments;
+        priority_engine.statistics.emergency_count = emergency_count;
+        priority_engine.statistics.critical_count = critical_count;
+        priority_engine.statistics.avg_priority = avg_priority;
 
         tracing::debug!("Priority calculation cycle completed");
         Ok(())
@@ -1302,8 +1312,15 @@ impl PriorityManager {
     async fn run_sla_monitoring(sla_monitor: Arc<RwLock<SLAMonitor>>) -> Result<()> {
         let mut sla_monitor = sla_monitor.write().await;
 
+        // Collect SLA definitions first to avoid borrow conflicts
+        let sla_defs: Vec<(String, SLADefinition)> = {
+            sla_monitor.sla_definitions.iter()
+                .map(|(id, def)| (id.clone(), (*def).clone()))
+                .collect()
+        };
+
         // Check SLA compliance for each definition
-        for (sla_id, sla_def) in &sla_monitor.sla_definitions {
+        for (sla_id, sla_def) in sla_defs {
             if !sla_def.enabled {
                 continue;
             }
@@ -1339,7 +1356,7 @@ impl PriorityManager {
 
             sla_monitor
                 .compliance_tracking
-                .insert(sla_id.clone(), compliance);
+                .insert(sla_id, compliance);
         }
 
         // Update SLA metrics

@@ -13,7 +13,7 @@ use crate::agents::{Agent, AgentMessage, AgentRegistry, AgentResult, AlertSeveri
 use crate::orchestration::{Task, TaskResult, TaskStatus};
 use agentaskit_shared::{
     AgentContext, AgentId, AgentMetadata, AgentRole, AgentStatus, HealthStatus,
-    Priority, ResourceRequirements, ResourceUsage,
+    Priority, ResourceRequirements, ResourceUsage, TaskId,
 };
 
 /// NOA Commander - The Chief Executive Agent of ARK OS NOA

@@ -79,7 +79,7 @@ pub mod task_utils {
 
     /// Enhanced: Generate a new unique task ID with type safety
     pub fn generate_task_id() -> TaskId {
-        Uuid::new_v4()
+        TaskId::new()
     }
 
     /// Create a new task with default values

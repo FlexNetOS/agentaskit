@@ -28,7 +28,7 @@ pub type AgentResult<T> = Result<T, anyhow::Error>;
 /// Generate a new unique message ID
 #[inline]
 pub fn new_message_id() -> MessageId {
-    Uuid::new_v4()
+    MessageId::new()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
