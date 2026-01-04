@@ -339,7 +339,7 @@ record_deployment() {
     "environment": "$ENVIRONMENT",
     "git_sha": "$git_sha",
     "git_branch": "$git_branch",
-    "dry_run": $([[ "$DRY_RUN" == "true" ]] && echo "true" || echo "false"),
+    "dry_run": ${DRY_RUN,,},
     "status": "success"
 }
 EOF
