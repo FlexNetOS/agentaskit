@@ -137,7 +137,7 @@ pre_deploy_checks() {
 
     case "$ENVIRONMENT" in
         production)
-            if [[ ! "$current_branch" =~ ^(main|master|release) ]]; then
+            if [[ ! "$current_branch" =~ ^(main|master|release\/.+)$ ]]; then
                 log_error "Production deployment only allowed from main/master/release branches"
                 return 1
             fi
