@@ -258,14 +258,22 @@ validate_deployment() {
 
     cd "$PROJECT_ROOT"
 
+    # Track validation status across all config files
+    local validation_failed=false
+
     # Validate configs
     for config_file in configs/*.yaml configs/*.toml; do
         [ -f "$config_file" ] || continue
-        python3 configs/tools/validate_config.py "$config_file" > /dev/null 2>&1 || {
+        if ! python3 configs/tools/validate_config.py "$config_file" > /dev/null 2>&1; then
             log_warning "Config validation failed: $config_file"
-        }
+            validation_failed=true
+        fi
     done
 
+    if [ "$validation_failed" = true ]; then
+        log_error "Deployment validation failed due to invalid configuration files"
+        return 1
+    fi
     log_success "Deployment validation complete"
     return 0
 }
