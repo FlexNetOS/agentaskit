@@ -240,7 +240,11 @@ generate_deployment_config() {
     cd "$PROJECT_ROOT"
 
     # Generate environment-specific configs
-    python3 configs/tools/generate_config.py all -e "$ENVIRONMENT" -o "configs/$ENVIRONMENT" 2>&1 || true
+    if [ -f "configs/tools/generate_config.py" ]; then
+        python3 configs/tools/generate_config.py all -e "$ENVIRONMENT" -o "configs/$ENVIRONMENT" 2>&1 || true
+    else
+        log_warning "Config generation script not found at $PROJECT_ROOT/configs/tools/generate_config.py, skipping config generation"
+    fi
 
     if [ -d "configs/$ENVIRONMENT" ]; then
         log_success "Deployment configs generated in configs/$ENVIRONMENT"
